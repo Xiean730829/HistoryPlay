@@ -1,0 +1,15 @@
+[project]
+name = "museum-game"
+version = "0.1.0"
+description = "Authoritative local application for the Time-Space Museum"
+requires-python = ">=3.12"
+dependencies = [
+  "aiohttp>=3.11,<4",
+]
+
+[build-system]
+requires = ["hatchling>=1.26,<2"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/museum"]

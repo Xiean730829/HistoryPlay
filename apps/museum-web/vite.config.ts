@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
       port: Number(env.MUSEUM_WEB_PORT ?? 5173),
       proxy: {
         "/api": {
-          target: "http://127.0.0.1:8780",
+          target: `http://127.0.0.1:${env.MUSEUM_PORT ?? 8780}`,
           rewrite: (path) => path.replace(/^\/api/, ""),
         },
       },
