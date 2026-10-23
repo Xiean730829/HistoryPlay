@@ -1,0 +1,175 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+from content_pipeline.cli import main
+from content_pipeline.validation.reference_validator import validate_references
+
+MANIFEST = """
+id: cn.tang.core
+version: 0.1.0
+schema_version: "1"
+language: zh-CN
+region:
+  id: cn
+  label: 中国
+time_range:
+  start_year: 618
+  end_year: 907
+  precision: year
+required_capabilities:
+  - artifact3d
+publication_status: draft
+"""
+
+ARTIFACT = """
+id: cn.tang.artifact.stele
+title: 一佛二菩萨造像碑
+museum:
+  name: Minneapolis Institute of Art
+  accession: art/140016
+time_range:
+  start_year: 678
+  end_year: 678
+  precision: year
+material: 石
+category: 纪年造像碑
+asset_ids:
+  - cn.tang.asset.stele.original
+fact_card_ids:
+  - cn.tang.fact.stele.dated-678
+story_entry_ids:
+  - cn.tang.story.stele-observation
+"""
+
+ASSET = """
+id: cn.tang.asset.stele.original
+kind: model3d
+format: glb
+sha256: 9df4392c5d16e92fd704737f4037be19b55e69b28635ec3d47142e5180d87ed4
+byte_size: 4855856
+license:
+  spdx: CC0-1.0
+  attribution: Minneapolis Institute of Art
+"""
+
+SOURCE = """
+id: cn.tang.source.mia.stele-record
+kind: museum_record
+title: Mia 造像碑馆藏记录
+locator:
+  label: Minneapolis Institute of Art art/140016
+"""
+
+FACT = """
+id: cn.tang.fact.stele.dated-678
+claim: 馆方将此造像碑断代为678年。
+grade: F
+applicable_time:
+  start_year: 678
+  end_year: 678
+  precision: year
+source_ids:
+  - cn.tang.source.mia.stele-record
+"""
+
+STORY = """
+id: cn.tang.story.stele-observation
+title: 造像碑三片段观察
+entry_node_id: cn.tang.node.stele-observation.01
+node_ids:
+  - cn.tang.node.stele-observation.01
+  - cn.tang.node.stele-observation.02
+artifact_id: cn.tang.artifact.stele
+"""
+
+NODE_01 = """
+id: cn.tang.node.stele-observation.01
+story_id: cn.tang.story.stele-observation
+fact_grade: F
+allowed_actions:
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.stele-observation.02
+"""
+
+NODE_02 = """
+id: cn.tang.node.stele-observation.02
+story_id: cn.tang.story.stele-observation
+fact_grade: F
+allowed_actions:
+  - return_to_exhibit
+exits:
+  - action: return_to_exhibit
+    target_node_id: cn.tang.node.stele-observation.01
+"""
+
+
+def write_pack(root: Path, *, artifact: str = ARTIFACT, extra_asset: str | None = None) -> Path:
+    pack = root / "pack"
+    (pack / "artifacts").mkdir(parents=True)
+    (pack / "assets").mkdir()
+    (pack / "sources").mkdir()
+    (pack / "facts").mkdir()
+    (pack / "stories").mkdir()
+    (pack / "nodes").mkdir()
+    (pack / "manifest.yaml").write_text(MANIFEST, encoding="utf-8")
+    (pack / "artifacts" / "stele.yaml").write_text(artifact, encoding="utf-8")
+    (pack / "assets" / "stele.yaml").write_text(ASSET, encoding="utf-8")
+    (pack / "sources" / "mia.yaml").write_text(SOURCE, encoding="utf-8")
+    (pack / "facts" / "dated.yaml").write_text(FACT, encoding="utf-8")
+    (pack / "stories" / "observation.yaml").write_text(STORY, encoding="utf-8")
+    (pack / "nodes" / "01.yaml").write_text(NODE_01, encoding="utf-8")
+    (pack / "nodes" / "02.yaml").write_text(NODE_02, encoding="utf-8")
+    if extra_asset is not None:
+        (pack / "assets" / "extra.yaml").write_text(extra_asset, encoding="utf-8")
+    return pack
+
+
+def test_complete_pack_references_pass(tmp_path: Path) -> None:
+    assert validate_references(write_pack(tmp_path)) == []
+
+
+def test_missing_asset_reference_fails(tmp_path: Path) -> None:
+    pack = write_pack(
+        tmp_path,
+        artifact=ARTIFACT.replace("cn.tang.asset.stele.original", "cn.tang.asset.missing"),
+    )
+    issues = validate_references(pack)
+    assert any("缺少引用" in issue.message and "cn.tang.asset.missing" in issue.message for issue in issues)
+
+
+def test_wrong_kind_reference_fails(tmp_path: Path) -> None:
+    pack = write_pack(
+        tmp_path,
+        artifact=ARTIFACT.replace("cn.tang.story.stele-observation", "cn.tang.artifact.stele"),
+    )
+    issues = validate_references(pack)
+    assert any("需要故事" in issue.message for issue in issues)
+
+
+def test_duplicate_id_fails(tmp_path: Path) -> None:
+    pack = write_pack(
+        tmp_path,
+        extra_asset=ASSET.replace("cn.tang.asset.stele.original", "cn.tang.artifact.stele"),
+    )
+    issues = validate_references(pack)
+    assert any("重复的标识" in issue.message for issue in issues)
+
+
+def test_foreign_namespace_fails(tmp_path: Path) -> None:
+    pack = write_pack(
+        tmp_path,
+        extra_asset=ASSET.replace("cn.tang.asset.stele.original", "iq.abbasid.asset.bowl"),
+    )
+    issues = validate_references(pack)
+    assert any("命名空间" in issue.message for issue in issues)
+
+
+def test_cli_validate_rejects_missing_reference(tmp_path: Path) -> None:
+    pack = write_pack(
+        tmp_path,
+        artifact=ARTIFACT.replace("cn.tang.asset.stele.original", "cn.tang.asset.missing"),
+    )
+    assert main(["validate", "--pack", str(pack)]) == 1

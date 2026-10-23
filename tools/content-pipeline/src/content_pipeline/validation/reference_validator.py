@@ -1,0 +1,202 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+
+from yaml import YAMLError
+
+from content_pipeline.validation.schema_validator import Issue, iter_pack_files, load_yaml
+
+KIND_LABEL = {
+    "manifest": "内容包",
+    "artifact": "文物",
+    "asset": "资产",
+    "source": "来源",
+    "fact": "事实卡",
+    "story": "故事",
+    "story-node": "故事节点",
+    "event": "历史事件",
+    "relation": "关系",
+}
+
+
+@dataclass(frozen=True)
+class Entity:
+    ident: str
+    kind: str
+    path: Path
+    data: dict[str, object]
+    index: int | None = None
+
+    def locate(self, message: str) -> Issue:
+        if self.index is None:
+            return Issue(self.path, message)
+        return Issue(self.path, f"[{self.index}] {message}")
+
+
+def _iter_entities(pack_dir: Path) -> list[Entity]:
+    entities: list[Entity] = []
+    for path, kind in iter_pack_files(pack_dir):
+        try:
+            data = load_yaml(path)
+        except YAMLError:
+            continue
+        rows: list[tuple[int | None, object]]
+        if kind == "relation" and isinstance(data, list):
+            rows = list(enumerate(data))
+        else:
+            rows = [(None, data)]
+        for index, item in rows:
+            if not isinstance(item, dict):
+                continue
+            ident = item.get("id")
+            if isinstance(ident, str) and ident:
+                entities.append(Entity(ident, kind, path, item, index))
+    return entities
+
+
+def _as_ids(value: object) -> list[str]:
+    if isinstance(value, str) and value:
+        return [value]
+    if isinstance(value, list):
+        return [item for item in value if isinstance(item, str) and item]
+    return []
+
+
+def _pack_namespace(entities: list[Entity]) -> str | None:
+    for entity in entities:
+        if entity.kind == "manifest":
+            parts = entity.ident.split(".")
+            if len(parts) >= 3:
+                return ".".join(parts[:-1])
+    return None
+
+
+def _check_target(
+    entity: Entity,
+    field: str,
+    target_id: str,
+    expected_kind: str | None,
+    by_id: dict[str, Entity],
+) -> list[Issue]:
+    issues: list[Issue] = []
+    if expected_kind == "asset" and target_id == entity.ident:
+        issues.append(entity.locate(f"{field} 不能引用自身：{target_id}"))
+        return issues
+    found = by_id.get(target_id)
+    if found is None:
+        issues.append(entity.locate(f"{field} 缺少引用：{target_id}"))
+        return issues
+    if expected_kind is not None and found.kind != expected_kind:
+        expected = KIND_LABEL.get(expected_kind, expected_kind)
+        actual = KIND_LABEL.get(found.kind, found.kind)
+        issues.append(entity.locate(f"{field} 需要{expected}，实际是{actual}：{target_id}"))
+    return issues
+
+
+def _check_field(
+    entity: Entity,
+    field: str,
+    expected_kind: str | None,
+    by_id: dict[str, Entity],
+) -> list[Issue]:
+    issues: list[Issue] = []
+    for target_id in _as_ids(entity.data.get(field)):
+        issues.extend(_check_target(entity, field, target_id, expected_kind, by_id))
+    return issues
+
+
+def _check_story(entity: Entity, by_id: dict[str, Entity]) -> list[Issue]:
+    issues: list[Issue] = []
+    node_ids = _as_ids(entity.data.get("node_ids"))
+    entry = entity.data.get("entry_node_id")
+    if isinstance(entry, str) and entry and entry not in node_ids:
+        issues.append(entity.locate(f"故事入口节点未列入 node_ids：{entry}"))
+    for node_id in node_ids:
+        node = by_id.get(node_id)
+        if node is None or node.kind != "story-node":
+            continue
+        owner = node.data.get("story_id")
+        if owner != entity.ident:
+            issues.append(entity.locate(f"node_ids 中的节点不属于本故事：{node_id}"))
+    return issues
+
+
+def _check_story_node(entity: Entity, by_id: dict[str, Entity]) -> list[Issue]:
+    issues: list[Issue] = []
+    presentation = entity.data.get("presentation")
+    if isinstance(presentation, dict):
+        for target_id in _as_ids(presentation.get("asset_ids")):
+            issues.extend(
+                _check_target(entity, "presentation.asset_ids", target_id, "asset", by_id)
+            )
+    exits = entity.data.get("exits")
+    if isinstance(exits, list):
+        for index, item in enumerate(exits):
+            if not isinstance(item, dict):
+                continue
+            target_id = item.get("target_node_id")
+            if isinstance(target_id, str) and target_id:
+                issues.extend(
+                    _check_target(
+                        entity, f"exits[{index}].target_node_id", target_id, "story-node", by_id
+                    )
+                )
+    story_id = entity.data.get("story_id")
+    if isinstance(story_id, str) and story_id:
+        story = by_id.get(story_id)
+        if story is not None and story.kind == "story":
+            node_ids = _as_ids(story.data.get("node_ids"))
+            if entity.ident not in node_ids:
+                issues.append(entity.locate(f"节点未列入所属故事的 node_ids：{story_id}"))
+    return issues
+
+
+_FIELD_REFS: dict[str, tuple[tuple[str, str | None], ...]] = {
+    "artifact": (("asset_ids", "asset"), ("fact_card_ids", "fact"), ("story_entry_ids", "story")),
+    "asset": (("derived_from", "asset"), ("fallback_asset_id", "asset")),
+    "fact": (("source_ids", "source"),),
+    "story": (("entry_node_id", "story-node"), ("node_ids", "story-node"), ("artifact_id", "artifact")),
+    "story-node": (("story_id", "story"),),
+    "event": (
+        ("fact_card_ids", "fact"),
+        ("related_artifact_ids", "artifact"),
+        ("tell_story_id", "story"),
+        ("role_story_id", "story"),
+    ),
+    "relation": (("from_id", None), ("to_id", None), ("fact_card_id", "fact")),
+}
+
+
+def validate_references(pack_dir: Path) -> list[Issue]:
+    entities = _iter_entities(pack_dir)
+    if not entities:
+        return []
+    issues: list[Issue] = []
+    by_id: dict[str, Entity] = {}
+    for entity in entities:
+        existing = by_id.get(entity.ident)
+        if existing is not None:
+            issues.append(
+                entity.locate(f"重复的标识：{entity.ident}（已在 {existing.path} 定义）")
+            )
+            continue
+        by_id[entity.ident] = entity
+
+    namespace = _pack_namespace(entities)
+    if namespace:
+        prefix = namespace + "."
+        for entity in entities:
+            if entity.kind == "manifest":
+                continue
+            if not entity.ident.startswith(prefix):
+                issues.append(entity.locate(f"标识不属于内容包命名空间 {namespace}：{entity.ident}"))
+
+    for entity in entities:
+        for field, expected_kind in _FIELD_REFS.get(entity.kind, ()):
+            issues.extend(_check_field(entity, field, expected_kind, by_id))
+        if entity.kind == "story":
+            issues.extend(_check_story(entity, by_id))
+        elif entity.kind == "story-node":
+            issues.extend(_check_story_node(entity, by_id))
+    return issues
