@@ -31,4 +31,10 @@ uv run python tools/dev/run_local.py
 uv run --package museum-content-pipeline content-pipeline validate --pack <作者包目录>
 ```
 
-当前检查 YAML 形状和包内引用完整性，不编译或发布。仓库里还没有 `content-src/packs/` 作者包。
+当前检查 YAML 形状和包内引用完整性，并可编译候选 JSON；不会发布。仓库里还没有 `content-src/packs/` 作者包。
+
+```powershell
+uv run --package museum-content-pipeline content-pipeline build --pack <作者包目录> --out <候选JSON目录>
+```
+
+编译会先完整校验，按源稿相对路径写出 JSON，不联网补充史实，也不覆盖发布目录。
