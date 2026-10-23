@@ -21,6 +21,7 @@ SCHEMA_FILES = {
     "historical-event": "historical-event.schema.json",
     "relation": "relation.schema.json",
     "session": "session.schema.json",
+    "command": "command.schema.json",
 }
 
 
