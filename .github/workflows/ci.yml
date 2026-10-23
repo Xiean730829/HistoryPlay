@@ -21,3 +21,13 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --all-packages --dev
+      - run: uv run ruff check services/museum tools/dev
+      - run: uv run python tools/dev/check_boundaries.py
+      - run: uv run python -m compileall -q services/museum/src tools/dev
