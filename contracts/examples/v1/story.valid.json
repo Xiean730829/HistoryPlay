@@ -1,0 +1,12 @@
+{
+  "id": "cn.tang.story.stele-observation",
+  "title": "造像碑三片段观察",
+  "entry_node_id": "cn.tang.node.stele-observation.01",
+  "node_ids": [
+    "cn.tang.node.stele-observation.01",
+    "cn.tang.node.stele-observation.02",
+    "cn.tang.node.stele-observation.03"
+  ],
+  "artifact_id": "cn.tang.artifact.stele",
+  "return_to_exhibit": true
+}
