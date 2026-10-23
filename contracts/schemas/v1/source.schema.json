@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historyplay.dev/contracts/schemas/v1/source.schema.json",
+  "title": "Source",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "kind", "title", "locator"],
+  "properties": {
+    "id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "kind": {
+      "enum": ["museum_record", "excavation", "book", "article", "open_text"]
+    },
+    "title": {
+      "$ref": "common.schema.json#/$defs/nonEmptyText"
+    },
+    "locator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label"],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 500
+        },
+        "volume": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "accessed_on": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      }
+    },
+    "citation_license": {
+      "type": "string",
+      "maxLength": 80
+    }
+  }
+}

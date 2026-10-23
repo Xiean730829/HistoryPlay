@@ -1,0 +1,11 @@
+{
+  "id": "cn.tang.fact.stele.dated-678",
+  "claim": "馆方将此造像碑断代为678年。",
+  "grade": "F",
+  "applicable_time": {
+    "start_year": 678,
+    "end_year": 678,
+    "precision": "year"
+  },
+  "source_ids": []
+}
