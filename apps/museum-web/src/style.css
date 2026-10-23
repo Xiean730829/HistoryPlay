@@ -1,0 +1,36 @@
+:root {
+  font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  color: #28251f;
+  background: #f4efe5;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 0%, #fffaf0 0, #f4efe5 60%);
+}
+
+.welcome-card {
+  width: min(560px, calc(100% - 40px));
+  padding: 48px;
+  border: 1px solid #dfd3be;
+  border-radius: 20px;
+  background: rgb(255 253 248 / 90%);
+  box-shadow: 0 24px 70px rgb(66 52 30 / 10%);
+}
+
+.eyebrow { color: #9a6b35; font-size: 12px; letter-spacing: .16em; }
+h1 { margin: 12px 0; font-size: clamp(32px, 8vw, 48px); }
+.intro { color: #655e52; line-height: 1.7; }
+.service-status { display: flex; gap: 10px; align-items: center; margin-top: 28px; color: #675e50; }
+.status-dot { width: 9px; height: 9px; border-radius: 50%; background: #c99442; }
+.is-ready .status-dot { background: #4c8b62; }
+.has-error .status-dot { background: #b44b3d; }
+.note { margin-top: 32px; color: #8b8377; font-size: 13px; }
