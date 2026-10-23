@@ -1,0 +1,12 @@
+{
+  "id": "cn.tang.artifact.stele",
+  "title": "一佛二菩萨造像碑",
+  "time_range": {
+    "start_year": 678,
+    "end_year": 678,
+    "precision": "year"
+  },
+  "material": "石",
+  "category": "纪年造像碑",
+  "asset_ids": ["cn.tang.asset.stele.original"]
+}

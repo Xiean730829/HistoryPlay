@@ -1,0 +1,20 @@
+{
+  "id": "cn.tang.core",
+  "version": "0.1.0",
+  "schema_version": "1",
+  "language": "zh-CN",
+  "region": {
+    "id": "cn",
+    "label": "中国"
+  },
+  "time_range": {
+    "start_year": 618,
+    "end_year": 907,
+    "precision": "year",
+    "display_label": "618—907",
+    "calendar_note": "常用历史年表年号对应年；精确月日另核历法后显示。"
+  },
+  "required_capabilities": ["artifact3d", "comic", "timeline"],
+  "publication_status": "draft",
+  "title": "唐朝首版内容包"
+}
