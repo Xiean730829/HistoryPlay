@@ -23,7 +23,7 @@ def main() -> int:
         titles.append(("PR标题", args.title))
     if args.base:
         result = subprocess.run(
-            ["git", "log", f"{args.base}..HEAD", "--format=%s"],
+            ["git", "log", f"{args.base}..HEAD", "--no-merges", "--format=%s"],
             check=False,
             capture_output=True,
             text=True,
