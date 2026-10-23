@@ -16,6 +16,7 @@
 | `schemas/v1/story-node.schema.json` | 片段、画面、讲解、有限动作、条件与出口 | 02-b |
 | `schemas/v1/historical-event.schema.json` | 事件时间地点、事实卡、讲述与角色入口 | 02-b |
 | `schemas/v1/relation.schema.json` | 实体关系；解释性联系不冒充物件亲历 | 02-b |
+| `schemas/v1/session.schema.json` | 会话投影：固定包版本、焦点、显示顺序、模式与修订号 | 03-a |
 
 公开样例在 `examples/v1/`。样例不含密钥、本机盘符或未授权路径。校验命令：
 
