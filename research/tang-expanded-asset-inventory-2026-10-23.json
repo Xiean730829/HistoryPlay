@@ -1,0 +1,363 @@
+{
+  "checked_date": "2026-10-23",
+  "asset_root": "D:/7/History",
+  "models": [
+    {
+      "id": "e97f95d5781a4359b5a744b0cf0328fa",
+      "title": "一佛二菩萨造像碑",
+      "path": "D:\\7\\History\\models\\e97f95d5781a4359b5a744b0cf0328fa\\original.glb",
+      "bytes": 4855856,
+      "sha256": "9df4392c5d16e92fd704737f4037be19b55e69b28635ec3d47142e5180d87ed4",
+      "gltf_version": 2,
+      "vertices": 36862,
+      "triangles": 64000,
+      "images": [
+        {
+          "format": "JPEG",
+          "size": [
+            1024,
+            1024
+          ]
+        },
+        {
+          "format": "PNG",
+          "size": [
+            1024,
+            1024
+          ]
+        },
+        {
+          "format": "PNG",
+          "size": [
+            1024,
+            1024
+          ]
+        }
+      ],
+      "materials": 1,
+      "asset_extras": {
+        "author": "Minneapolis Institute of Art (https://sketchfab.com/artsmia)",
+        "license": "CC0-1.0 (http://creativecommons.org/publicdomain/zero/1.0/)",
+        "source": "https://sketchfab.com/3d-models/votive-stele-buddha-and-two-bodhisattvas-e97f95d5781a4359b5a744b0cf0328fa",
+        "title": "Votive stele - Buddha and two Bodhisattvas"
+      },
+      "structural_checks_passed": true,
+      "browser_render_checked": true,
+      "license_name": "CC0 Public Domain",
+      "model_page": "https://sketchfab.com/3d-models/votive-stele-buddha-and-two-bodhisattvas-e97f95d5781a4359b5a744b0cf0328fa",
+      "rotation_checked": true,
+      "sha256_matches_dataset": true,
+      "browser_screenshot": "D:\\7\\History\\research\\asset-check\\stele-browser.png",
+      "viewer_file": "original.glb",
+      "production_optimized": false,
+      "texture_quality_note": "本次取得的版本贴图为1024×1024；未通过极近距离细节或移动设备性能验收。"
+    },
+    {
+      "id": "d2118efe2b8d4df28661e4ff0501b75e",
+      "title": "唐代女立俑",
+      "path": "D:\\7\\History\\models\\d2118efe2b8d4df28661e4ff0501b75e\\original.glb",
+      "bytes": 201074112,
+      "sha256": "5606920c52057d4115b855cf17077a24ad269447f21b83f8229c01b8b91f07d1",
+      "gltf_version": 2,
+      "vertices": 4016336,
+      "triangles": 6000382,
+      "images": [
+        {
+          "format": "JPEG",
+          "size": [
+            1024,
+            1024
+          ]
+        }
+      ],
+      "materials": 1,
+      "asset_extras": {
+        "author": "laurashea (https://sketchfab.com/laurashea)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/standing-chinese-woman-figure-tang-dynasty-d2118efe2b8d4df28661e4ff0501b75e",
+        "title": "Standing Chinese Woman Figure (Tang Dynasty)"
+      },
+      "structural_checks_passed": true,
+      "browser_render_checked": true,
+      "license_name": "Creative Commons Attribution",
+      "model_page": "https://sketchfab.com/3d-models/standing-chinese-woman-figure-tang-dynasty-d2118efe2b8d4df28661e4ff0501b75e",
+      "rotation_checked": true,
+      "sha256_matches_dataset": true,
+      "browser_screenshot": "D:\\7\\History\\research\\asset-check\\woman-rotated-browser.png",
+      "viewer_file": "original.glb",
+      "production_optimized": false,
+      "texture_quality_note": "本次取得的版本贴图为1024×1024；未通过极近距离细节或移动设备性能验收。"
+    },
+    {
+      "id": "55e4c6ae757b455d970debc51a742e6c",
+      "title": "唐代骑马俑组合",
+      "path": "D:\\7\\History\\models\\55e4c6ae757b455d970debc51a742e6c\\original.glb",
+      "bytes": 329828324,
+      "sha256": "c56449a5693fde20340f066c822ad2eb2ea98a8aaadfd22d5eb9b923764240bd",
+      "gltf_version": 2,
+      "vertices": 6362169,
+      "triangles": 10462094,
+      "images": [
+        {
+          "format": "JPEG",
+          "size": [
+            1024,
+            1024
+          ]
+        }
+      ],
+      "materials": 1,
+      "asset_extras": {
+        "author": "laurashea (https://sketchfab.com/laurashea)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/chinese-equestrian-figures-tang-dynasty-55e4c6ae757b455d970debc51a742e6c",
+        "title": "Chinese Equestrian Figures, Tang Dynasty"
+      },
+      "structural_checks_passed": true,
+      "browser_render_checked": true,
+      "license_name": "Creative Commons Attribution",
+      "model_page": "https://sketchfab.com/3d-models/chinese-equestrian-figures-tang-dynasty-55e4c6ae757b455d970debc51a742e6c",
+      "rotation_checked": true,
+      "sha256_matches_dataset": true,
+      "browser_screenshot": "D:\\7\\History\\research\\asset-check\\equestrian-browser.png",
+      "viewer_file": "original.glb",
+      "production_optimized": false,
+      "texture_quality_note": "本次取得的版本贴图为1024×1024；未通过极近距离细节或移动设备性能验收。"
+    },
+    {
+      "id": "46a7591d54a443248d95a6fa394ac210",
+      "title": "唐代镇墓兽",
+      "path": "D:\\7\\History\\models\\46a7591d54a443248d95a6fa394ac210\\original.glb",
+      "bytes": 195334184,
+      "sha256": "b7a34467917992f6bd52b1f39e35a3fde905d114a8eb3bf729d3a136cb9cb47a",
+      "gltf_version": 2,
+      "vertices": 3828265,
+      "triangles": 5999983,
+      "images": [
+        {
+          "format": "JPEG",
+          "size": [
+            1024,
+            1024
+          ]
+        }
+      ],
+      "materials": 1,
+      "asset_extras": {
+        "author": "laurashea (https://sketchfab.com/laurashea)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/tang-dynasty-tomb-guardian-zhenmushou-46a7591d54a443248d95a6fa394ac210",
+        "title": "Tang Dynasty Tomb Guardian (Zhenmushou)"
+      },
+      "structural_checks_passed": true,
+      "browser_render_checked": true,
+      "license_name": "Creative Commons Attribution",
+      "model_page": "https://sketchfab.com/3d-models/tang-dynasty-tomb-guardian-zhenmushou-46a7591d54a443248d95a6fa394ac210",
+      "rotation_checked": true,
+      "sha256_matches_dataset": true,
+      "browser_screenshot": "D:\\7\\History\\research\\asset-check\\guardian-browser.png",
+      "viewer_file": "web-compatible.glb",
+      "production_optimized": false,
+      "texture_quality_note": "本次取得的版本贴图为1024×1024；未通过极近距离细节或移动设备性能验收。"
+    },
+    {
+      "id": "047235675c0242bb90398a1f333042ed",
+      "title": "天龙山第21窟坐佛",
+      "path": "D:\\7\\History\\models\\047235675c0242bb90398a1f333042ed\\original.glb",
+      "bytes": 58249224,
+      "sha256": "63f62978d22a550072c30f43d992f618f95534ac008a122bb413cec3a67f98c7",
+      "gltf_version": 2,
+      "vertices": 1113446,
+      "triangles": 1812001,
+      "images": [
+        {
+          "format": "JPEG",
+          "size": [
+            1024,
+            1024
+          ]
+        }
+      ],
+      "materials": 1,
+      "asset_extras": {
+        "author": "Harvard Art Museums (https://sketchfab.com/harvardartmuseums)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/19435322-model-caea-university-of-chicago-047235675c0242bb90398a1f333042ed",
+        "title": "1943.53.22 (Model: CAEA, University of Chicago)"
+      },
+      "structural_checks_passed": true,
+      "browser_render_checked": true,
+      "license_name": "Creative Commons Attribution",
+      "model_page": "https://sketchfab.com/3d-models/19435322-model-caea-university-of-chicago-047235675c0242bb90398a1f333042ed",
+      "rotation_checked": true,
+      "sha256_matches_dataset": true,
+      "browser_screenshot": "D:\\7\\History\\research\\asset-check\\buddha-browser.png",
+      "viewer_file": "web-compatible.glb",
+      "production_optimized": false,
+      "texture_quality_note": "本次取得的版本贴图为1024×1024；未通过极近距离细节或移动设备性能验收。"
+    },
+    {
+      "id": "8949c4225c4b456488b0aae198cdfbb7",
+      "title": "开元通宝铜钱",
+      "path": "D:\\7\\History\\models\\8949c4225c4b456488b0aae198cdfbb7\\original.glb",
+      "bytes": 260393800,
+      "sha256": "94acc94cf0ee0c55bb723b02522c73840688823fbc762281c1593c13f7c25898",
+      "gltf_version": 2,
+      "vertices": 3905762,
+      "triangles": 5999979,
+      "images": [
+        {
+          "format": "JPEG",
+          "size": [
+            1024,
+            1024
+          ]
+        }
+      ],
+      "materials": 1,
+      "asset_extras": {
+        "author": "laurashea (https://sketchfab.com/laurashea)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/tang-dynasty-currency-kai-yuan-tong-boa-8949c4225c4b456488b0aae198cdfbb7",
+        "title": "Tang Dynasty Currency: Kai Yuan Tong Boa"
+      },
+      "structural_checks_passed": true,
+      "browser_render_checked": true,
+      "license_name": "Creative Commons Attribution",
+      "model_page": "https://sketchfab.com/3d-models/tang-dynasty-currency-kai-yuan-tong-boa-8949c4225c4b456488b0aae198cdfbb7",
+      "rotation_checked": true,
+      "sha256_matches_dataset": true,
+      "browser_screenshot": "D:\\7\\History\\research\\asset-check\\kaiyuan-browser.png",
+      "production_optimized": false,
+      "viewer_file": "original.glb"
+    },
+    {
+      "id": "8c27362570514399a03752d0964a39e4",
+      "title": "白釉陶净水瓶（Kundika，暂译）",
+      "path": "D:\\7\\History\\models\\8c27362570514399a03752d0964a39e4\\original.glb",
+      "bytes": 43068392,
+      "sha256": "26e40cfea9a158c9101d4b84d61657c5ca862d11a3aba1ebf4615c7b4380bd61",
+      "gltf_version": 2,
+      "vertices": 1123811,
+      "triangles": 558308,
+      "images": [
+        {
+          "format": "JPEG",
+          "size": [
+            1024,
+            1024
+          ]
+        }
+      ],
+      "materials": 1,
+      "asset_extras": {
+        "author": "The Hunt Museum (https://sketchfab.com/TheHuntMuseum)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/kundika-8c27362570514399a03752d0964a39e4",
+        "title": "Kundika"
+      },
+      "structural_checks_passed": true,
+      "browser_render_checked": true,
+      "license_name": "Creative Commons Attribution",
+      "model_page": "https://sketchfab.com/3d-models/ceramic-kundika-or-ritual-ewer-8c27362570514399a03752d0964a39e4",
+      "rotation_checked": true,
+      "sha256_matches_dataset": true,
+      "browser_screenshot": "D:\\7\\History\\research\\asset-check\\kundika-browser.png",
+      "production_optimized": false,
+      "viewer_file": "original.glb"
+    },
+    {
+      "id": "6c123dc391cc45858e4efa7ffddadbc1",
+      "title": "修定寺舞者浮雕砖",
+      "path": "D:\\7\\History\\models\\6c123dc391cc45858e4efa7ffddadbc1\\original.glb",
+      "bytes": 85405000,
+      "sha256": "6c980e53b0d3a4c0f4d224d7d49de2e237f8a59bef9691fb37053956edccc373",
+      "gltf_version": 2,
+      "vertices": 697419,
+      "triangles": 1056846,
+      "images": [
+        {
+          "format": "JPEG",
+          "size": [
+            4096,
+            4096
+          ]
+        },
+        {
+          "format": "PNG",
+          "size": [
+            4096,
+            4096
+          ]
+        },
+        {
+          "format": "JPEG",
+          "size": [
+            4096,
+            4096
+          ]
+        }
+      ],
+      "materials": 1,
+      "asset_extras": {
+        "author": "Cleveland Museum of Art (https://sketchfab.com/clevelandart)",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "source": "https://sketchfab.com/3d-models/1921263-architectural-brick-with-dancer-in-reli-6c123dc391cc45858e4efa7ffddadbc1",
+        "title": "1921.263 Architectural Brick with Dancer in Reli"
+      },
+      "structural_checks_passed": true,
+      "browser_render_checked": true,
+      "license_name": "Creative Commons Attribution",
+      "model_page": "https://sketchfab.com/3d-models/1921263-architectural-brick-with-dancer-in-reli-6c123dc391cc45858e4efa7ffddadbc1",
+      "production_optimized": false,
+      "rotation_checked": true,
+      "viewer_file": "web-compatible.glb",
+      "browser_screenshot": "D:\\7\\History\\research\\asset-check\\xiudingsi-brick-browser.png",
+      "derivative": {
+        "tool": "@gltf-transform/cli",
+        "version": "4.5.1",
+        "operation": "metalrough original.glb web-compatible.glb",
+        "purpose": "Convert legacy KHR_materials_pbrSpecularGlossiness material to metallic-roughness; preserve original scan.",
+        "geometry_triangles": 1056846,
+        "output_bytes": 88799044,
+        "output_sha256": "b7d46c3a1335eef2cd06e992e162e26532792d434b4c839e5d3f2f2fa0564ad2",
+        "source_file": "original.glb",
+        "source_sha256": "6c980e53b0d3a4c0f4d224d7d49de2e237f8a59bef9691fb37053956edccc373",
+        "license": "CC BY 4.0",
+        "credit": "Cleveland Museum of Art; 1921.263; model 6c123dc391cc45858e4efa7ffddadbc1",
+        "browser_render_checked": true,
+        "rotation_checked": true,
+        "production_optimized": false,
+        "documentation": "https://gltf-transform.dev/modules/functions/functions/metalRough"
+      },
+      "sha256_matches_dataset": null,
+      "checksum_note": "Local SHA-256 only; downloaded from official Sketchfab model page. No published source checksum used."
+    }
+  ],
+  "model_count": 8,
+  "original_bytes": 1178208892,
+  "new_model_ids": [
+    "8949c4225c4b456488b0aae198cdfbb7",
+    "8c27362570514399a03752d0964a39e4",
+    "6c123dc391cc45858e4efa7ffddadbc1"
+  ],
+  "photographic_object": {
+    "artifact_id": "A10",
+    "museum": "The Metropolitan Museum of Art",
+    "accession": "1986.97.3",
+    "object_api": "https://collectionapi.metmuseum.org/public/collection/v1/objects/42399",
+    "isPublicDomain": true,
+    "images": [
+      "images/met_1986.97.3/view-1.jpg",
+      "images/met_1986.97.3/view-2.jpg"
+    ],
+    "model_obtained": false
+  },
+  "not_obtained": [
+    "A05冠饰",
+    "A06仪刀"
+  ],
+  "production_optimized": false,
+  "snapshot_stage": "first_eight_models",
+  "superseded_by": "research/tang-world-asset-inventory-2026-10-23.json"
+}
