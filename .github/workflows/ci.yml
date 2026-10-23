@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  pull_request: {}
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --all-packages --dev
+      - run: uv run ruff check services/museum tools/dev
+      - run: uv run python tools/dev/check_boundaries.py
+      - run: uv run python -m compileall -q services/museum/src tools/dev
+      - name: Check PR and commit titles
+        if: github.event_name == 'pull_request'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: uv run python tools/dev/check_commit_titles.py --base "$BASE_SHA" --title "$PR_TITLE"
+      - name: Report PR scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: uv run python tools/dev/check_pr_scope.py --base "$BASE_SHA"
