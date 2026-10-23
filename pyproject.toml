@@ -9,7 +9,7 @@ dependencies = []
 package = false
 
 [tool.uv.workspace]
-members = ["services/museum"]
+members = ["services/museum", "packages/contracts-python"]
 
 [dependency-groups]
 dev = [
@@ -24,3 +24,6 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+
+[tool.ruff.lint.per-file-ignores]
+"packages/contracts-python/src/museum_contracts/models.py" = ["E501"]

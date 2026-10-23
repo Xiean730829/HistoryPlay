@@ -5,6 +5,7 @@ requires-python = ">=3.12"
 [manifest]
 members = [
     "history-play-workspace",
+    "museum-contracts",
     "museum-game",
 ]
 
@@ -482,6 +483,11 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/a9/b3/a44c301fe13716c5f2c08afd89a481018988cde4b337b36e28a2b0fcf3a3/multidict-7.1.0-cp315-cp315t-win_arm64.whl", hash = "sha256:f979a077d1c0a9a36dd4fab0d3a36b8de7b593bf935e13df85a380395b2c11ad", size = 98893, upload-time = "2026-10-09T20:31:33.62Z" },
     { url = "https://files.pythonhosted.org/packages/d0/86/a3de309c5e28ee85b314d0e3ba0e0dea6fd361c313322a05e67be4656e1e/multidict-7.1.0-py3-none-any.whl", hash = "sha256:d9ef29cfd98e17085b4f91bba8fa1570bec6787d5c52ce653ed33a58785585d0", size = 28087, upload-time = "2026-10-09T20:31:35.945Z" },
 ]
+
+[[package]]
+name = "museum-contracts"
+version = "0.1.0"
+source = { editable = "packages/contracts-python" }
 
 [[package]]
 name = "museum-game"
