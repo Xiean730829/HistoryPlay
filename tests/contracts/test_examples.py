@@ -24,6 +24,8 @@ SCHEMA_FILES = {
     "command": "command.schema.json",
     "event": "event.schema.json",
     "receipt": "receipt.schema.json",
+    "voice-event": "voice-event.schema.json",
+    "mcp-tools": "mcp-tools.schema.json",
 }
 
 

@@ -22,6 +22,8 @@
 | `schemas/v1/receipt.schema.json` | 命令提交回执与呈现超时状态 | 03-a |
 | `../packages/contracts-ts/src/generated.ts` | 网页/MCP 客户端传输类型，生成后不手改 | 03-a |
 | `../packages/contracts-python/src/museum_contracts/models.py` | Python 传输 DTO，不含领域规则 | 03-a |
+| `schemas/v1/voice-event.schema.json` | 本地可信语音生命周期；供应商轮次可空 | 03-b |
+| `schemas/v1/mcp-tools.schema.json` | 五个 MCP 工具的公共输入 | 03-b |
 
 公开样例在 `examples/v1/`。样例不含密钥、本机盘符或未授权路径。跨语言传输类型由生成器写入 `packages/contracts-ts` 与 `packages/contracts-python`，不能手改。校验命令：
 

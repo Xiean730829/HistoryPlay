@@ -112,6 +112,35 @@ class HistoricalEvent(TypedDict):
     tell_story_id: NotRequired[NamespacedId]
     role_story_id: NotRequired[NamespacedId]
 
+class McpToolCallConnect(TypedDict):
+    tool: Literal["museum_connect"]
+    pair_code: str
+
+class McpToolCallGetContext(TypedDict):
+    tool: Literal["museum_get_context"]
+    cursor: NotRequired[str]
+    receipt_id: NotRequired[OpaqueId]
+
+class McpToolCallSearch(TypedDict):
+    tool: Literal["museum_search"]
+    query: str
+    kind: NotRequired[Literal["artifact", "event", "story", "fact"]]
+    cursor: NotRequired[str]
+
+class McpToolCallReadContent(TypedDict):
+    tool: Literal["museum_read_content"]
+    content_id: NamespacedId
+    cursor: NotRequired[str]
+
+class McpToolCallAct(TypedDict):
+    tool: Literal["museum_act"]
+    action: CommandAction
+    target_id: NotRequired[NamespacedId]
+    request_id: OpaqueId
+    expected_revision: NonNegativeInt
+    expected_view_revision: NotRequired[NonNegativeInt]
+    control_ticket: NotRequired[str]
+
 class CommandReceipt(TypedDict):
     schema_version: Literal["1"]
     receipt_id: OpaqueId
@@ -205,6 +234,17 @@ class Story(TypedDict):
     artifact_id: NotRequired[NamespacedId]
     return_to_exhibit: NotRequired[bool]
 
+class VoiceEvent(TypedDict):
+    schema_version: Literal["1"]
+    kind: Literal["speech_started", "speech_ended", "transcript_partial", "transcript_final", "interrupt", "playback_started", "playback_drained", "playback_stopped", "connection_changed"]
+    source: Literal["local_vad", "local_player", "browser", "voice_bridge", "unknown"]
+    connection_id: OpaqueId
+    local_turn_id: NotRequired[OpaqueId]
+    vendor_turn_id: NotRequired[str | object]
+    occurred_at: str
+    text: NotRequired[str]
+    connected: NotRequired[bool]
+
 class ArtifactMuseum(TypedDict):
     name: NonEmptyText
     accession: NonEmptyText
@@ -245,3 +285,5 @@ class StoryNodeExits(TypedDict):
     action: Literal["continue_story", "choose_route", "enter_hypothesis", "return_to_exhibit"]
     target_node_id: NamespacedId
     when: NotRequired[StoryNodeCondition]
+
+type McpToolCall = McpToolCallConnect | McpToolCallGetContext | McpToolCallSearch | McpToolCallReadContent | McpToolCallAct

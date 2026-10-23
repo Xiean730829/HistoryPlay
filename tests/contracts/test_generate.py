@@ -29,3 +29,7 @@ def test_generated_exports_include_session_and_command() -> None:
     assert "export interface Command" in ts
     assert "class SessionProjection(TypedDict):" in py
     assert "class Command(TypedDict):" in py
+    assert "export interface VoiceEvent" in ts
+    assert "export type McpToolCall" in ts
+    assert "class VoiceEvent(TypedDict):" in py
+    assert "type McpToolCall =" in py

@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historyplay.dev/contracts/schemas/v1/voice-event.schema.json",
+  "title": "VoiceEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "source",
+    "connection_id",
+    "occurred_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1"
+    },
+    "kind": {
+      "enum": [
+        "speech_started",
+        "speech_ended",
+        "transcript_partial",
+        "transcript_final",
+        "interrupt",
+        "playback_started",
+        "playback_drained",
+        "playback_stopped",
+        "connection_changed"
+      ]
+    },
+    "source": {
+      "enum": ["local_vad", "local_player", "browser", "voice_bridge", "unknown"],
+      "description": "Provenance of this event. unknown must not be treated as a cloud turn id."
+    },
+    "connection_id": {
+      "$ref": "common.schema.json#/$defs/opaqueId"
+    },
+    "local_turn_id": {
+      "$ref": "common.schema.json#/$defs/opaqueId",
+      "description": "Local input turn. Not a vendor task id and not mintable by the model."
+    },
+    "vendor_turn_id": {
+      "type": ["string", "null"],
+      "maxLength": 64,
+      "description": "Vendor turn id when actually observed; null means unknown. Do not invent one."
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "text": {
+      "type": "string",
+      "maxLength": 400
+    },
+    "connected": {
+      "type": "boolean"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "enum": ["transcript_partial", "transcript_final"]
+          }
+        },
+        "required": ["kind"]
+      },
+      "then": {
+        "required": ["text"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "connection_changed"
+          }
+        },
+        "required": ["kind"]
+      },
+      "then": {
+        "required": ["connected"]
+      }
+    }
+  ]
+}

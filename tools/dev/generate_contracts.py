@@ -146,13 +146,27 @@ def named_types(schemas: list[tuple[str, dict]]) -> list[tuple[str, dict, str]]:
         for def_name, node in schema.get("$defs", {}).items():
             if node.get("type") == "object":
                 named.append((pascal(schema["title"]) + pascal(def_name), node, schema["title"]))
-        named.append((pascal(schema["title"]), schema, schema["title"]))
+        if schema.get("type") == "object" or "properties" in schema:
+            named.append((pascal(schema["title"]), schema, schema["title"]))
     return named
 
 
 def bind(emitter: Emitter, schemas: list[tuple[str, dict]], prefix: str) -> None:
     emitter.prefix = prefix
     emitter.current = next(schema for _name, schema in schemas if schema["title"] == prefix)
+
+
+def one_of_alias(schema: dict) -> str | None:
+    if "oneOf" not in schema:
+        return None
+    aliases = []
+    for item in schema["oneOf"]:
+        ref = item.get("$ref", "")
+        if ref.startswith("#/$defs/"):
+            aliases.append(pascal(schema["title"]) + pascal(ref.rsplit("/", 1)[-1]))
+    if not aliases:
+        return None
+    return " | ".join(aliases)
 
 
 def emit_named(emitter: Emitter, schemas: list[tuple[str, dict]], write) -> None:
@@ -203,6 +217,11 @@ def emit_ts(common: dict, schemas: list[tuple[str, dict]]) -> str:
         parts.append("")
 
     emit_named(emitter, schemas, write)
+    for _name, schema in schemas:
+        alias = one_of_alias(schema)
+        if alias:
+            parts.append(f"export type {pascal(schema['title'])} = {alias};")
+            parts.append("")
     return "\n".join(parts).rstrip() + "\n"
 
 
@@ -250,6 +269,11 @@ def emit_py(common: dict, schemas: list[tuple[str, dict]]) -> str:
         parts.append("")
 
     emit_named(emitter, schemas, write)
+    for _name, schema in schemas:
+        alias = one_of_alias(schema)
+        if alias:
+            parts.append(f"type {pascal(schema['title'])} = {alias}")
+            parts.append("")
     return "\n".join(parts).rstrip() + "\n"
 
 
