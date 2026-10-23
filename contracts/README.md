@@ -17,6 +17,10 @@
 | `schemas/v1/historical-event.schema.json` | 事件时间地点、事实卡、讲述与角色入口 | 02-b |
 | `schemas/v1/relation.schema.json` | 实体关系；解释性联系不冒充物件亲历 | 02-b |
 
-公开样例在 `examples/v1/`。样例不含密钥、本机盘符或未授权路径。
+公开样例在 `examples/v1/`。样例不含密钥、本机盘符或未授权路径。校验命令：
+
+```text
+uv run pytest tests/contracts -q
+```
 
 公元前年份使用天文年编号：公元前 1 年为 `0`，公元前 2 年为 `-1`。显示层再转成纪年标签。不同地区的时间范围允许重叠；不把中国朝代写成唯一时间轴。

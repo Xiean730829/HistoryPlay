@@ -13,6 +13,7 @@ members = ["services/museum"]
 
 [dependency-groups]
 dev = [
+  "jsonschema>=4.23,<5",
   "pytest>=8.3,<9",
   "ruff>=0.11,<1",
 ]

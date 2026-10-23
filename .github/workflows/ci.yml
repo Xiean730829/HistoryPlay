@@ -31,6 +31,7 @@ jobs:
       - run: uv run ruff check services/museum tools/dev
       - run: uv run python tools/dev/check_boundaries.py
       - run: uv run python -m compileall -q services/museum/src tools/dev
+      - run: uv run pytest tests/contracts -q
       - name: Check PR and commit titles
         if: github.event_name == 'pull_request'
         env:
