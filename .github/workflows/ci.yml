@@ -31,3 +31,14 @@ jobs:
       - run: uv run ruff check services/museum tools/dev
       - run: uv run python tools/dev/check_boundaries.py
       - run: uv run python -m compileall -q services/museum/src tools/dev
+      - name: Check PR and commit titles
+        if: github.event_name == 'pull_request'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: uv run python tools/dev/check_commit_titles.py --base "$BASE_SHA" --title "$PR_TITLE"
+      - name: Report PR scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: uv run python tools/dev/check_pr_scope.py --base "$BASE_SHA"
