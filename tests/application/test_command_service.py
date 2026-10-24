@@ -134,6 +134,9 @@ def make_service(tmp_path):
                 "move_next",
                 "move_previous",
                 "locate_artifact",
+                "enter_story",
+                "return_to_exhibit",
+                "set_view",
             }
         ),
     )
@@ -528,3 +531,69 @@ def test_locate_artifact_rejects_comparison_only_artifacts_without_moving(tmp_pa
     assert saved.station_id == "cn.tang.station.stele"
     assert saved.focused_entity_id == "cn.tang.artifact.stele"
     assert saved.revision == entered.revision
+
+
+def test_story_entry_captures_root_anchor_and_return_restores_station_and_camera(tmp_path) -> None:
+    database, state, token, service = _exploration_service(tmp_path)
+    entered_gallery = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_gallery",
+            target_id="cn.tang.gallery.main",
+            revision=state.revision,
+            interaction_epoch=state.interaction_epoch,
+            view_revision=state.view_revision,
+            request_id="story-return-enter-gallery",
+        ),
+    )
+    view = _navigation_command(
+        token,
+        action="set_view",
+        revision=entered_gallery.revision,
+        interaction_epoch=entered_gallery.interaction_epoch,
+        view_revision=entered_gallery.view_revision,
+        request_id="story-return-set-view",
+    )
+    view["params"] = {"camera": {"yaw": 32, "pitch": -8, "zoom": 1.7}}
+    changed_view = service.execute(state.session_id, ACTOR_ID, view)
+    started = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_story",
+            target_id=STORY_ID,
+            revision=changed_view.revision,
+            interaction_epoch=changed_view.interaction_epoch,
+            view_revision=changed_view.view_revision,
+            request_id="story-return-enter-story",
+        ),
+    )
+    with database.transaction() as unit:
+        story_state = unit.sessions.get(state.session_id)
+    assert story_state is not None and story_state.exhibit_return_point is not None
+    assert story_state.exhibit_return_point.station_id == "cn.tang.station.stele"
+
+    returned = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="return_to_exhibit",
+            revision=started.revision,
+            interaction_epoch=started.interaction_epoch,
+            view_revision=started.view_revision,
+            request_id="story-return-to-exhibit",
+        ),
+    )
+    assert returned.status == "committed"
+    with database.transaction() as unit:
+        restored = unit.sessions.get(state.session_id)
+    assert restored is not None
+    assert restored.mode == SessionMode.EXPLORE
+    assert restored.station_id == "cn.tang.station.stele"
+    assert restored.focused_entity_id == "cn.tang.artifact.stele"
+    assert restored.camera_pose.yaw == 32 and restored.camera_pose.zoom == 1.7
+    assert restored.exhibit_return_point is None

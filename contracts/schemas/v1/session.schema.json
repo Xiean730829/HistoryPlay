@@ -52,6 +52,14 @@
     "focused_entity_id": {
       "$ref": "common.schema.json#/$defs/namespacedId"
     },
+    "camera_pose": {
+      "$ref": "common.schema.json#/$defs/cameraPose",
+      "description": "Persisted target camera pose; view_revision changes atomically with this value."
+    },
+    "exhibit_return_point": {
+      "$ref": "#/$defs/exhibitReturnPoint",
+      "description": "Optional root gallery anchor captured on the first story entry from exploration."
+    },
     "visible_entities": {
       "type": "array",
       "uniqueItems": true,
@@ -179,7 +187,8 @@
           "$ref": "#/$defs/narrationCheckpoint"
         },
         "exhibit_return_point": {
-          "$ref": "#/$defs/exhibitReturnPoint"
+          "$ref": "#/$defs/exhibitReturnPoint",
+          "description": "Legacy nested anchor accepted for older projections; new projections use the session-level field."
         }
       }
     },

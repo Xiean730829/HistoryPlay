@@ -1,12 +1,19 @@
+import json
 from dataclasses import replace
 
 import pytest
 from museum.adapters.sqlite.database import SQLiteDatabase
 from museum.adapters.sqlite.event_repository import EventSequenceConflict
 from museum.adapters.sqlite.receipt_repository import IdempotencyConflict
-from museum.adapters.sqlite.session_repository import SessionRevisionConflict
+from museum.adapters.sqlite.session_repository import (
+    SessionRevisionConflict,
+    _decode_state,
+    _encode_state,
+)
 from museum.domain.session.events import SessionEvent, SessionEventKind
 from museum.domain.session.models import (
+    CameraPose,
+    ExhibitReturnPoint,
     HistoricalTime,
     NarrationCheckpoint,
     ReturnPoint,
@@ -70,6 +77,28 @@ def test_session_snapshot_round_trips_immutable_nested_state(tmp_path) -> None:
     assert loaded is not None
     assert loaded.pack_versions == state.pack_versions
     assert loaded.return_stack[0].narration_checkpoint == state.return_stack[0].narration_checkpoint
+
+
+def test_session_snapshot_persists_root_exhibit_anchor_and_reads_legacy_json() -> None:
+    state = replace(
+        make_state(),
+        exhibit_return_point=ExhibitReturnPoint(
+            gallery_id="cn.tang.gallery.main",
+            station_id="cn.tang.station.ox",
+            focused_entity_id="artifact.ox",
+            view=CameraPose(yaw=22, pitch=-4, zoom=1.5),
+            view_revision=7,
+        ),
+        camera_pose=CameraPose(yaw=22, pitch=-4, zoom=1.5),
+    )
+    assert _decode_state(_encode_state(state)) == state
+
+    legacy = json.loads(_encode_state(state))
+    legacy.pop("camera_pose")
+    legacy.pop("exhibit_return_point")
+    restored = _decode_state(json.dumps(legacy))
+    assert restored.camera_pose == CameraPose()
+    assert restored.exhibit_return_point is None
 
 
 def test_session_save_uses_optimistic_revision_and_exact_increment(tmp_path) -> None:

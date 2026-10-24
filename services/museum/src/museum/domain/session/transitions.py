@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import replace
 
 from museum.domain.session.events import SessionEvent, SessionEventKind, TransitionResult
-from museum.domain.session.models import ReturnPoint, SessionMode, SessionState
+from museum.domain.session.models import CameraPose, ReturnPoint, SessionMode, SessionState
 
 
 class InvalidTransition(ValueError):
@@ -66,6 +66,48 @@ def return_to_story(state: SessionState) -> TransitionResult:
         story_id=point.story_id,
         node_id=point.node_id,
     )
+
+
+def set_view(state: SessionState, view: CameraPose) -> TransitionResult:
+    if state.mode != SessionMode.EXPLORE:
+        raise InvalidTransition("只有长廊探索模式可以调整文物视角")
+    if state.camera_pose == view:
+        raise InvalidTransition("文物已经处于目标视角")
+    updated = replace(
+        state,
+        camera_pose=view,
+        revision=state.revision + 1,
+        view_revision=state.view_revision + 1,
+        event_seq=state.event_seq + 1,
+        interaction_epoch=state.interaction_epoch + 1,
+    )
+    return _result(updated, SessionEventKind.VIEW_CHANGED, entity_id=state.focused_entity_id)
+
+
+def return_to_exhibit(state: SessionState) -> TransitionResult:
+    point = state.exhibit_return_point
+    if state.mode not in {SessionMode.STORY, SessionMode.QA, SessionMode.HYPOTHESIS} or point is None:
+        raise InvalidTransition("当前故事没有可恢复的展台返回点")
+    updated = replace(
+        state,
+        mode=SessionMode.EXPLORE,
+        story_id=None,
+        node_id=None,
+        story_variables={},
+        return_stack=(),
+        narration_checkpoint=None,
+        gallery_id=point.gallery_id,
+        station_id=point.station_id,
+        current_location_id=point.station_id,
+        focused_entity_id=point.focused_entity_id,
+        camera_pose=point.view,
+        exhibit_return_point=None,
+        revision=state.revision + 1,
+        view_revision=state.view_revision + 1,
+        event_seq=state.event_seq + 1,
+        interaction_epoch=state.interaction_epoch + 1,
+    )
+    return _result(updated, SessionEventKind.RETURNED_TO_EXHIBIT)
 
 
 def _advance(state: SessionState, **changes: object) -> SessionState:

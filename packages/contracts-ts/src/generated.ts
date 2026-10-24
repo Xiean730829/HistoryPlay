@@ -80,7 +80,7 @@ export interface SessionEvent {
   /** Monotonic delivery sequence. Clients that see a gap must request a snapshot. */
   event_seq: NonNegativeInt;
   session_id: OpaqueId;
-  kind: "snapshot" | "focus_changed" | "story_entered" | "story_advanced" | "story_paused" | "returned_to_story" | "qa_entered" | "view_changed" | "command_committed" | "render_updated";
+  kind: "snapshot" | "focus_changed" | "story_entered" | "story_advanced" | "story_paused" | "returned_to_story" | "returned_to_exhibit" | "qa_entered" | "view_changed" | "command_committed" | "render_updated";
   revision: NonNegativeInt;
   view_revision?: NonNegativeInt;
   interaction_epoch: NonNegativeInt;
@@ -205,6 +205,7 @@ export interface SessionProjectionReturnPoint {
   revision: NonNegativeInt;
   story_variables?: Record<string, VariableValue>;
   narration_checkpoint?: SessionProjectionNarrationCheckpoint;
+  /** Legacy nested anchor accepted for older projections; new projections use the session-level field. */
   exhibit_return_point?: SessionProjectionExhibitReturnPoint;
 }
 
@@ -234,6 +235,10 @@ export interface SessionProjection {
   /** Legacy location anchor retained for older clients; new projections also provide station_id. */
   current_location_id?: NamespacedId;
   focused_entity_id?: NamespacedId;
+  /** Persisted target camera pose; view_revision changes atomically with this value. */
+  camera_pose?: SessionProjectionObject;
+  /** Optional root gallery anchor captured on the first story entry from exploration. */
+  exhibit_return_point?: SessionProjectionExhibitReturnPoint;
   visible_entities?: Array<NamespacedId>;
   /** Server-authored order used to resolve 'the second one'. Clients must not reorder it. */
   display_order: Array<NamespacedId>;

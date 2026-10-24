@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import replace
 
 from museum.domain.session.events import SessionEvent, SessionEventKind
-from museum.domain.session.models import SessionMode, SessionState
+from museum.domain.session.models import ExhibitReturnPoint, SessionMode, SessionState
 from museum.domain.story.conditions import evaluate_for_session
 from museum.domain.story.effects import apply_effects
 from museum.domain.story.models import (
@@ -23,12 +23,27 @@ def start_story(state: SessionState, story: StoryDefinition) -> StoryTransition:
     if state.mode == SessionMode.QA:
         raise InvalidStoryAction("问答模式必须先返回原主线")
     entry = story.nodes[story.entry_node_id]
+    return_point = state.exhibit_return_point
+    if (
+        state.mode == SessionMode.EXPLORE
+        and return_point is None
+        and state.gallery_id is not None
+        and state.station_id is not None
+    ):
+        return_point = ExhibitReturnPoint(
+            gallery_id=state.gallery_id,
+            station_id=state.station_id,
+            focused_entity_id=state.focused_entity_id,
+            view=state.camera_pose,
+            view_revision=state.view_revision,
+        )
     started = replace(
         state,
         mode=SessionMode.STORY,
         story_id=story.id,
         node_id=entry.id,
         story_variables={},
+        exhibit_return_point=return_point,
     )
     if not evaluate_for_session(entry.enter_when, started):
         raise InvalidStoryAction("故事入口条件尚未满足")
