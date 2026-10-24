@@ -136,9 +136,7 @@ class CommandService:
         self._tickets = tickets
         self._receipt_id_factory = receipt_id_factory or (lambda: uuid4().hex)
 
-    def execute(
-        self, session_id: str, actor_id: str, payload: Mapping[str, Any]
-    ) -> CommandReceipt:
+    def execute(self, session_id: str, actor_id: str, payload: Mapping[str, Any]) -> CommandReceipt:
         command = _parse_command(payload)
         digest = _payload_digest(payload)
         with self._transaction() as unit:
@@ -166,7 +164,13 @@ class CommandService:
 
             try:
                 transition = self._apply(state, command)
-            except (InvalidTransition, InvalidStoryAction, InvalidStoryContent, LookupError, ValueError) as error:
+            except (
+                InvalidTransition,
+                InvalidStoryAction,
+                InvalidStoryContent,
+                LookupError,
+                ValueError,
+            ) as error:
                 receipt = self._rejected(command, session_id, digest, state, str(error))
                 unit.receipts.save(session_id, command.request_id, digest, receipt.to_dict())
                 return receipt
@@ -254,11 +258,24 @@ class CommandService:
 def _parse_command(payload: Mapping[str, Any]) -> _Command:
     if not isinstance(payload, Mapping) or payload.get("schema_version") != "1":
         raise InvalidCommand("命令协议版本无效")
+    allowed_fields = {
+        "schema_version",
+        "request_id",
+        "expected_revision",
+        "expected_view_revision",
+        "interaction_epoch",
+        "control_ticket",
+        "action",
+        "target_id",
+        "params",
+    }
+    if set(payload) - allowed_fields:
+        raise InvalidCommand("命令包含协议未定义字段")
     request_id = payload.get("request_id")
     if not isinstance(request_id, str) or not OPAQUE_ID.fullmatch(request_id):
         raise InvalidCommand("request_id必须是8至64位不透明标识")
     action = payload.get("action")
-    if action not in COMMAND_ACTIONS:
+    if not isinstance(action, str) or action not in COMMAND_ACTIONS:
         raise InvalidCommand("命令动作不在协议枚举内")
     expected_revision = _non_negative_int(payload.get("expected_revision"), "expected_revision")
     interaction_epoch = _non_negative_int(payload.get("interaction_epoch"), "interaction_epoch")
@@ -270,14 +287,24 @@ def _parse_command(payload: Mapping[str, Any]) -> _Command:
     target = payload.get("target_id")
     if target is not None and (not isinstance(target, str) or not NAMESPACED_ID.fullmatch(target)):
         raise InvalidCommand("target_id不是有效的命名空间标识")
-    if action in {"open_artifact", "enter_story", "focus_detail", "choose_action"} and target is None:
+    if (
+        action in {"open_artifact", "enter_story", "focus_detail", "choose_action"}
+        and target is None
+    ):
         raise InvalidCommand(f"{action}必须提供target_id")
     ticket = payload.get("control_ticket")
-    if not isinstance(ticket, str) or not 8 <= len(ticket) <= 128:
+    if (
+        not isinstance(ticket, str)
+        or not 8 <= len(ticket) <= 128
+        or re.fullmatch(r"[A-Za-z0-9._-]+", ticket) is None
+    ):
         raise InvalidCommand("控制票据缺失或长度无效")
     params = payload.get("params", {})
     if not isinstance(params, Mapping):
         raise InvalidCommand("params必须是对象")
+    _validate_params(params)
+    if action in {"set_view", "choose_action"} and "params" not in payload:
+        raise InvalidCommand(f"{action}必须提供params")
     return _Command(
         request_id=request_id,
         expected_revision=expected_revision,
@@ -288,6 +315,34 @@ def _parse_command(payload: Mapping[str, Any]) -> _Command:
         control_ticket=ticket,
         params=params,
     )
+
+
+def _validate_params(params: Mapping[str, Any]) -> None:
+    allowed = {"intent", "input_text", "camera"}
+    if set(params) - allowed:
+        raise InvalidCommand("params包含协议未定义字段")
+    intent = params.get("intent")
+    if intent is not None and (
+        not isinstance(intent, str) or re.fullmatch(r"[a-z][a-z0-9_]{0,79}", intent) is None
+    ):
+        raise InvalidCommand("params.intent格式无效")
+    input_text = params.get("input_text")
+    if input_text is not None and (
+        not isinstance(input_text, str) or not 1 <= len(input_text) <= 400
+    ):
+        raise InvalidCommand("params.input_text长度无效")
+    camera = params.get("camera")
+    if camera is not None:
+        if not isinstance(camera, Mapping) or set(camera) != {"yaw", "pitch", "zoom"}:
+            raise InvalidCommand("params.camera必须包含yaw、pitch和zoom")
+        yaw, pitch, zoom = (camera[key] for key in ("yaw", "pitch", "zoom"))
+        if (
+            any(type(value) not in (int, float) for value in (yaw, pitch, zoom))
+            or not -180 <= yaw <= 180
+            or not -90 <= pitch <= 90
+            or not 0 < zoom <= 8
+        ):
+            raise InvalidCommand("params.camera取值超出协议范围")
 
 
 def _payload_digest(payload: Mapping[str, Any]) -> str:
