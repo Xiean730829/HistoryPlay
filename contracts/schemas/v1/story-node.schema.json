@@ -29,13 +29,18 @@
           "items": {
             "$ref": "common.schema.json#/$defs/namespacedId"
           }
+        },
+        "audio_asset_id": {
+          "$ref": "common.schema.json#/$defs/namespacedId",
+          "description": "Stable audio asset ID for this node's narration; the text body remains the node's narration field."
         }
       }
     },
     "narration": {
       "type": "string",
       "minLength": 1,
-      "maxLength": 800
+      "maxLength": 800,
+      "description": "The single authored text body for this stable node ID; do not duplicate it in artifact presentation metadata."
     },
     "allowed_actions": {
       "type": "array",

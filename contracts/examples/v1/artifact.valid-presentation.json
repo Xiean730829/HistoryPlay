@@ -1,0 +1,17 @@
+{
+  "id": "cn.tang.artifact.stele",
+  "title": "一佛二菩萨造像碑",
+  "museum": {"name": "Minneapolis Institute of Art", "accession": "art/140016"},
+  "time_range": {"start_year": 678, "end_year": 678, "precision": "year"},
+  "material": "石",
+  "category": "纪年造像碑",
+  "asset_ids": ["cn.tang.asset.stele.original"],
+  "presentation": {
+    "preview_asset_id": "cn.tang.asset.stele.preview",
+    "display": {"kind": "model3d", "asset_id": "cn.tang.asset.stele.display"},
+    "default_camera": {"orbit": "three-quarter-front", "target_note": "Center the inscription."},
+    "teaser": "A dated stele that records a donor's vow.",
+    "background_node_id": "cn.tang.node.stele-observation.01"
+  },
+  "story_entry_ids": ["cn.tang.story.stele-observation"]
+}

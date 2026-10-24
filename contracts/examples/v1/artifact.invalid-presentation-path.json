@@ -1,0 +1,15 @@
+{
+  "id": "cn.tang.artifact.stele",
+  "title": "一佛二菩萨造像碑",
+  "museum": {"name": "Minneapolis Institute of Art", "accession": "art/140016"},
+  "time_range": {"start_year": 678, "end_year": 678, "precision": "year"},
+  "material": "石",
+  "category": "纪年造像碑",
+  "asset_ids": [],
+  "presentation": {
+    "preview_asset_id": "D:\\museum\\preview.jpg",
+    "display": {"kind": "photo", "asset_id": "cn.tang.asset.stele.photo"},
+    "teaser": "A short introduction.",
+    "background_node_id": "cn.tang.node.stele-observation.01"
+  }
+}

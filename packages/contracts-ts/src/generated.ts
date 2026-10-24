@@ -29,6 +29,8 @@ export interface Artifact {
   category: NonEmptyText;
   /** Logical digital asset IDs. Replacing a model does not change this artifact ID. */
   asset_ids: Array<NamespacedId>;
+  /** Optional explicit presentation bindings. The display source is a model or a photo, never whichever asset happens to be first. */
+  presentation?: ArtifactPresentation;
   fact_card_ids?: Array<NamespacedId>;
   story_entry_ids?: Array<NamespacedId>;
   identity_unknown?: boolean;
@@ -284,6 +286,7 @@ export interface StoryNode {
   story_id: NamespacedId;
   fact_grade: FactGrade;
   presentation?: StoryNodePresentation;
+  /** The single authored text body for this stable node ID; do not duplicate it in artifact presentation metadata. */
   narration?: string;
   allowed_actions: Array<"observe" | "ask" | "switch_perspective" | "choose_route" | "compare_evidence" | "enter_hypothesis" | "continue_story" | "return_to_exhibit">;
   enter_when?: StoryNodeCondition;
@@ -320,6 +323,17 @@ export interface ArtifactMuseum {
   name: NonEmptyText;
   accession: NonEmptyText;
   collection_url?: string;
+}
+
+export interface ArtifactPresentation {
+  /** Stable ID of a real preview image; never inferred from asset_ids order. */
+  preview_asset_id: NamespacedId;
+  display: ArtifactDisplay;
+  default_camera?: ArtifactDefaultCamera;
+  /** One-line exhibit introduction; the longer background remains in the referenced story node. */
+  teaser: string;
+  /** Stable story-node ID containing the single authored background narration. */
+  background_node_id: NamespacedId;
 }
 
 export interface AssetLicense {
@@ -371,12 +385,27 @@ export interface SourceLocator {
 export interface StoryNodePresentation {
   capability: CapabilityId;
   asset_ids?: Array<NamespacedId>;
+  /** Stable audio asset ID for this node's narration; the text body remains the node's narration field. */
+  audio_asset_id?: NamespacedId;
 }
 
 export interface StoryNodeExits {
   action: "continue_story" | "choose_route" | "enter_hypothesis" | "return_to_exhibit";
   target_node_id: NamespacedId;
   when?: StoryNodeCondition;
+}
+
+export interface ArtifactDisplay {
+  /** Explicit display medium, checked against the referenced asset kind. */
+  kind: "model3d" | "photo";
+  /** Stable ID of the display model or photograph. */
+  asset_id: NamespacedId;
+}
+
+export interface ArtifactDefaultCamera {
+  /** Curator-selected initial orbit preset for the bound display model. */
+  orbit: NonEmptyText;
+  target_note?: string;
 }
 
 export type McpToolCall = McpToolCallConnect | McpToolCallGetContext | McpToolCallSearch | McpToolCallReadContent | McpToolCallAct;
