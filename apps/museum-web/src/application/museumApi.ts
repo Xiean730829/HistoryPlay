@@ -246,20 +246,20 @@ export async function moveGalleryStation(
   return { session: await refreshSession(session), receipt: response };
 }
 
-/** Authenticated asset bytes as a short-lived object URL; caller must revoke. */
-export async function loadSessionAssetObjectUrl(
+/** Authenticated asset bytes; caller owns cancellation and object-URL lifetime. */
+export async function loadSessionAssetBlob(
   session: SessionCredentials,
   assetId: string,
-): Promise<string> {
+  signal: AbortSignal,
+): Promise<Blob> {
   const response = await fetch(
     `/api/sessions/${encodeURIComponent(session.session_id)}/assets/${encodeURIComponent(assetId)}`,
-    { headers: authHeaders(session) },
+    { headers: authHeaders(session), signal },
   );
   if (!response.ok) {
     throw new Error(response.status === 404 ? "展示资产不可用" : `展示资产返回 ${response.status}`);
   }
-  const blob = await response.blob();
-  return URL.createObjectURL(blob);
+  return response.blob();
 }
 
 export async function refreshSession(session: ActiveSession): Promise<ActiveSession> {

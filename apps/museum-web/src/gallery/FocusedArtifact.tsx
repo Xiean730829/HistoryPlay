@@ -1,9 +1,7 @@
 import React from "react";
-import {
-  loadSessionAssetObjectUrl,
-  type ActiveSession,
-  type ArtifactProjection,
-} from "../application/museumApi";
+import type { ActiveSession, ArtifactProjection } from "../application/museumApi";
+import { galleryAssets } from "../capabilities/galleryAssets";
+import type { AssetLease } from "../capabilities/assetLoader";
 import { cameraOrbit } from "./cameraOrbit";
 
 const Artifact3D = React.lazy(() =>
@@ -28,30 +26,26 @@ export function FocusedArtifact({ artifact, session, poster }: FocusedArtifactPr
   const failed = assetState?.assetId === assetId && assetState.failed;
 
   React.useEffect(() => {
-    let cancelled = false;
-    let objectUrl: string | null = null;
+    const controller = new AbortController();
+    let lease: AssetLease | null = null;
     if (!assetId || (display?.kind !== "model3d" && display?.kind !== "photo")) {
       setAssetState(null);
       return;
     }
 
-    void loadSessionAssetObjectUrl(session, assetId)
-      .then((url) => {
-        objectUrl = url;
-        if (cancelled) {
-          URL.revokeObjectURL(url);
-          objectUrl = null;
-          return;
-        }
-        setAssetState({ assetId, url, failed: false });
+    const kind = display?.kind === "photo" ? "preview" : "model";
+    void galleryAssets.acquire(session, assetId, kind, controller.signal)
+      .then((assetLease) => {
+        lease = assetLease;
+        setAssetState({ assetId, url: assetLease.url, failed: false });
       })
       .catch(() => {
-        if (!cancelled) setAssetState({ assetId, url: null, failed: true });
+        if (!controller.signal.aborted) setAssetState({ assetId, url: null, failed: true });
       });
 
     return () => {
-      cancelled = true;
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      controller.abort();
+      lease?.release();
     };
   }, [assetId, display?.kind, session.session_id, session.session_token]);
 
