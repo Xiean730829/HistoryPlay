@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import json
-import os
 import re
+import shutil
 import subprocess
 import tempfile
 from pathlib import Path
@@ -133,7 +133,8 @@ def render_preview(
         )
         if result.returncode != 0 or not temporary_preview.is_file():
             raise PreviewInputError(f"Blender渲染失败，未生成预览PNG：{_short_output(result)}")
-        os.replace(temporary_preview, preview_path)
+        # copyfile：临时目录常在系统盘，预览输出在资源盘；Windows 不能 os.replace 跨盘。
+        shutil.copyfile(temporary_preview, preview_path)
 
     return record_preview(
         manifest_path=manifest_path,

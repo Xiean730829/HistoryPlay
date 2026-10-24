@@ -19,6 +19,7 @@ material: 铜合金
 category: 钱币
 asset_ids:
   - cn.tang.asset.kaiyuan-coin.glb
+  - cn.tang.asset.kaiyuan-coin.preview
 fact_card_ids:
   - cn.tang.fact.kaiyuan-coin.specimen-date
   - cn.tang.fact.kaiyuan-coin.type-start

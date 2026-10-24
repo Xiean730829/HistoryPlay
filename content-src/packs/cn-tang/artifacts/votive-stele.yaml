@@ -17,6 +17,7 @@ material: 石灰岩、颜料
 category: 佛教造像碑
 asset_ids:
   - cn.tang.asset.votive-stele.glb
+  - cn.tang.asset.votive-stele.preview
 fact_card_ids:
   - cn.tang.fact.votive-stele.date
 story_entry_ids:
