@@ -11,22 +11,24 @@ import {
 } from "../application/museumApi";
 import { ExhibitList } from "./ExhibitList";
 import { StatusNotice } from "./StatusNotice";
+import { MuseumCorridor } from "../gallery/MuseumCorridor";
 
 const SESSION_KEY = "history-play.session.v1";
+const DEFAULT_PACK_ID = import.meta.env.VITE_MUSEUM_PACK_ID?.trim() || "cn.tang.core";
+const DEFAULT_VERSION = import.meta.env.VITE_MUSEUM_PACK_VERSION?.trim() || "1.0.0";
+const SHOW_DIAGNOSTICS = new URLSearchParams(window.location.search).get("debug") === "1";
 type Health = { status: "ok"; service: string };
 
 export function MuseumShell() {
   const [health, setHealth] = React.useState<Health | null>(null);
   const [healthError, setHealthError] = React.useState(false);
   const [session, setSession] = React.useState<ActiveSession | null>(null);
-  const [packId, setPackId] = React.useState("cn.tang.core");
-  const [version, setVersion] = React.useState("1.0.0");
   const [query, setQuery] = React.useState("");
   const [results, setResults] = React.useState<SearchHit[]>([]);
   const [busy, setBusy] = React.useState(false);
   const [notice, setNotice] = React.useState("正在连接本地游戏服务…");
   const [noticeTone, setNoticeTone] = React.useState<"info" | "error" | "success">("info");
-  const restoreTask = React.useRef<Promise<ActiveSession | null> | null>(null);
+  const restoreTask = React.useRef<Promise<ActiveSession> | null>(null);
 
   React.useEffect(() => {
     let current = true;
@@ -36,45 +38,38 @@ export function MuseumShell() {
         return (await response.json()) as Health;
       })
       .then((value) => {
-        if (current) setHealth(value);
+        if (!current) return;
+        setHealth(value);
+        restoreTask.current ??= openDefaultSession();
+        restoreTask.current
+          .then((active) => {
+            if (!current) return;
+            setSession(active);
+            setNotice("已进入唐朝长廊。文物顺序与年代由当前发布版本和服务端状态决定。");
+            setNoticeTone("success");
+          })
+          .catch((error: unknown) => {
+            if (current) showError(error, setNotice, setNoticeTone);
+          });
       })
       .catch(() => {
         if (current) setHealthError(true);
-      });
-
-    restoreTask.current ??= restoreSavedSession();
-    restoreTask.current
-      .then((restored) => {
-        if (!current) return;
-        if (restored) {
-          setSession(restored);
-          setPackId(restored.pack_id);
-          setVersion(restored.version);
-          setNotice("已从本地恢复展厅状态，目录版本与服务端保持一致。");
-          setNoticeTone("success");
-        } else {
-          setNotice("服务已连接后，输入已发布内容包即可进入展厅。");
-        }
-      })
-      .catch((error: unknown) => {
-        if (current) showError(error, setNotice, setNoticeTone);
       });
     return () => {
       current = false;
     };
   }, []);
 
-  async function startMuseum(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function startMuseum() {
     setBusy(true);
     try {
-      const credentials = await createSession(packId.trim(), version.trim());
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(credentials));
-      const active = await restoreSession(credentials);
+      restoreTask.current = null;
+      const active = await openDefaultSession();
+      restoreTask.current = Promise.resolve(active);
       setSession(active);
       setResults([]);
       setQuery("");
-      setNotice("展厅已打开。搜索一件文物，查看服务端目录并按顺序放入展厅。");
+      setNotice("已进入唐朝长廊。文物顺序与年代由当前发布版本和服务端状态决定。");
       setNoticeTone("success");
     } catch (error) {
       showError(error, setNotice, setNoticeTone);
@@ -152,42 +147,25 @@ export function MuseumShell() {
         </div>
       </header>
 
-      <section className="hero-panel">
-        <div className="hero-copy">
-          <p className="section-kicker">一座持续生长的数字展厅</p>
-          <h2>让文物与它的时代重新相遇。</h2>
-          <p>展品、年代与陈列顺序由当前会话固定的已发布内容和服务端状态决定。</p>
-        </div>
-        <div className="hero-seal" aria-hidden="true"><span>馆藏</span><strong>时空</strong><span>开放探索</span></div>
-      </section>
-
       <StatusNotice message={notice} tone={noticeTone} />
 
-      {!session ? (
-        <section className="entry-card" aria-labelledby="entry-title">
-          <div className="section-heading">
-            <div>
-              <p className="section-kicker">开始参观</p>
-              <h2 id="entry-title">选择已发布内容</h2>
-            </div>
-            <span className="count-pill">固定版本</span>
-          </div>
-          <form className="entry-form" onSubmit={startMuseum}>
-            <label>
-              <span>内容包 ID</span>
-              <input value={packId} onChange={(event) => setPackId(event.target.value)} required />
-            </label>
-            <label>
-              <span>版本</span>
-              <input value={version} onChange={(event) => setVersion(event.target.value)} required />
-            </label>
-            <button className="button" disabled={busy || !health} type="submit">
-              {busy ? "正在进入…" : "进入展厅"}
-            </button>
-          </form>
-          <p className="form-note">只接受已发布版本。刷新页面后会恢复当前会话并重新配对。</p>
-        </section>
-      ) : (
+      <MuseumCorridor
+        artifacts={session?.context.visible_artifacts ?? []}
+        displayOrder={session?.state.display_order ?? []}
+        focusedId={session?.context.focused_artifact?.id ?? session?.state.focused_entity_id ?? null}
+        loading={!session && !healthError}
+      />
+
+      {!session && health && (
+        <div className="corridor-retry-row">
+          <span>展厅暂未连接，不会显示未经发布的展品。</span>
+          <button className="button button-quiet" disabled={busy} onClick={() => void startMuseum()} type="button">
+            {busy ? "正在重试…" : "重试连接"}
+          </button>
+        </div>
+      )}
+
+      {session && SHOW_DIAGNOSTICS && (
         <>
           <section className="session-strip">
             <div>
@@ -254,6 +232,15 @@ async function restoreSavedSession(): Promise<ActiveSession | null> {
     sessionStorage.removeItem(SESSION_KEY);
     return null;
   }
+  return restoreSession(credentials);
+}
+
+async function openDefaultSession(): Promise<ActiveSession> {
+  const restored = await restoreSavedSession();
+  if (restored) return restored;
+
+  const credentials = await createSession(DEFAULT_PACK_ID, DEFAULT_VERSION);
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(credentials));
   return restoreSession(credentials);
 }
 
