@@ -1,0 +1,16 @@
+id: cn.tang.node.t02.n05
+story_id: cn.tang.story.t02
+fact_grade: F
+narration: >-
+  史书把这场权力冲突记为武德九年玄武门事件。记载中的结果是李建成、李元吉被杀，政治权力随后转移。我们用文字和关系图说明结果，不展示伤害画面，也不把骑马俑说成事件现场的证物。
+allowed_actions:
+  - ask
+  - observe
+  - choose_route
+exits:
+  - action: choose_route
+    target_node_id: cn.tang.node.t02.n03
+    route_label: 回看三人的身份关系
+  - action: choose_route
+    target_node_id: cn.tang.node.t02.n06
+    route_label: 继续看事件之后的时间线

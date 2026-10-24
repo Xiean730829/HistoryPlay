@@ -1,0 +1,12 @@
+id: cn.tang.node.t02.n06
+story_id: cn.tang.story.t02
+fact_grade: F
+narration: >-
+  事件之后，李世民即位；627年开始使用贞观年号。时间线把权力转移和之后的治理分成两段：后来怎样作决定、能听到谁的意见，是接下来的问题，并不能由一次事件预先回答。
+allowed_actions:
+  - ask
+  - observe
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.t02.n07

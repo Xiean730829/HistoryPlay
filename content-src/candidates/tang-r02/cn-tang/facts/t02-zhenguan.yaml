@@ -1,0 +1,11 @@
+id: cn.tang.fact.t02.zhenguan
+claim: 李世民在626年事件后即位；627年开始使用贞观年号。取得皇位与此后的治理议题分开叙述。
+grade: F
+applicable_time:
+  start_year: 626
+  end_year: 627
+  precision: range
+  display_label: 626年即位；627年进入贞观纪年
+source_ids:
+  - cn.tang.source.history-h03
+evidence_note: 年份按常用公历年标记；不把即位、改元和后世对治理的评价合并为同一事件。

@@ -1,0 +1,17 @@
+id: cn.tang.node.t02.n07
+story_id: cn.tang.story.t02
+fact_grade: C
+narration: >-
+  许青把观察卡写成“听见一件事，先问消息从哪里来”。她还想知道，一个人坐上更高的位置以后，会不会听见不同的话。你可以重新整理人物关系，或回到展台继续看这对唐代骑马俑；它们提供的是观察入口，不是那场事件的亲历者。
+allowed_actions:
+  - ask
+  - observe
+  - choose_route
+  - return_to_exhibit
+exits:
+  - action: choose_route
+    target_node_id: cn.tang.node.t02.n02
+    route_label: 再听几种说法
+  - action: return_to_exhibit
+    target_node_id: cn.tang.node.t02.n01
+return_checkpoint: true
