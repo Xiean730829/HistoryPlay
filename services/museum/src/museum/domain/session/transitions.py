@@ -1,0 +1,99 @@
+from __future__ import annotations
+
+from dataclasses import replace
+
+from museum.domain.session.events import SessionEvent, SessionEventKind, TransitionResult
+from museum.domain.session.models import ReturnPoint, SessionMode, SessionState
+
+
+class InvalidTransition(ValueError):
+    """Raised when a requested session change is not valid in its current state."""
+
+
+def focus_entity(state: SessionState, entity_id: str) -> TransitionResult:
+    if entity_id not in state.visible_entities:
+        raise InvalidTransition("只能聚焦当前可见展品")
+    if state.focused_entity_id == entity_id:
+        raise InvalidTransition("目标展品已经处于焦点")
+    updated = _advance(state, focused_entity_id=entity_id)
+    return _result(updated, SessionEventKind.FOCUS_CHANGED, entity_id=entity_id)
+
+
+def enter_story(state: SessionState, story_id: str, node_id: str) -> TransitionResult:
+    if not story_id or not node_id:
+        raise InvalidTransition("进入故事需要故事和节点标识")
+    updated = _advance(
+        state,
+        mode=SessionMode.STORY,
+        story_id=story_id,
+        node_id=node_id,
+        story_variables={},
+        narration_checkpoint=None,
+    )
+    return _result(updated, SessionEventKind.STORY_ENTERED, story_id=story_id, node_id=node_id)
+
+
+def enter_qa(state: SessionState) -> TransitionResult:
+    if state.mode != SessionMode.STORY or not state.story_id or not state.node_id:
+        raise InvalidTransition("只有主线故事播放中可以进入问答")
+    point = ReturnPoint(
+        story_id=state.story_id,
+        node_id=state.node_id,
+        revision=state.revision,
+        story_variables=state.story_variables,
+        narration_checkpoint=state.narration_checkpoint,
+    )
+    updated = _advance(state, mode=SessionMode.QA, return_stack=(*state.return_stack, point))
+    return _result(updated, SessionEventKind.QA_ENTERED, story_id=state.story_id, node_id=state.node_id)
+
+
+def return_to_story(state: SessionState) -> TransitionResult:
+    if state.mode != SessionMode.QA or not state.return_stack:
+        raise InvalidTransition("当前没有可恢复的问答返回点")
+    point = state.return_stack[-1]
+    updated = _advance(
+        state,
+        mode=SessionMode.STORY,
+        story_id=point.story_id,
+        node_id=point.node_id,
+        story_variables=point.story_variables,
+        narration_checkpoint=point.narration_checkpoint,
+        return_stack=state.return_stack[:-1],
+    )
+    return _result(
+        updated,
+        SessionEventKind.RETURNED_TO_STORY,
+        story_id=point.story_id,
+        node_id=point.node_id,
+    )
+
+
+def _advance(state: SessionState, **changes: object) -> SessionState:
+    return replace(
+        state,
+        **changes,
+        revision=state.revision + 1,
+        event_seq=state.event_seq + 1,
+        interaction_epoch=state.interaction_epoch + 1,
+    )
+
+
+def _result(
+    state: SessionState,
+    kind: SessionEventKind,
+    *,
+    entity_id: str | None = None,
+    story_id: str | None = None,
+    node_id: str | None = None,
+) -> TransitionResult:
+    event = SessionEvent(
+        session_id=state.session_id,
+        event_seq=state.event_seq,
+        kind=kind,
+        revision=state.revision,
+        interaction_epoch=state.interaction_epoch,
+        entity_id=entity_id,
+        story_id=story_id,
+        node_id=node_id,
+    )
+    return TransitionResult(state=state, event=event)
