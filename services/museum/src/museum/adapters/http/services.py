@@ -9,6 +9,7 @@ from museum.application.command_service import CommandService
 from museum.application.event_hub import EventHub
 from museum.application.query_service import QueryService
 from museum.application.render_service import RenderService
+from museum.ports.asset_store import AssetStore
 from museum.ports.content_catalog import ContentCatalog
 
 
@@ -22,4 +23,5 @@ class HttpServices:
     bindings: BindingService
     event_hub: EventHub
     renders: RenderService
+    assets: AssetStore
     allowed_origins: frozenset[str]

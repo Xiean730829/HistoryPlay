@@ -11,6 +11,7 @@ from content_pipeline.assets.preview_manifest import (
     record_preview,
     record_preview_batch,
 )
+from content_pipeline.assets.stage_assets import AssetStageError, stage_assets
 from content_pipeline.build.compiler import compile_pack, write_documents
 from content_pipeline.build.pack_writer import write_immutable_pack
 from content_pipeline.validation.reference_validator import validate_references
@@ -161,6 +162,20 @@ def cmd_batch_record_preview(*, batch: Path, manifest: Path) -> int:
     return 0
 
 
+def cmd_stage_assets(
+    *, pack: Path, sources: Path, out: Path, require_all: bool
+) -> int:
+    try:
+        dest = stage_assets(
+            pack_dir=pack, sources_path=sources, out_root=out, require_all=require_all
+        )
+    except AssetStageError as exc:
+        print(f"资源暂存失败：{exc}", file=sys.stderr)
+        return 1
+    print(f"已写入版本化资源根：{dest}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="内容制作命令")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -204,6 +219,19 @@ def main(argv: list[str] | None = None) -> int:
         "--batch", required=True, type=Path, help="预览项目清单；相对素材路径以此文件目录为准"
     )
     batch.add_argument("--manifest", required=True, type=Path, help="版本外部的预览导出清单")
+    stage_local = sub.add_parser(
+        "stage-assets", help="按内容包清单把本机真实PNG/GLB复制到版本化资源根"
+    )
+    stage_local.add_argument("--pack", required=True, type=Path, help="作者包目录")
+    stage_local.add_argument(
+        "--sources", required=True, type=Path, help="忽略目录中的本机来源映射JSON"
+    )
+    stage_local.add_argument("--out", required=True, type=Path, help="版本化资源根目录")
+    stage_local.add_argument(
+        "--require-all",
+        action="store_true",
+        help="内容包中每个资产都必须有本机源文件，缺文件则失败",
+    )
     args = parser.parse_args(argv)
     if args.command == "validate":
         return cmd_validate(args.pack)
@@ -237,6 +265,13 @@ def main(argv: list[str] | None = None) -> int:
         )
     if args.command == "batch-record-preview":
         return cmd_batch_record_preview(batch=args.batch, manifest=args.manifest)
+    if args.command == "stage-assets":
+        return cmd_stage_assets(
+            pack=args.pack,
+            sources=args.sources,
+            out=args.out,
+            require_all=args.require_all,
+        )
     parser.error("未知命令")
     return 2
 
