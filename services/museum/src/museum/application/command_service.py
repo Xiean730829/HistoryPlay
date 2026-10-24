@@ -12,7 +12,7 @@ from uuid import uuid4
 from museum.application.control_tickets import ControlTickets
 from museum.domain.gallery.navigation import InvalidGalleryRoute, adjacent_station
 from museum.domain.session.events import SessionEvent, SessionEventKind, TransitionResult
-from museum.domain.session.models import CameraPose, HistoricalTime, SessionState
+from museum.domain.session.models import CameraPose, HistoricalTime, SessionMode, SessionState
 from museum.domain.session.transitions import (
     InvalidTransition,
     focus_entity,
@@ -222,14 +222,31 @@ class CommandService:
 
     def _apply(self, state: SessionState, command: _Command) -> TransitionResult:
         if command.action == "locate_artifact":
-            if state.mode.value != "explore":
-                raise InvalidTransition("只有长廊探索模式可以定位文物")
             packs = self._pinned_packs(state)
             artifact_id = _required_target(command)
             _find_document(packs, artifact_id, "artifacts/")
             gallery, station = _find_artifact_station(packs, artifact_id)
-            if state.gallery_id == gallery.get("id") and state.station_id == station.get("id"):
+            if (
+                state.mode == SessionMode.EXPLORE
+                and state.gallery_id == gallery.get("id")
+                and state.station_id == station.get("id")
+            ):
                 raise InvalidTransition("目标文物已经位于当前展位")
+            if state.mode != SessionMode.EXPLORE:
+                if state.mode not in {SessionMode.STORY, SessionMode.QA, SessionMode.HYPOTHESIS}:
+                    raise InvalidTransition("当前模式不能定位展品")
+                if state.exhibit_return_point is None:
+                    raise InvalidTransition("当前故事没有可恢复的展台返回点")
+                original = state
+                state = return_to_exhibit(state).state
+                # Fold the return anchor and destination into one committed command/event.
+                state = replace(
+                    state,
+                    revision=original.revision,
+                    view_revision=original.view_revision,
+                    event_seq=original.event_seq,
+                    interaction_epoch=original.interaction_epoch,
+                )
             return _enter_station(state, gallery, station)
 
         if command.action in {"enter_gallery", "move_next", "move_previous"}:

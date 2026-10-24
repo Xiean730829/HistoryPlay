@@ -3,7 +3,13 @@ from __future__ import annotations
 from dataclasses import replace
 
 from museum.domain.session.events import SessionEvent, SessionEventKind, TransitionResult
-from museum.domain.session.models import CameraPose, ReturnPoint, SessionMode, SessionState
+from museum.domain.session.models import (
+    CameraPose,
+    ExhibitReturnPoint,
+    ReturnPoint,
+    SessionMode,
+    SessionState,
+)
 
 
 class InvalidTransition(ValueError):
@@ -86,8 +92,20 @@ def set_view(state: SessionState, view: CameraPose) -> TransitionResult:
 
 def return_to_exhibit(state: SessionState) -> TransitionResult:
     point = state.exhibit_return_point
-    if state.mode not in {SessionMode.STORY, SessionMode.QA, SessionMode.HYPOTHESIS} or point is None:
+    if state.mode not in {SessionMode.STORY, SessionMode.QA, SessionMode.HYPOTHESIS}:
         raise InvalidTransition("当前故事没有可恢复的展台返回点")
+    if point is None:
+        if state.gallery_id is None or state.station_id is None:
+            raise InvalidTransition("当前故事没有可恢复的展台返回点")
+        # Older saves predate the explicit root anchor but kept the explore
+        # location and camera on the session snapshot itself.
+        point = ExhibitReturnPoint(
+            gallery_id=state.gallery_id,
+            station_id=state.station_id,
+            focused_entity_id=state.focused_entity_id,
+            view=state.camera_pose,
+            view_revision=state.view_revision,
+        )
     updated = replace(
         state,
         mode=SessionMode.EXPLORE,
