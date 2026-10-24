@@ -19,8 +19,12 @@ from test_reference_validator import NODE_01, NODE_02, STORY, write_pack
 PACK = Path(__file__).resolve().parents[2] / "content-src" / "packs" / "cn-tang"
 PREVIEW_BYTES = b"\x89PNG\r\n\x1a\npreview-bytes"
 DISPLAY_BYTES = b"glTF\x02\x00\x00\x00display-bytes"
+STORY_IMAGE_BYTES = b"\x89PNG\r\n\x1a\nstory-frame"
+STORY_AUDIO_BYTES = b"ID3-narration"
 PREVIEW_HASH = sha256(PREVIEW_BYTES).hexdigest()
 DISPLAY_HASH = sha256(DISPLAY_BYTES).hexdigest()
+STORY_IMAGE_HASH = sha256(STORY_IMAGE_BYTES).hexdigest()
+STORY_AUDIO_HASH = sha256(STORY_AUDIO_BYTES).hexdigest()
 
 ARTIFACTS = (
     "cn.tang.artifact.votive-stele",
@@ -102,7 +106,16 @@ def write_three_pack(root: Path) -> Path:
     for slug, ident in zip(SLUGS, ARTIFACTS, strict=True):
         (pack / "artifacts" / f"{slug}.yaml").write_text(_artifact(ident, slug), encoding="utf-8")
         (pack / "stories" / f"{slug}.yaml").write_text(_story(slug, ident), encoding="utf-8")
-        (pack / "nodes" / f"{slug}-01.yaml").write_text(_node(slug, NODE_01), encoding="utf-8")
+        frame_node = _node(slug, NODE_01).replace(
+            "fact_grade: F",
+            "fact_grade: F\n"
+            "presentation:\n"
+            "  capability: comic\n"
+            "  asset_ids:\n"
+            "    - cn.tang.asset.story-frame\n"
+            "  audio_asset_id: cn.tang.asset.narration",
+        )
+        (pack / "nodes" / f"{slug}-01.yaml").write_text(frame_node, encoding="utf-8")
         (pack / "nodes" / f"{slug}-02.yaml").write_text(_node(slug, NODE_02), encoding="utf-8")
         extra_assets.extend(
             [
@@ -133,6 +146,26 @@ def write_three_pack(root: Path) -> Path:
         )
     for index, asset in enumerate(extra_assets, start=1):
         (pack / "assets" / f"extra-{index}.yaml").write_text(asset, encoding="utf-8")
+    (pack / "assets" / "story-frame.yaml").write_text(
+        _asset(
+            "cn.tang.asset.story-frame",
+            kind="image",
+            fmt="png",
+            digest=STORY_IMAGE_HASH,
+            size=len(STORY_IMAGE_BYTES),
+        ),
+        encoding="utf-8",
+    )
+    (pack / "assets" / "narration.yaml").write_text(
+        _asset(
+            "cn.tang.asset.narration",
+            kind="audio",
+            fmt="mp3",
+            digest=STORY_AUDIO_HASH,
+            size=len(STORY_AUDIO_BYTES),
+        ),
+        encoding="utf-8",
+    )
     (pack / "galleries" / "main.yaml").write_text(
         """id: cn.tang.gallery.main
 title: 唐朝长廊
@@ -187,12 +220,18 @@ def _sources(tmp_path: Path, mapping: dict[str, Path]) -> Path:
 def _runtime_files(tmp_path: Path) -> dict[str, Path]:
     preview = tmp_path / "preview.png"
     display = tmp_path / "display.glb"
+    story_image = tmp_path / "story-frame.png"
+    narration = tmp_path / "narration.mp3"
     preview.write_bytes(PREVIEW_BYTES)
     display.write_bytes(DISPLAY_BYTES)
+    story_image.write_bytes(STORY_IMAGE_BYTES)
+    narration.write_bytes(STORY_AUDIO_BYTES)
     mapping: dict[str, Path] = {}
     for slug in SLUGS:
         mapping[f"cn.tang.asset.{slug}.preview"] = preview
         mapping[f"cn.tang.asset.{slug}.display"] = display
+    mapping["cn.tang.asset.story-frame"] = story_image
+    mapping["cn.tang.asset.narration"] = narration
     return mapping
 
 
@@ -227,6 +266,8 @@ def test_rehearsal_pack_publishes_isolated_copy_and_keeps_author_draft(tmp_path:
     assert index["version"] == "0.2.1"
     assert "cn.tang.asset.votive-stele.preview" in index["assets"]
     assert "cn.tang.asset.votive-stele.display" in index["assets"]
+    assert "cn.tang.asset.story-frame" in index["assets"]
+    assert "cn.tang.asset.narration" in index["assets"]
     assert "cn.tang.asset.votive-stele.glb" not in index["assets"]
 
     origin = "http://localhost:5173"
@@ -278,6 +319,18 @@ def test_rehearsal_pack_publishes_isolated_copy_and_keeps_author_draft(tmp_path:
         )
         assert display.status == 200
         assert await display.read() == DISPLAY_BYTES
+        story_image = await client.get(
+            f"/api/sessions/{session_id}/assets/cn.tang.asset.story-frame",
+            headers={"Origin": origin, "Authorization": f"Bearer {token}"},
+        )
+        assert story_image.status == 200
+        assert await story_image.read() == STORY_IMAGE_BYTES
+        narration = await client.get(
+            f"/api/sessions/{session_id}/assets/cn.tang.asset.narration",
+            headers={"Origin": origin, "Authorization": f"Bearer {token}"},
+        )
+        assert narration.status == 200
+        assert await narration.read() == STORY_AUDIO_BYTES
         draft = await client.post(
             "/api/sessions",
             json={"pack_id": "cn.tang.core", "version": "0.1.0"},
