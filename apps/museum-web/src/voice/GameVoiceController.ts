@@ -1,8 +1,8 @@
 import type { ActiveSession } from "../application/museumApi";
 import type { CommandReceipt } from "@history-play/contracts";
-import { AudioFocus } from "../narration/AudioFocus";
-import { BrowserSpeechAdapter } from "../narration/BrowserSpeechAdapter";
-import { NarrationPlayer } from "../narration/NarrationPlayer";
+import type { AudioFocus } from "../narration/AudioFocus";
+import type { NarrationPlayer } from "../narration/NarrationPlayer";
+import { acquireSessionNarration } from "../narration/sessionNarration";
 import { PlaybackQueue } from "./PlaybackQueue";
 import { VoiceClient } from "./VoiceClient";
 import type { VoiceControlResult } from "./VoiceClient";
@@ -17,14 +17,20 @@ export interface GameVoiceHooks {
 export class GameVoiceController {
   private audio: AudioContext | null = null;
   private voice: VoiceClient | null = null;
-  private readonly focus = new AudioFocus();
-  private readonly narration = new NarrationPlayer(new BrowserSpeechAdapter(), this.focus);
+  private readonly focus: AudioFocus;
+  private readonly narration: NarrationPlayer;
+  private readonly releaseNarration: () => void;
   private disposed = false;
   private inputSequence = 0;
 
   constructor(private readonly session: ActiveSession, private readonly hooks: GameVoiceHooks,
     private readonly gameUrl = "http://127.0.0.1:8781",
-    private readonly bridgeUrl = "http://127.0.0.1:8782") {}
+    private readonly bridgeUrl = "http://127.0.0.1:8782") {
+    const runtime = acquireSessionNarration(session.session_id);
+    this.focus = runtime.focus;
+    this.narration = runtime.player;
+    this.releaseNarration = runtime.release;
+  }
 
   async initialize(): Promise<void> {
     this.disposed = false;
@@ -86,21 +92,23 @@ export class GameVoiceController {
       this.hooks.onStatus(result.message ?? "动作已提交，正在更新画面");
       await this.hooks.onRefresh(result.receipt);
     }
-    if (result.narration && !this.disposed && sequence === this.inputSequence) {
+    const storyTransition = ["enter_story", "continue_story"].includes(result.receipt?.action ?? "");
+    if (result.narration && !storyTransition && !this.disposed && sequence === this.inputSequence) {
       this.hooks.onTranscript(result.narration.text);
       this.hooks.onStatus("正在朗读已准备的正文");
-      await this.narration.play(result.narration);
+      await this.narration.play({ ...result.narration, role: "answer" });
     }
   }
 
   dispose(): void {
     this.inputSequence += 1;
     this.disposed = true;
-    this.narration.leave();
+    this.narration.stop();
     this.focus.stop();
     this.voice?.disconnect();
     this.voice = null;
     void this.audio?.close().catch(() => undefined);
     this.audio = null;
+    this.releaseNarration();
   }
 }
