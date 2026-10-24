@@ -12,9 +12,10 @@ interface FocusedArtifactProps {
   artifact: ArtifactProjection;
   session: ActiveSession;
   poster: string | null;
+  onRender?: (status: "rendered" | "degraded", reason?: string) => void;
 }
 
-export function FocusedArtifact({ artifact, session, poster }: FocusedArtifactProps) {
+export function FocusedArtifact({ artifact, session, poster, onRender }: FocusedArtifactProps) {
   const display = artifact.presentation?.display;
   const assetId = display?.asset_id?.trim() || "";
   const [assetState, setAssetState] = React.useState<{
@@ -51,7 +52,12 @@ export function FocusedArtifact({ artifact, session, poster }: FocusedArtifactPr
 
   if (display?.kind === "photo") {
     return modelUrl
-      ? <img alt={`${artifact.title}照片展品`} className="artifact-photo" src={modelUrl} />
+      ? <img
+          alt={`${artifact.title}照片展品`}
+          className="artifact-photo"
+          onLoad={() => onRender?.("degraded", "当前展位使用照片呈现")}
+          src={modelUrl}
+        />
       : <>
           {poster && <img alt="" className="station-preview" src={poster} />}
           <span className="visually-hidden" role="status">{failed ? "照片展品不可用，保留真实预览图" : "正在载入照片展品"}</span>
@@ -62,7 +68,12 @@ export function FocusedArtifact({ artifact, session, poster }: FocusedArtifactPr
   }
   if (failed) {
     return <>
-      {poster && <img alt="" className="station-preview" src={poster} />}
+      {poster && <img
+        alt=""
+        className="station-preview"
+        onLoad={() => onRender?.("degraded", "展示模型不可用，实际显示真实预览图")}
+        src={poster}
+      />}
       <span className="visually-hidden" role="status">三维模型暂不可用，保留真实预览图</span>
     </>;
   }
@@ -80,6 +91,8 @@ export function FocusedArtifact({ artifact, session, poster }: FocusedArtifactPr
         key={modelUrl}
         orbit={cameraOrbit(session.state.camera_pose, artifact.presentation?.default_camera?.orbit)}
         poster={poster}
+        onDegraded={() => onRender?.("degraded", "展示模型不可用，实际显示真实预览图")}
+        onRendered={() => onRender?.("rendered")}
         src={modelUrl}
       />
     </React.Suspense>
