@@ -1,7 +1,7 @@
 import {
   ACESFilmicToneMapping, Box3, Color, FogExp2, Group, Mesh, MeshStandardMaterial,
   PCFSoftShadowMap, PerspectiveCamera, Raycaster, Scene, Vector2, Vector3, WebGLRenderer,
-  PMREMGenerator, type Object3D, type WebGLRenderTarget,
+  PMREMGenerator, BoxGeometry, MeshBasicMaterial, type WebGLRenderTarget,
 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
@@ -11,11 +11,13 @@ import type { AssetLease } from "../capabilities/assetLoader";
 import { buildHall, inscription } from "./architecture";
 import { nearbyModelIndices, seatModel, stationPlacement } from "./layout";
 import { disposeTree } from "./resources";
+import { pickArtifact } from "./picking";
 
 interface Exhibit { root: Group; spin: Group; loaded: boolean; loading: boolean; controller: AbortController; lease?: AssetLease }
 interface WorldHooks {
   onSelect(id: string): void;
   onObserve(yaw: number, pitch: number, zoom: number): void;
+  onPick(id: string | null): void;
   onLoaded(count: number): void;
   onRender(status: "rendered" | "degraded", reason?: string): void;
 }
@@ -94,6 +96,10 @@ export class MuseumWorld {
     const spin = new Group(); root.add(spin); this.scene.add(root);
     const entry: Exhibit = { root, spin, loaded: false, loading: false, controller: new AbortController() };
     this.exhibits.set(artifact.id, entry);
+    // A case-sized target catches the coin hole and the supporting plinth as one exhibit.
+    const pickVolume = new Mesh(new BoxGeometry(2.25, 3.15, 1.95), new MeshBasicMaterial({ visible: false }));
+    pickVolume.position.set(p.x, 1.575, p.z); pickVolume.userData.artifactId = artifact.id;
+    this.scene.add(pickVolume);
     const label = inscription(artifact.title, 2.1, 0.4);
     label.position.set(p.x, 0.76, p.z + 0.895); this.scene.add(label);
     const date = inscription(artifact.time_range.display_label ?? `${artifact.time_range.start_year}年`, 2.3, 0.6, true);
@@ -165,14 +171,14 @@ export class MuseumWorld {
     const bounds = this.renderer.domElement.getBoundingClientRect();
     this.pointer.set((event.clientX - bounds.left) / bounds.width * 2 - 1, -(event.clientY - bounds.top) / bounds.height * 2 + 1);
     this.raycaster.setFromCamera(this.pointer, this.camera);
-    const hits = this.raycaster.intersectObjects(this.scene.children, true);
-    let object: Object3D | null = hits[0]?.object ?? null;
-    while (object && !object.userData.artifactId) object = object.parent;
-    if (object?.userData.artifactId) this.hooks.onSelect(object.userData.artifactId as string);
+    const artifact = pickArtifact(this.raycaster, this.scene.children);
+    this.hooks.onPick(artifact);
+    if (artifact) this.hooks.onSelect(artifact);
   };
 
   private pointerDown = (event: PointerEvent): void => {
     if (!this.inspection || event.button !== 0) return;
+    this.suppressClick = false;
     this.drag = { x: event.clientX, y: event.clientY, yaw: 0, pitch: 0 };
     this.renderer.domElement.setPointerCapture(event.pointerId);
   };
@@ -187,7 +193,7 @@ export class MuseumWorld {
   private pointerUp = (): void => {
     if (!this.drag) return;
     const { yaw, pitch } = this.drag; this.drag = null;
-    if (Math.abs(yaw) + Math.abs(pitch) > 2) {
+    if (Math.hypot(yaw / 0.42, pitch / 0.22) > 8) {
       this.suppressClick = true; this.hooks.onObserve(yaw, pitch, 1);
     }
     this.preview = null;
