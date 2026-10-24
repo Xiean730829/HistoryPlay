@@ -20,10 +20,14 @@
 | `schemas/v1/command.schema.json` | 命令信封、有限动作、目标及动作参数；request_id 去重 | 03-a |
 | `schemas/v1/event.schema.json` | 有序会话事件；缺口时要求完整快照 | 03-a |
 | `schemas/v1/receipt.schema.json` | 命令提交回执与呈现超时状态 | 03-a |
+| `../packages/contracts-ts/src/generated.ts` | 网页/MCP 客户端传输类型，生成后不手改 | 03-a |
+| `../packages/contracts-python/src/museum_contracts/models.py` | Python 传输 DTO，不含领域规则 | 03-a |
 
-公开样例在 `examples/v1/`。样例不含密钥、本机盘符或未授权路径。校验命令：
+公开样例在 `examples/v1/`。样例不含密钥、本机盘符或未授权路径。跨语言传输类型由生成器写入 `packages/contracts-ts` 与 `packages/contracts-python`，不能手改。校验命令：
 
 ```text
+uv run python tools/dev/generate_contracts.py
+uv run python tools/dev/generate_contracts.py --check
 uv run pytest tests/contracts -q
 ```
 

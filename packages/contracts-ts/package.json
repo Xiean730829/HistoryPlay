@@ -1,0 +1,12 @@
+{
+  "name": "@history-play/contracts",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/generated.ts"
+  },
+  "scripts": {
+    "check": "tsc -p tsconfig.json --pretty false"
+  }
+}
