@@ -1,0 +1,17 @@
+{
+  "id": "cn.tang.event.wuzhou-690",
+  "title": "武周建立",
+  "time_range": {
+    "start_year": 690,
+    "end_year": 690,
+    "precision": "year",
+    "display_label": "690年"
+  },
+  "place": {
+    "label": "洛阳",
+    "region_id": "cn"
+  },
+  "fact_card_ids": ["cn.tang.fact.stele.dated-678"],
+  "related_artifact_ids": ["cn.tang.artifact.stele"],
+  "tell_story_id": "cn.tang.story.stele-observation"
+}
