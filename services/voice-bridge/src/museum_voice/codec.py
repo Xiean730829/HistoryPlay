@@ -46,10 +46,13 @@ class AudioCodec:
         self.encoder.bit_rate = 24000
         self.encoder.time_base = Fraction(1, 16000)
         self.encoder.options = {"frame_duration": "60", "application": "voip"}
-        self.decoder = av.CodecContext.create("opus", "r")
-        self.resampler = av.AudioResampler(format="s16", layout="mono", rate=24000)
+        self.reset_decoder()
         self.pending = bytearray()
         self.pts = 0
+
+    def reset_decoder(self) -> None:
+        self.decoder = av.CodecContext.create("opus", "r")
+        self.resampler = av.AudioResampler(format="s16", layout="mono", rate=24000)
 
     def encode(self, pcm20ms: bytes) -> list[bytes]:
         if len(pcm20ms) != 640:

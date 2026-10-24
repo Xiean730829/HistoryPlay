@@ -117,3 +117,7 @@ $env:MUSEUM_MCP_REPORT_FILE = '<本机.local/voice/probe-report.json的绝对路
 浏览器SpeechSynthesis是可选的第一版固定正文适配器，直接传入准备的原文，不调用小智自由复述。系统中文音色、首次解锁、真实声音逐字一致性和外放打断仍需H4/H6；API缺失或合成错误明确失败，不默默变成模型重述。它不能作为小智“指定文本TTS已支持”的证据。
 
 A线在故事/文物背景正文取到后调用player.play，画面保留在同节点；用户追问时先AudioFocus.claim("qa",stopQA)，用户“继续”调用resume，返回展台调用leave。后台持久化检查点和可信语音生命周期由A串行装配，当前仅是网页播放器基础，不关闭CW12a/b整卡。
+
+## 接入回归补充
+
+额外执行真实stdio子进程经过管道的initialize→tools/list→tools/call回归（模拟云端传输，不连接云端账号），诊断工具调用成功且脱敏计数正确。收到新的tts.start只重置解码器，不提升音频generation；异常JSON形态明确拒绝。当前Python接入测试合计36项通过，Ruff与compileall通过；全网页19项、投影5项、TS和构建通过。
