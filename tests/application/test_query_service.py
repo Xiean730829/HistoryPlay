@@ -1,0 +1,183 @@
+from __future__ import annotations
+
+from dataclasses import replace
+
+import pytest
+from museum.application.query_service import ContentUnavailable, QueryService
+from museum.domain.session.models import SessionMode, SessionState
+from museum.ports.content_catalog import PublishedPack
+
+PACK_ID = "cn.tang.core"
+VERSION = "1.0.0"
+ARTIFACT_ID = "cn.tang.artifact.stele"
+FACT_ID = "cn.tang.fact.stele.dated-678"
+SOURCE_ID = "cn.tang.source.mia.stele"
+STORY_ID = "cn.tang.story.stele-observation"
+NODE_ID = "cn.tang.node.stele.01"
+
+
+def make_artifact(identity: str, title: str, aliases: list[str] | None = None) -> dict:
+    return {
+        "id": identity,
+        "title": title,
+        "aliases": aliases or [],
+        "museum": {"name": "明尼阿波利斯艺术博物馆", "accession": "art/140016"},
+        "time_range": {"start_year": 678, "end_year": 678, "precision": "year"},
+        "material": "石",
+        "category": "造像碑",
+        "asset_ids": ["cn.tang.asset.stele.original"],
+        "fact_card_ids": [FACT_ID],
+        "story_entry_ids": [STORY_ID],
+    }
+
+
+def make_pack(version: str = VERSION, alias: str = "佛碑") -> PublishedPack:
+    artifact_b = "cn.tang.artifact.stele.second"
+    documents = {
+        "manifest.json": {
+            "id": PACK_ID,
+            "version": version,
+            "publication_status": "published",
+        },
+        "artifacts/a.json": make_artifact(ARTIFACT_ID, "一佛二菩萨造像碑", [alias]),
+        "artifacts/b.json": make_artifact(artifact_b, "浮雕造像残片", ["佛碑残片"]),
+        "facts/dated.json": {
+            "id": FACT_ID,
+            "claim": "造像碑题记记载其完成于678年。",
+            "grade": "fact",
+            "applicable_time": {"start_year": 678, "end_year": 678, "precision": "year"},
+            "source_ids": [SOURCE_ID],
+        },
+        "sources/mia.json": {
+            "id": SOURCE_ID,
+            "kind": "museum_record",
+            "title": "馆藏记录：一佛二菩萨造像碑",
+            "locator": {"label": "作品页面", "url": "https://example.org/stele"},
+        },
+        "stories/observation.json": {
+            "id": STORY_ID,
+            "title": "碑上的纪年",
+            "entry_node_id": NODE_ID,
+            "node_ids": [NODE_ID],
+        },
+        "nodes/first.json": {
+            "id": NODE_ID,
+            "story_id": STORY_ID,
+            "fact_grade": "fact",
+            "narration": "先观察碑额与题记。",
+            "presentation": {"capability": "comic_scene"},
+            "allowed_actions": ["observe", "continue_story"],
+        },
+    }
+    return PublishedPack(PACK_ID, version, "1", documents)
+
+
+class MemoryCatalog:
+    def __init__(self, *packs: PublishedPack) -> None:
+        self.packs = {(pack.pack_id, pack.version): pack for pack in packs}
+        self.requests: list[tuple[str, str]] = []
+
+    def list_published(self):
+        raise AssertionError("查询必须受会话固定版本约束，不应扫描所有已发布包")
+
+    def get_published(self, pack_id: str, version: str) -> PublishedPack:
+        self.requests.append((pack_id, version))
+        try:
+            return self.packs[(pack_id, version)]
+        except KeyError as error:
+            raise LookupError("pack missing") from error
+
+
+def make_state() -> SessionState:
+    return SessionState(
+        session_id="sess_query_01",
+        pack_versions={PACK_ID: VERSION},
+        mode=SessionMode.STORY,
+        focused_entity_id=ARTIFACT_ID,
+        visible_entities=(ARTIFACT_ID, "cn.tang.artifact.stele.second"),
+        display_order=("cn.tang.artifact.stele.second", ARTIFACT_ID),
+        story_id=STORY_ID,
+        node_id=NODE_ID,
+        revision=7,
+        event_seq=11,
+    )
+
+
+def test_search_uses_explicit_chinese_aliases_pinned_version_and_cursor_scope() -> None:
+    old = make_pack("1.0.0", "佛碑")
+    new = make_pack("2.0.0", "别名已更新")
+    catalog = MemoryCatalog(old, new)
+    service = QueryService(catalog)
+    state = make_state()
+
+    first = service.search(state, "佛 碑", kind="artifact", limit=1)
+    assert len(first.items) == 1
+    assert first.items[0].id == ARTIFACT_ID
+    assert first.items[0].version == VERSION
+    assert first.next_cursor is not None
+
+    second = service.search(state, "佛 碑", kind="artifact", limit=1, cursor=first.next_cursor)
+    assert tuple(item.id for item in second.items) == ("cn.tang.artifact.stele.second",)
+    with pytest.raises(ValueError, match="游标"):
+        service.search(state, "造像碑", kind="artifact", limit=1, cursor=first.next_cursor)
+    assert set(catalog.requests) == {(PACK_ID, VERSION)}
+
+
+def test_context_preserves_server_order_and_projects_the_current_story_node() -> None:
+    state = make_state()
+    service = QueryService(MemoryCatalog(make_pack()))
+
+    context = service.context(state)
+
+    assert tuple(item.id for item in context.visible_artifacts) == (
+        "cn.tang.artifact.stele.second",
+        ARTIFACT_ID,
+    )
+    assert context.focused_artifact is not None
+    assert context.focused_artifact.id == ARTIFACT_ID
+    assert context.story_node is not None
+    assert context.story_node.node_id == NODE_ID
+    assert context.story_node.allowed_actions == ("observe", "continue_story")
+    assert context.revision == state.revision
+    assert context.event_seq == state.event_seq
+
+
+def test_fact_read_returns_grade_applicable_time_and_real_source_locator() -> None:
+    state = make_state()
+    service = QueryService(MemoryCatalog(make_pack()))
+
+    evidence = service.read_fact(state, FACT_ID)
+
+    assert evidence.grade == "fact"
+    assert evidence.applicable_time["start_year"] == 678
+    assert evidence.sources[0].id == SOURCE_ID
+    assert evidence.sources[0].locator["label"] == "作品页面"
+    assert state == make_state()
+
+
+def test_query_fails_closed_when_a_pinned_version_or_citation_is_missing() -> None:
+    state = make_state()
+    service = QueryService(MemoryCatalog(make_pack(alias="造像碑")))
+    broken_state = replace(state, pack_versions={PACK_ID: "9.9.9"})
+    with pytest.raises(ContentUnavailable, match="固定的内容包"):
+        service.search(broken_state, "碑")
+
+    missing_source_pack = make_pack()
+    missing_source_pack = replace(
+        missing_source_pack,
+        documents={
+            key: value
+            for key, value in missing_source_pack.documents.items()
+            if not key.startswith("sources/")
+        },
+    )
+    service = QueryService(MemoryCatalog(missing_source_pack))
+    with pytest.raises(ContentUnavailable, match="source"):
+        service.read_fact(state, FACT_ID)
+
+
+@pytest.mark.parametrize("limit", [0, 51])
+def test_search_rejects_unbounded_or_empty_pages(limit: int) -> None:
+    service = QueryService(MemoryCatalog(make_pack()))
+    with pytest.raises(ValueError, match="分页"):
+        service.search(make_state(), "碑", limit=limit)

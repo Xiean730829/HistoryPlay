@@ -7,7 +7,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any
 
-from museum.ports.content_catalog import PackReference, PublishedPack
+from museum.ports.content_catalog import PackReference, PublishedContentUnavailable, PublishedPack
 
 PACK_ID = re.compile(r"^[a-z]{2}(?:\.[a-z0-9-]+)+$")
 VERSION = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
@@ -16,7 +16,7 @@ INDEX_NAME = "pack-index.json"
 MANIFEST_NAME = "manifest.json"
 
 
-class CatalogError(Exception):
+class CatalogError(PublishedContentUnavailable):
     """Base error for catalog lookup and integrity failures."""
 
 

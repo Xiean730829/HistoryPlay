@@ -25,6 +25,7 @@ class TimeRange(TypedDict):
 class Artifact(TypedDict):
     id: NamespacedId
     title: NonEmptyText
+    aliases: NotRequired[list[str]]
     museum: ArtifactMuseum
     time_range: TimeRange
     material: NonEmptyText
