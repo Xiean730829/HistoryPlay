@@ -1,0 +1,93 @@
+import React from "react";
+import {
+  loadSessionAssetObjectUrl,
+  type ActiveSession,
+  type ArtifactProjection,
+} from "../application/museumApi";
+import { cameraOrbit } from "./cameraOrbit";
+
+const Artifact3D = React.lazy(() =>
+  import("./Artifact3D").then((module) => ({ default: module.Artifact3D })),
+);
+
+interface FocusedArtifactProps {
+  artifact: ArtifactProjection;
+  session: ActiveSession;
+  poster: string | null;
+}
+
+export function FocusedArtifact({ artifact, session, poster }: FocusedArtifactProps) {
+  const display = artifact.presentation?.display;
+  const assetId = display?.asset_id?.trim() || "";
+  const [assetState, setAssetState] = React.useState<{
+    assetId: string;
+    url: string | null;
+    failed: boolean;
+  } | null>(null);
+  const modelUrl = assetState?.assetId === assetId ? assetState.url : null;
+  const failed = assetState?.assetId === assetId && assetState.failed;
+
+  React.useEffect(() => {
+    let cancelled = false;
+    let objectUrl: string | null = null;
+    if (!assetId || (display?.kind !== "model3d" && display?.kind !== "photo")) {
+      setAssetState(null);
+      return;
+    }
+
+    void loadSessionAssetObjectUrl(session, assetId)
+      .then((url) => {
+        objectUrl = url;
+        if (cancelled) {
+          URL.revokeObjectURL(url);
+          objectUrl = null;
+          return;
+        }
+        setAssetState({ assetId, url, failed: false });
+      })
+      .catch(() => {
+        if (!cancelled) setAssetState({ assetId, url: null, failed: true });
+      });
+
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [assetId, display?.kind, session.session_id, session.session_token]);
+
+  if (display?.kind === "photo") {
+    return modelUrl
+      ? <img alt={`${artifact.title}照片展品`} className="artifact-photo" src={modelUrl} />
+      : <>
+          {poster && <img alt="" className="station-preview" src={poster} />}
+          <span className="visually-hidden" role="status">{failed ? "照片展品不可用，保留真实预览图" : "正在载入照片展品"}</span>
+        </>;
+  }
+  if (display?.kind !== "model3d" || !assetId) {
+    return <span className="artifact-model-state" role="status">当前展品未绑定展示模型</span>;
+  }
+  if (failed) {
+    return <>
+      {poster && <img alt="" className="station-preview" src={poster} />}
+      <span className="visually-hidden" role="status">三维模型暂不可用，保留真实预览图</span>
+    </>;
+  }
+  if (!modelUrl) {
+    return <>
+      {poster && <img alt="" className="station-preview" src={poster} />}
+      <span className="visually-hidden" role="status">正在载入真实三维模型</span>
+    </>;
+  }
+
+  return (
+    <React.Suspense fallback={poster && <img alt="" className="station-preview" src={poster} />}>
+      <Artifact3D
+        alt={`${artifact.title}三维模型`}
+        key={modelUrl}
+        orbit={cameraOrbit(session.state.camera_pose, artifact.presentation?.default_camera?.orbit)}
+        poster={poster}
+        src={modelUrl}
+      />
+    </React.Suspense>
+  );
+}

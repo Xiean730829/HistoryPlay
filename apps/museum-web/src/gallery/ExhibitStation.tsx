@@ -2,17 +2,18 @@ import React from "react";
 import type { CSSProperties } from "react";
 import {
   loadSessionAssetObjectUrl,
+  type ActiveSession,
   type ArtifactProjection,
-  type SessionCredentials,
 } from "../application/museumApi";
 import type { CorridorProjection } from "./corridorProjection";
 import { ArtifactCaption } from "./ArtifactCaption";
 import { resolvePreviewAssetId } from "./previewAsset";
+import { FocusedArtifact } from "./FocusedArtifact";
 
 interface ExhibitStationProps {
   artifact: ArtifactProjection;
   projection: CorridorProjection;
-  session: SessionCredentials | null;
+  session: ActiveSession | null;
 }
 
 export function ArtifactStation({ artifact, projection, session }: ExhibitStationProps) {
@@ -56,7 +57,7 @@ export function ArtifactStation({ artifact, projection, session }: ExhibitStatio
 
   const waiting = Boolean(session && previewId && !previewUrl && !previewFailed);
   const objectLabel = previewUrl
-    ? `${artifact.title}真实模型预览`
+    ? `${artifact.title}真实预览`
     : waiting
       ? "正在载入真实模型预览"
       : "真实模型预览尚未发布";
@@ -70,8 +71,10 @@ export function ArtifactStation({ artifact, projection, session }: ExhibitStatio
       data-depth={projection.depth}
     >
       <div className="station-light" aria-hidden="true" />
-      <div className="station-object" aria-label={objectLabel} role="img">
-        {previewUrl ? (
+      <div className="station-object" aria-label={objectLabel}>
+        {projection.isFocused && session && artifact.presentation?.display ? (
+          <FocusedArtifact artifact={artifact} poster={previewUrl} session={session} />
+        ) : previewUrl ? (
           <img alt="" className="station-preview" decoding="async" src={previewUrl} />
         ) : (
           <span className="station-object-core" aria-hidden="true" />
