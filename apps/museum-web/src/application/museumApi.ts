@@ -1,4 +1,10 @@
-import type { Artifact, CommandAction, CommandReceipt, SessionProjection } from "@history-play/contracts";
+import type {
+  Artifact,
+  ArtifactPresentation,
+  CommandAction,
+  CommandReceipt,
+  SessionProjection,
+} from "@history-play/contracts";
 import { CommandDispatcher } from "../state/commandDispatcher";
 
 const commandDispatcher = new CommandDispatcher();
@@ -31,7 +37,9 @@ export type ArtifactProjection = Pick<
   | "asset_ids"
   | "fact_card_ids"
   | "story_entry_ids"
->;
+> & {
+  presentation?: ArtifactPresentation | null;
+};
 
 export interface SearchHit {
   id: string;
@@ -159,6 +167,56 @@ export async function openArtifact(
     (status, body) => status === 409 && isCommandReceipt(body),
   ));
   return { session: await refreshSession(session), receipt: response };
+}
+
+export async function enterGallery(
+  session: ActiveSession,
+  galleryId: string,
+): Promise<{ session: ActiveSession; receipt: CommandReceipt }> {
+  const action = "enter_gallery" satisfies CommandAction;
+  const dispatchKey = [
+    session.session_id,
+    action,
+    galleryId,
+    session.state.revision,
+    session.state.view_revision,
+    session.state.interaction_epoch,
+  ].join(":");
+  const response = await commandDispatcher.dispatch(dispatchKey, (requestId) => request<CommandReceipt>(
+    `/api/sessions/${session.session_id}/commands`,
+    {
+      method: "POST",
+      headers: boundHeaders(session),
+      body: JSON.stringify({
+        schema_version: "1",
+        request_id: requestId,
+        expected_revision: session.state.revision,
+        expected_view_revision: session.state.view_revision,
+        interaction_epoch: session.state.interaction_epoch,
+        control_ticket: session.control_ticket,
+        action,
+        target_id: galleryId,
+      }),
+    },
+    (status, body) => status === 409 && isCommandReceipt(body),
+  ));
+  return { session: await refreshSession(session), receipt: response };
+}
+
+/** Authenticated asset bytes as a short-lived object URL; caller must revoke. */
+export async function loadSessionAssetObjectUrl(
+  session: SessionCredentials,
+  assetId: string,
+): Promise<string> {
+  const response = await fetch(
+    `/api/sessions/${encodeURIComponent(session.session_id)}/assets/${encodeURIComponent(assetId)}`,
+    { headers: authHeaders(session) },
+  );
+  if (!response.ok) {
+    throw new Error(response.status === 404 ? "展示资产不可用" : `展示资产返回 ${response.status}`);
+  }
+  const blob = await response.blob();
+  return URL.createObjectURL(blob);
 }
 
 export async function refreshSession(session: ActiveSession): Promise<ActiveSession> {

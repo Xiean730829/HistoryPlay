@@ -177,6 +177,10 @@ def test_context_preserves_server_order_and_projects_the_current_story_node() ->
     )
     assert context.focused_artifact is not None
     assert context.focused_artifact.id == ARTIFACT_ID
+    assert context.focused_artifact.presentation == {
+        "background_node_id": NODE_ID,
+        "teaser": "观察碑额与题记。",
+    }
     assert context.story_node is not None
     assert context.story_node.node_id == NODE_ID
     assert context.story_node.allowed_actions == ("observe", "continue_story")

@@ -31,6 +31,7 @@ class ArtifactProjection:
     asset_ids: tuple[str, ...]
     fact_card_ids: tuple[str, ...]
     story_entry_ids: tuple[str, ...]
+    presentation: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True, slots=True)
