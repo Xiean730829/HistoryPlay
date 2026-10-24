@@ -107,3 +107,13 @@ $env:MUSEUM_MCP_REPORT_FILE = '<本机.local/voice/probe-report.json的绝对路
 脱敏报告只记录连接状态、initialize/tools-list请求次数、白名单工具调用次数；不记录参数、响应原文、录音、设备身份或接入点。即使实际调用成功，报告中的audio/abort/turn_association仍为false，必须分别核实，不会自动把工具发现提升为全链路语音成功。
 
 本地 `tests/mcp` 已增到24项通过（含诊断工具和脱敏报告/目标校验），Ruff通过。当前没有读取到本机MCP接入点，云端发现仍未测。
+
+## 固定正文朗读与同片段恢复（独立PR）
+
+新增 `narration/AudioFocus.ts`、`NarrationPlayer.ts`、`BrowserSpeechAdapter.ts`。播放器只消费稳定的 `packId/version/contentId/text`；不认识模型供应商、不推进剧情或改场景。QA与固定朗读共用AudioFocus；QA抢占先停止固定稿，继续时从被打断的同片段开头重读；只有下一段命令才能推进剧情。
+
+`lastStarted`、`lastCompleted`分开记录，适配器真实完成Promise后才记已读完。leave清除恢复目标，迟到完成回调不能把退出的故事复活。启动、错误、中断、完成可由getCheckpoint观察，由A线展示简短状态。
+
+浏览器SpeechSynthesis是可选的第一版固定正文适配器，直接传入准备的原文，不调用小智自由复述。系统中文音色、首次解锁、真实声音逐字一致性和外放打断仍需H4/H6；API缺失或合成错误明确失败，不默默变成模型重述。它不能作为小智“指定文本TTS已支持”的证据。
+
+A线在故事/文物背景正文取到后调用player.play，画面保留在同节点；用户追问时先AudioFocus.claim("qa",stopQA)，用户“继续”调用resume，返回展台调用leave。后台持久化检查点和可信语音生命周期由A串行装配，当前仅是网页播放器基础，不关闭CW12a/b整卡。
