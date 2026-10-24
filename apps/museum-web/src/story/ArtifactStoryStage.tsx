@@ -9,6 +9,7 @@ interface ArtifactStoryStageProps {
   session: ActiveSession;
   busy: boolean;
   onContinue: () => void;
+  onChooseRoute: (targetNodeId: string) => void;
   onReturn: () => void;
 }
 

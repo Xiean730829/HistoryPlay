@@ -95,7 +95,15 @@ def make_pack(version: str = VERSION, alias: str = "佛碑") -> PublishedPack:
             "fact_grade": "fact",
             "narration": "先观察碑额与题记。",
             "presentation": {"capability": "comic_scene"},
-            "allowed_actions": ["observe", "continue_story"],
+            "allowed_actions": ["observe", "continue_story", "choose_route"],
+            "exits": [
+                {"action": "continue_story", "target_node_id": "cn.tang.node.stele.02"},
+                {
+                    "action": "choose_route",
+                    "target_node_id": "cn.tang.node.stele.02",
+                    "route_label": "查看题记",
+                },
+            ],
         },
         "nodes/second.json": {
             "id": "cn.tang.node.stele.02",
@@ -103,6 +111,7 @@ def make_pack(version: str = VERSION, alias: str = "佛碑") -> PublishedPack:
             "fact_grade": "interpretation",
             "narration": "再看题记的位置。",
             "allowed_actions": ["observe"],
+            "exits": [{"action": "continue_story", "target_node_id": "cn.tang.node.stele.02"}],
         },
     }
     documents["artifacts/a.json"]["presentation"] = {
@@ -183,7 +192,14 @@ def test_context_preserves_server_order_and_projects_the_current_story_node() ->
     }
     assert context.story_node is not None
     assert context.story_node.node_id == NODE_ID
-    assert context.story_node.allowed_actions == ("observe", "continue_story")
+    assert context.story_node.allowed_actions == ("observe", "continue_story", "choose_route")
+    assert tuple(
+        (exit.action, exit.target_node_id, exit.route_label)
+        for exit in context.story_node.available_exits
+    ) == (
+        ("continue_story", "cn.tang.node.stele.02", None),
+        ("choose_route", "cn.tang.node.stele.02", "查看题记"),
+    )
     assert context.revision == state.revision
     assert context.event_seq == state.event_seq
 

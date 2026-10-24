@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { enterStory, readStoryNode, returnToExhibit, type ActiveSession } from "./museumApi";
+import { chooseStoryRoute, enterStory, readStoryNode, returnToExhibit, type ActiveSession } from "./museumApi";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -69,5 +69,32 @@ describe("story APIs", () => {
       action: "return_to_exhibit", expected_view_revision: 4,
     });
     expect(exiting.receipt.action).toBe("return_to_exhibit");
+  });
+
+  it("sends an explicit story node target when choosing a route", async () => {
+    const base = session();
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/commands")) {
+        const command = JSON.parse(String(init?.body)) as { request_id: string; action: string };
+        return new Response(JSON.stringify({
+          schema_version: "1", receipt_id: "receipt-route", request_id: command.request_id,
+          session_id: base.session_id, status: "committed", revision: 8,
+          interaction_epoch: 4, action: command.action,
+        }), { status: 200 });
+      }
+      if (url.endsWith("/context")) {
+        return new Response(JSON.stringify({ ...base.context, revision: 8, event_seq: 7 }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ ...base.state, revision: 8, event_seq: 7 }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await chooseStoryRoute(base, "cn.tang.node.t01.n05");
+
+    const commandCall = fetchMock.mock.calls.find(([url]) => String(url).endsWith("/commands"));
+    expect(JSON.parse(String(commandCall?.[1]?.body))).toMatchObject({
+      action: "choose_route", target_id: "cn.tang.node.t01.n05", expected_revision: 7,
+    });
   });
 });

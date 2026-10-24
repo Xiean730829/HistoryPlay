@@ -1,0 +1,19 @@
+id: cn.tang.node.t01.n03
+story_id: cn.tang.story.t01
+fact_grade: C
+narration: >-
+  你可以先看一眼展柜里的钱，听听双方怎样描述这件货，也可以请一位熟悉双方的人把约定再说一遍。这里没有唯一正确的选项；想先了解哪一件？
+allowed_actions:
+  - ask
+  - observe
+  - choose_route
+exits:
+  - action: choose_route
+    target_node_id: cn.tang.node.t01.n04
+    route_label: 先看这枚钱能说明什么
+  - action: choose_route
+    target_node_id: cn.tang.node.t01.n05
+    route_label: 先把修补约定说清
+  - action: choose_route
+    target_node_id: cn.tang.node.t01.n06
+    route_label: 请熟人复述约定

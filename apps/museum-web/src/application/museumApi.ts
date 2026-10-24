@@ -23,6 +23,11 @@ export interface SessionContext {
     fact_grade: string;
     presentation: Record<string, unknown> | null;
     allowed_actions: string[];
+    available_exits: Array<{
+      action: string;
+      target_node_id: string;
+      route_label?: string;
+    }>;
   };
 }
 
@@ -125,6 +130,13 @@ export async function continueStory(
   session: ActiveSession,
 ): Promise<{ session: ActiveSession; receipt: CommandReceipt }> {
   return dispatchSessionCommand(session, "continue_story", session.state.story_id ?? undefined);
+}
+
+export async function chooseStoryRoute(
+  session: ActiveSession,
+  targetNodeId: string,
+): Promise<{ session: ActiveSession; receipt: CommandReceipt }> {
+  return dispatchSessionCommand(session, "choose_route", targetNodeId);
 }
 
 export async function returnToExhibit(

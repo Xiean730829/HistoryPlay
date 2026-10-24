@@ -223,7 +223,12 @@ _FIELD_REFS: dict[str, tuple[tuple[str, str | None], ...]] = {
     "artifact": (("asset_ids", "asset"), ("fact_card_ids", "fact"), ("story_entry_ids", "story")),
     "asset": (("derived_from", "asset"), ("fallback_asset_id", "asset")),
     "fact": (("source_ids", "source"),),
-    "story": (("entry_node_id", "story-node"), ("node_ids", "story-node"), ("artifact_id", "artifact")),
+    "story": (
+        ("entry_node_id", "story-node"),
+        ("node_ids", "story-node"),
+        ("fact_card_ids", "fact"),
+        ("artifact_id", "artifact"),
+    ),
     "story-node": (("story_id", "story"),),
     "event": (
         ("fact_card_ids", "fact"),

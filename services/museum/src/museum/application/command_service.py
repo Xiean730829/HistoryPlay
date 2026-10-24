@@ -10,6 +10,7 @@ from typing import Any
 from uuid import uuid4
 
 from museum.application.control_tickets import ControlTickets
+from museum.application.story_content import InvalidStoryContent, load_story
 from museum.domain.gallery.navigation import InvalidGalleryRoute, adjacent_station
 from museum.domain.session.events import SessionEvent, SessionEventKind, TransitionResult
 from museum.domain.session.models import CameraPose, HistoricalTime, SessionMode, SessionState
@@ -20,16 +21,8 @@ from museum.domain.session.transitions import (
     return_to_story,
     set_view,
 )
-from museum.domain.story.conditions import Condition, ConditionOp, InvalidStoryRule
-from museum.domain.story.effects import Effect, EffectOp
 from museum.domain.story.engine import InvalidStoryAction, advance_story, start_story
-from museum.domain.story.models import (
-    ExitAction,
-    StoryAction,
-    StoryDefinition,
-    StoryExit,
-    StoryNode,
-)
+from museum.domain.story.models import ExitAction
 from museum.ports.content_catalog import ContentCatalog, PublishedPack
 from museum.ports.unit_of_work import UnitOfWork
 
@@ -44,6 +37,7 @@ COMMAND_ACTIONS = frozenset(
         "locate_artifact",
         "enter_story",
         "continue_story",
+        "choose_route",
         "pause_story",
         "return_to_story",
         "return_to_exhibit",
@@ -64,10 +58,6 @@ class SessionNotFound(LookupError):
 
 class PinnedContentUnavailable(LookupError):
     """A target is not present in any content version pinned by this session."""
-
-
-class InvalidStoryContent(ValueError):
-    """A pinned published story cannot be safely interpreted by the domain engine."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -303,7 +293,7 @@ class CommandService:
             return focus_entity(state, _required_target(command))
 
         if command.action == "enter_story":
-            story = _load_story(self._pinned_packs(state), _required_target(command))
+            story = load_story(self._pinned_packs(state), _required_target(command), _find_document)
             result = start_story(state, story)
             return TransitionResult(result.state, result.event)
 
@@ -312,8 +302,20 @@ class CommandService:
                 raise InvalidStoryAction("当前会话没有进行中的故事")
             if command.target_id is not None and command.target_id != state.story_id:
                 raise InvalidStoryAction("继续命令的目标与当前故事不一致")
-            story = _load_story(self._pinned_packs(state), state.story_id)
+            story = load_story(self._pinned_packs(state), state.story_id, _find_document)
             result = advance_story(state, story, ExitAction.CONTINUE_STORY)
+            return TransitionResult(result.state, result.event)
+
+        if command.action == "choose_route":
+            if state.story_id is None:
+                raise InvalidStoryAction("当前会话没有进行中的故事")
+            story = load_story(self._pinned_packs(state), state.story_id, _find_document)
+            result = advance_story(
+                state,
+                story,
+                ExitAction.CHOOSE_ROUTE,
+                target_node_id=_required_target(command),
+            )
             return TransitionResult(result.state, result.event)
 
         if command.action == "return_to_story":
@@ -396,6 +398,7 @@ def _parse_command(payload: Mapping[str, Any]) -> _Command:
             "enter_story",
             "focus_detail",
             "choose_action",
+            "choose_route",
         }
         and target is None
     ):
@@ -642,70 +645,3 @@ def _enter_station(
         else SessionEventKind.ARTIFACT_OPENED
     )
     return _transition(updated, kind, entity_id=artifact_id)
-
-
-def _load_story(packs: tuple[PublishedPack, ...], story_id: str) -> StoryDefinition:
-    story = _find_document(packs, story_id, "stories/")
-    node_ids = story.get("node_ids")
-    if not isinstance(node_ids, list) or not node_ids:
-        raise InvalidStoryContent(f"故事没有节点清单：{story_id}")
-    nodes: dict[str, StoryNode] = {}
-    try:
-        for node_id in node_ids:
-            if not isinstance(node_id, str):
-                raise InvalidStoryContent(f"故事节点标识无效：{story_id}")
-            raw = _find_document(packs, node_id, "nodes/")
-            if raw.get("story_id") != story_id:
-                raise InvalidStoryContent(f"节点不属于当前故事：{node_id}")
-            exits = tuple(
-                StoryExit(
-                    action=ExitAction(exit_item["action"]),
-                    target_node_id=exit_item["target_node_id"],
-                    when=_condition(exit_item.get("when")),
-                )
-                for exit_item in raw["exits"]
-            )
-            nodes[node_id] = StoryNode(
-                id=node_id,
-                story_id=story_id,
-                allowed_actions=tuple(StoryAction(item) for item in raw["allowed_actions"]),
-                exits=exits,
-                enter_when=_condition(raw.get("enter_when")),
-                effects=tuple(_effect(item) for item in raw.get("effects", [])),
-            )
-        return StoryDefinition(
-            id=story_id,
-            entry_node_id=story["entry_node_id"],
-            nodes=nodes,
-        )
-    except (KeyError, TypeError, ValueError) as error:
-        if isinstance(error, InvalidStoryContent):
-            raise
-        raise InvalidStoryContent(f"发布故事结构无效：{story_id}") from error
-
-
-def _condition(value: object) -> Condition | None:
-    if value is None:
-        return None
-    if not isinstance(value, Mapping):
-        raise InvalidStoryRule("故事条件必须是对象")
-    try:
-        op = ConditionOp(value["op"])
-        items = tuple(_condition(item) for item in value.get("items", []))
-        return Condition(
-            op=op,
-            path=value.get("path"),
-            value=value.get("value"),
-            items=tuple(item for item in items if item is not None),
-        )
-    except (KeyError, TypeError, ValueError) as error:
-        raise InvalidStoryRule("发布故事包含无法解释的条件") from error
-
-
-def _effect(value: object) -> Effect:
-    if not isinstance(value, Mapping):
-        raise InvalidStoryRule("故事效果必须是对象")
-    try:
-        return Effect(op=EffectOp(value["op"]), path=value["path"], value=value.get("value"))
-    except (KeyError, TypeError, ValueError) as error:
-        raise InvalidStoryRule("发布故事包含无法解释的效果") from error

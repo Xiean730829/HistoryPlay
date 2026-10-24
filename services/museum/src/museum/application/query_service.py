@@ -17,9 +17,12 @@ from museum.application.mappers import (
     SearchPage,
     SessionContext,
     SourceProjection,
+    StoryExitProjection,
     StoryNodeProjection,
 )
+from museum.application.story_content import load_story
 from museum.domain.session.models import SessionState
+from museum.domain.story.engine import available_exits
 from museum.ports.content_catalog import ContentCatalog, PublishedPack
 
 
@@ -58,6 +61,7 @@ class QueryService:
             node = _find_document(packs, state.node_id, "node")
             if node.get("story_id") != state.story_id:
                 raise ContentUnavailable(f"故事节点与当前故事不匹配：{state.node_id}")
+            story = load_story(packs, state.story_id, _find_story_document)
             story_node = StoryNodeProjection(
                 story_id=state.story_id,
                 node_id=state.node_id,
@@ -65,6 +69,14 @@ class QueryService:
                 fact_grade=_required_text(node.get("fact_grade"), state.node_id),
                 presentation=_optional_mapping(node.get("presentation")),
                 allowed_actions=tuple(_text_items(node.get("allowed_actions"))),
+                available_exits=tuple(
+                    StoryExitProjection(
+                        action=exit.action.value,
+                        target_node_id=exit.target_node_id,
+                        route_label=exit.route_label,
+                    )
+                    for exit in available_exits(state, story)
+                ),
             )
         return SessionContext(
             session_id=state.session_id,
@@ -326,6 +338,15 @@ def _find_document(
             ):
                 return document
     raise ContentUnavailable(f"固定内容版本中找不到{kind}：{document_id}")
+
+
+def _find_story_document(
+    packs: tuple[PublishedPack, ...], document_id: str, directory: str
+) -> Mapping[str, Any]:
+    kind = {"stories/": "story", "nodes/": "node"}.get(directory)
+    if kind is None:
+        raise ContentUnavailable(f"不支持的故事内容目录：{directory}")
+    return _find_document(packs, document_id, kind)
 
 
 def _find_gallery(packs: tuple[PublishedPack, ...], gallery_id: str) -> Mapping[str, Any]:

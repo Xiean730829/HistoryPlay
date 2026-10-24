@@ -87,6 +87,12 @@
           "target_node_id": {
             "$ref": "common.schema.json#/$defs/namespacedId"
           },
+          "route_label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "description": "Short visitor-facing label for an explicit route choice."
+          },
           "when": {
             "$ref": "#/$defs/condition"
           }
