@@ -8,7 +8,9 @@ import {
   unpairSession,
   requestEventTicket,
   refreshSession,
+  loadGalleryArtifacts,
   type ActiveSession,
+  type ArtifactProjection,
   type SessionCredentials,
   type SearchHit,
 } from "../application/museumApi";
@@ -20,7 +22,7 @@ import { MuseumCorridor } from "../gallery/MuseumCorridor";
 
 const SESSION_KEY = "history-play.session.v1";
 const DEFAULT_PACK_ID = import.meta.env.VITE_MUSEUM_PACK_ID?.trim() || "cn.tang.core";
-const DEFAULT_VERSION = import.meta.env.VITE_MUSEUM_PACK_VERSION?.trim() || "1.0.0";
+const DEFAULT_VERSION = import.meta.env.VITE_MUSEUM_PACK_VERSION?.trim() || "0.2.1";
 const DEFAULT_GALLERY_ID =
   import.meta.env.VITE_MUSEUM_GALLERY_ID?.trim() || "cn.tang.gallery.main";
 const SHOW_DIAGNOSTICS = new URLSearchParams(window.location.search).get("debug") === "1";
@@ -30,6 +32,7 @@ export function MuseumShell() {
   const [health, setHealth] = React.useState<Health | null>(null);
   const [healthError, setHealthError] = React.useState(false);
   const [session, setSession] = React.useState<ActiveSession | null>(null);
+  const [galleryArtifacts, setGalleryArtifacts] = React.useState<ArtifactProjection[]>([]);
   const [query, setQuery] = React.useState("");
   const [results, setResults] = React.useState<SearchHit[]>([]);
   const [busy, setBusy] = React.useState(false);
@@ -60,6 +63,16 @@ export function MuseumShell() {
       if (projectionStore.current === store) projectionStore.current = null;
     };
   }, [session?.session_id, session?.connection_id]);
+
+  React.useEffect(() => {
+    let current = true;
+    setGalleryArtifacts([]);
+    if (!session?.state.gallery_id) return () => { current = false; };
+    void loadGalleryArtifacts(session, session.state.gallery_id)
+      .then((artifacts) => { if (current) setGalleryArtifacts(artifacts); })
+      .catch((error: unknown) => { if (current) showError(error, setNotice, setNoticeTone); });
+    return () => { current = false; };
+  }, [session?.session_id, session?.connection_id, session?.state.gallery_id]);
 
   React.useEffect(() => {
     let current = true;
@@ -183,8 +196,8 @@ export function MuseumShell() {
       <StatusNotice message={notice} tone={noticeTone} />
 
       <MuseumCorridor
-        artifacts={session?.context.visible_artifacts ?? []}
-        displayOrder={session?.state.display_order ?? []}
+        artifacts={galleryArtifacts.length ? galleryArtifacts : session?.context.visible_artifacts ?? []}
+        displayOrder={galleryArtifacts.length ? galleryArtifacts.map((artifact) => artifact.id) : session?.state.display_order ?? []}
         focusedId={session?.context.focused_artifact?.id ?? session?.state.focused_entity_id ?? null}
         session={session}
         loading={!session && !healthError}

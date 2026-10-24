@@ -226,9 +226,17 @@
 
 @media (max-width: 640px) {
   .corridor { min-height: min(620px, 73svh); }
-  .corridor-station { bottom: 20%; width: min(62vw, 210px); }
-  .station-object { height: clamp(66px, 12vh, 100px); }
-  .floor-timeline { right: 5%; left: 5%; gap: 12px; font-size: 9px; }
+  .corridor-station {
+    bottom: calc(18% + var(--station-depth) * 14%);
+    width: min(48vw, 170px);
+  }
+  .station-object { height: clamp(50px, 9vh, 70px); }
+  .station-plinth { height: clamp(16px, 3vh, 24px); }
+  .artifact-caption { gap: 3px; margin-top: 6px; }
+  .artifact-caption strong { font-size: 11px; }
+  .artifact-caption span, .artifact-caption p { font-size: 9px; }
+  .artifact-caption p { max-width: 23ch; line-height: 1.35; }
+  .floor-timeline { right: 5%; left: 5%; gap: 9px; font-size: 9px; }
   .floor-timeline > span { white-space: normal; }
   .corridor-state { top: 15%; width: 88%; text-align: center; }
 }

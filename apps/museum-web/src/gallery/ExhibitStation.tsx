@@ -19,6 +19,7 @@ export function ArtifactStation({ artifact, projection, session }: ExhibitStatio
   const style = {
     "--station-x": `${projection.xPercent}%`,
     "--station-scale": projection.scale,
+    "--station-depth": projection.depth,
     "--station-brightness": projection.brightness,
     zIndex: projection.zIndex,
   } as CSSProperties;
