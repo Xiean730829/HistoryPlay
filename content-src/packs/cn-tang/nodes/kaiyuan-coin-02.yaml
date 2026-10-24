@@ -1,0 +1,10 @@
+id: cn.tang.node.kaiyuan-coin.02
+story_id: cn.tang.story.kaiyuan-coin
+fact_grade: F
+narration: 记住这两个时间指向不同对象：一个是馆藏实物的年代范围，一个是钱币类型开始铸造的时间。现在返回长廊。
+allowed_actions:
+  - return_to_exhibit
+exits:
+  - action: return_to_exhibit
+    target_node_id: cn.tang.node.kaiyuan-coin.01
+return_checkpoint: true

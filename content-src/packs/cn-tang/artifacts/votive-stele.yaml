@@ -1,0 +1,23 @@
+id: cn.tang.artifact.votive-stele
+title: 佛与二菩萨造像碑
+aliases:
+  - 一佛二菩萨造像碑
+  - 造像碑
+  - MIA 2021.34
+museum:
+  name: Minneapolis Institute of Art
+  accession: "2021.34"
+  collection_url: https://collections.artsmia.org/art/140016/buddhist-votive-stele-with-buddha-and-two-bodhisattvas-china
+time_range:
+  start_year: 678
+  end_year: 678
+  precision: year
+  display_label: 678年
+material: 石灰岩、颜料
+category: 佛教造像碑
+asset_ids:
+  - cn.tang.asset.votive-stele.glb
+fact_card_ids:
+  - cn.tang.fact.votive-stele.date
+story_entry_ids:
+  - cn.tang.story.votive-stele

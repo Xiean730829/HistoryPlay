@@ -114,6 +114,7 @@ def write_pack(root: Path, *, artifact: str = ARTIFACT, extra_asset: str | None 
     (pack / "facts").mkdir()
     (pack / "stories").mkdir()
     (pack / "nodes").mkdir()
+    (pack / "galleries").mkdir()
     (pack / "manifest.yaml").write_text(MANIFEST, encoding="utf-8")
     (pack / "artifacts" / "stele.yaml").write_text(artifact, encoding="utf-8")
     (pack / "assets" / "stele.yaml").write_text(ASSET, encoding="utf-8")
@@ -165,6 +166,69 @@ def test_foreign_namespace_fails(tmp_path: Path) -> None:
     )
     issues = validate_references(pack)
     assert any("命名空间" in issue.message for issue in issues)
+
+
+def test_alias_shared_by_different_artifacts_fails(tmp_path: Path) -> None:
+    pack = write_pack(tmp_path)
+    (pack / "artifacts" / "coin.yaml").write_text(
+        """
+id: cn.tang.artifact.coin
+title: Coin two
+aliases:
+  - Shared alias
+museum:
+  name: Museum
+  accession: coin-1
+time_range:
+  start_year: 718
+  end_year: 732
+  precision: range
+material: copper
+category: coin
+asset_ids: []
+""",
+        encoding="utf-8",
+    )
+    (pack / "artifacts" / "stele.yaml").write_text(
+        ARTIFACT.replace("title: 一佛二菩萨造像碑", "title: Shared alias"), encoding="utf-8"
+    )
+    issues = validate_references(pack)
+    assert any("别名冲突" in issue.message and "Shared alias" in issue.message for issue in issues)
+
+
+def test_artifact_has_only_one_primary_gallery_station(tmp_path: Path) -> None:
+    pack = write_pack(tmp_path)
+    (pack / "galleries" / "main.yaml").write_text(
+        """
+id: cn.tang.gallery.main
+title: 唐朝长廊
+region:
+  id: cn
+  label: 中国
+status: open
+default_station_id: cn.tang.station.first
+stations:
+  - id: cn.tang.station.first
+    order: 0
+    time_range:
+      start_year: 678
+      end_year: 678
+      precision: year
+    placement_basis: 长廊入口。
+    artifact_id: cn.tang.artifact.stele
+  - id: cn.tang.station.second
+    order: 1
+    time_range:
+      start_year: 679
+      end_year: 700
+      precision: range
+    placement_basis: 重复主展位测试。
+    artifact_id: cn.tang.artifact.stele
+""",
+        encoding="utf-8",
+    )
+    issues = validate_references(pack)
+    assert any("主展品只能有一个展位" in issue.message for issue in issues)
 
 
 def test_cli_validate_rejects_missing_reference(tmp_path: Path) -> None:
