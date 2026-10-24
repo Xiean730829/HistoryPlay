@@ -1,5 +1,5 @@
 import React from "react";
-import type { ArtifactProjection, SessionCredentials } from "../application/museumApi";
+import type { ActiveSession, ArtifactProjection } from "../application/museumApi";
 import { projectCorridor } from "./corridorProjection";
 import { CorridorMotion } from "./CorridorMotion";
 import { ArtifactStation } from "./ExhibitStation";
@@ -9,7 +9,7 @@ interface MuseumCorridorProps {
   artifacts: readonly ArtifactProjection[];
   displayOrder: readonly string[];
   focusedId: string | null;
-  session?: SessionCredentials | null;
+  session?: ActiveSession | null;
   loading?: boolean;
   navigationDisabled?: boolean;
   onMove?: (direction: "next" | "previous") => void;
