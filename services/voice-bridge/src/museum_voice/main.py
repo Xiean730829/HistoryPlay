@@ -5,7 +5,15 @@ import json
 import os
 from pathlib import Path
 
-from aiohttp import ClientError, ClientSession, ClientTimeout, TraceConfig, WSMsgType, web
+from aiohttp import (
+    ClientError,
+    ClientSession,
+    ClientTimeout,
+    ClientWSTimeout,
+    TraceConfig,
+    WSMsgType,
+    web,
+)
 from av.error import FFmpegError
 
 from museum_voice.codec import AudioCodec, pack_audio, unpack_audio
@@ -55,6 +63,7 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
                 heartbeat=20,
                 max_msg_size=2 * 1024 * 1024,
                 autoping=True,
+                timeout=ClientWSTimeout(ws_close=1),
             )
             await upstream.send_json(hello_message(device))
             hello = await asyncio.wait_for(upstream.receive_json(), 12)

@@ -71,4 +71,24 @@ describe("受控语音客户端", () => {
     expect(frames.map((item) => new Uint8Array(item as ArrayBuffer)[0])).toEqual([2,3,4,5,6,7,8,9,10,11,12,13]);
     client.disconnect();
   });
+  it("用户说完早于ready时完整缓存本轮，连接后按start/音频/stop提交", async () => {
+    const { client } = fixture();
+    for (let i = 0; i < 6; i++) client.sendFrame(new Uint8Array(640).fill(i).buffer);
+    const opening = client.beginTurn();
+    for (let i = 6; i < 56; i++) client.sendFrame(new Uint8Array(640).fill(i).buffer);
+    client.endTurn();
+    // Silence after the input ended must not extend the buffered utterance.
+    for (let i = 0; i < 20; i++) client.sendFrame(new ArrayBuffer(640));
+    await Promise.resolve();
+    const socket = FakeSocket.sockets[0];
+    socket.onmessage?.({ data: JSON.stringify({ type: "ready" }) }); await opening;
+    const payloads = socket.send.mock.calls.map(([item]) => item);
+    expect(JSON.parse(payloads[0] as string).op).toBe("start");
+    expect(JSON.parse(payloads.at(-1) as string).op).toBe("stop");
+    const frames = payloads.filter((item) => typeof item !== "string");
+    expect(frames).toHaveLength(56);
+    expect(new Uint8Array(frames[0] as ArrayBuffer)[0]).toBe(0);
+    expect(new Uint8Array(frames.at(-1) as ArrayBuffer)[0]).toBe(55);
+    client.disconnect();
+  });
 });
