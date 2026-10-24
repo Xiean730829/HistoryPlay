@@ -7,3 +7,20 @@
 .museum-space-brand p { font-size: 11px; letter-spacing: .32em; }
 .museum-space-guide { position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); padding: 10px 20px; border: 1px solid #b99b5a66; border-radius: 2px; color: #f4e5cb; background: #21180dbb; font-size: 13px; white-space: nowrap; pointer-events: none; }
 @media (max-width: 650px) { .museum-space { height: 76vh; min-height: 480px; } .museum-space-brand { left: 20px; top: 20px; } .museum-space-brand h2 { font-size: 22px; } .museum-space-guide { font-size: 11px; max-width: 94%; white-space: normal; text-align: center; } }
+.museum-page-spatial { position: relative; width: 100%; max-width: none; padding: 0; min-height: 100svh; background: #29231c; }
+.museum-page-spatial .museum-space { height: 100svh; min-height: 600px; }
+.museum-page-spatial .masthead, .museum-page-spatial .page-footer { display: none; }
+.museum-page-spatial .status-notice { position: absolute; z-index: 12; top: 16px; left: 50%; transform: translateX(-50%); max-width: 640px; background: #2a211ce6; color: #f5d5b3; }
+.museum-page-spatial .story-entry-row { position: absolute; z-index: 5; right: 26px; bottom: 100px; display: flex; flex-wrap: wrap; gap: 12px; width: 320px; padding: 20px; border: 1px solid #d8b77866; color: #eed8b3; background: #231a12df; }
+.museum-page-spatial .story-entry-row span { display: block; flex: 1 0 100%; font-size: 14px; line-height: 1.7; }
+.museum-page-spatial .button { color: #241c14; border: 1px solid #caaa6b; background: #ddc18b; }
+.museum-page-spatial .button-quiet { color: #ead4af; background: transparent; }
+.museum-walk-controls { position: absolute; bottom: 25px; right: 24px; z-index: 4; display: flex; align-items: center; gap: 14px; color: #f0dfc2; background: #251d14d9; padding: 10px 15px; border: 1px solid #b1935d77; }
+.museum-walk-controls button { border: 0; color: #ebcf9e; background: transparent; padding: 4px; cursor: pointer; }
+.museum-walk-controls span { font-size: 12px; max-width: 170px; }
+.museum-page-spatial aside[aria-label="语音讲解"] { position: absolute; left: 24px; bottom: 24px; z-index: 9; max-width: 340px; padding: 12px 16px; color: #eddfcb; background: #201a14e6; border: 1px solid #b1935d77; font-size: 11px; }
+.museum-page-spatial .voice-entry { display: flex; align-items: center; gap: 12px; }
+.museum-page-spatial .voice-entry button { color: #f8e2b9; border: 1px solid #b1935d; background: #75432b; padding: 7px 12px; cursor: pointer; }
+.museum-page-spatial .voice-caption { max-height: 4em; overflow: hidden; line-height: 1.7; }
+.museum-page-spatial .story-stage { position: absolute; inset: 0; z-index: 7; min-height: 100svh; margin: 0; }
+@media (max-width: 700px) { .museum-page-spatial .story-entry-row { bottom: 120px; right: 14px; width: 260px; padding: 14px; } .museum-page-spatial aside[aria-label="语音讲解"] { left: 14px; bottom: 70px; max-width: 270px; } .museum-walk-controls { bottom: 12px; right: 14px; left: 14px; justify-content: space-between; } .museum-space-guide { bottom: 180px; } }
