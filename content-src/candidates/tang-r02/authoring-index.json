@@ -97,7 +97,9 @@
         "cn.tang.artifact.kneeling-bodhisattva"
       ],
       "historical_source_ids": [
-        "cn.tang.source.history-h04"
+        "cn.tang.source.history-h04",
+        "cn.tang.source.history-h13",
+        "cn.tang.source.history-h14"
       ],
       "nodes": [
         {

@@ -16,4 +16,5 @@ fact_card_ids:
 - cn.tang.fact.votive-stele.catalog
 story_entry_ids:
 - cn.tang.story.votive-stele
+- cn.tang.story.t03
 identity_unknown: true
