@@ -16,7 +16,21 @@
 | `schemas/v1/story-node.schema.json` | 片段、画面、讲解、有限动作、条件与出口 | 02-b |
 | `schemas/v1/historical-event.schema.json` | 事件时间地点、事实卡、讲述与角色入口 | 02-b |
 | `schemas/v1/relation.schema.json` | 实体关系；解释性联系不冒充物件亲历 | 02-b |
+| `schemas/v1/session.schema.json` | 会话投影：固定包版本、焦点、显示顺序、模式与修订号 | 03-a |
+| `schemas/v1/command.schema.json` | 命令信封、有限动作、目标及动作参数；request_id 去重 | 03-a |
+| `schemas/v1/event.schema.json` | 有序会话事件；缺口时要求完整快照 | 03-a |
+| `schemas/v1/receipt.schema.json` | 命令提交回执与呈现超时状态 | 03-a |
+| `../packages/contracts-ts/src/generated.ts` | 网页/MCP 客户端传输类型，生成后不手改 | 03-a |
+| `../packages/contracts-python/src/museum_contracts/models.py` | Python 传输 DTO，不含领域规则 | 03-a |
+| `schemas/v1/voice-event.schema.json` | 本地可信语音生命周期；供应商轮次可空 | 03-b |
+| `schemas/v1/mcp-tools.schema.json` | 五个 MCP 工具的公共输入 | 03-b |
 
-公开样例在 `examples/v1/`。样例不含密钥、本机盘符或未授权路径。
+公开样例在 `examples/v1/`。样例不含密钥、本机盘符或未授权路径。跨语言传输类型由生成器写入 `packages/contracts-ts` 与 `packages/contracts-python`，不能手改。校验命令：
+
+```text
+uv run python tools/dev/generate_contracts.py
+uv run python tools/dev/generate_contracts.py --check
+uv run pytest tests/contracts -q
+```
 
 公元前年份使用天文年编号：公元前 1 年为 `0`，公元前 2 年为 `-1`。显示层再转成纪年标签。不同地区的时间范围允许重叠；不把中国朝代写成唯一时间轴。

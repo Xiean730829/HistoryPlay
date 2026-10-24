@@ -1,0 +1,10 @@
+id: cn.tang.fact.gilt-bronze-bull.date
+claim: 克利夫兰艺术博物馆将这件鎏金卧牛断代为八世纪。
+grade: F
+applicable_time:
+  start_year: 700
+  end_year: 799
+  precision: century
+source_ids:
+  - cn.tang.source.r02-catalog
+evidence_note: 保留馆方的世纪级断代，不推定具体年份。

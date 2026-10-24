@@ -1,0 +1,25 @@
+{
+  "schema_version": "1",
+  "event_seq": 0,
+  "session_id": "sess_stele_001",
+  "kind": "snapshot",
+  "revision": 3,
+  "view_revision": 1,
+  "interaction_epoch": 2,
+  "projection": {
+    "schema_version": "1",
+    "session_id": "sess_stele_001",
+    "pack_versions": {
+      "cn.tang.core": "1.0.0"
+    },
+    "focused_entity_id": "cn.tang.artifact.stele",
+    "display_order": ["cn.tang.artifact.stele"],
+    "story_id": "cn.tang.story.stele-observation",
+    "node_id": "cn.tang.node.stele-observation.01",
+    "mode": "story",
+    "revision": 3,
+    "view_revision": 1,
+    "event_seq": 0,
+    "interaction_epoch": 2
+  }
+}

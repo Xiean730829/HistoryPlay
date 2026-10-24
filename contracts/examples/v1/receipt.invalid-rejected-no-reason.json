@@ -1,0 +1,9 @@
+{
+  "schema_version": "1",
+  "receipt_id": "rcpt_bad_001",
+  "request_id": "req_bad_001",
+  "session_id": "sess_stele_001",
+  "status": "rejected",
+  "revision": 3,
+  "interaction_epoch": 2
+}

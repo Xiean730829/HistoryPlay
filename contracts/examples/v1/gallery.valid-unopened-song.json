@@ -1,0 +1,15 @@
+{
+  "id": "cn.song.gallery.main",
+  "title": "宋朝长廊",
+  "region": {"id": "cn", "label": "中国"},
+  "status": "planned",
+  "stations": [
+    {
+      "id": "cn.song.station.preview",
+      "order": 0,
+      "time_range": {"start_year": 960, "end_year": 1279, "precision": "range", "display_label": "960—1279"},
+      "placement_basis": "展厅尚未开放；此占位仅用于表达待开放状态，不作为玩家内容发布。",
+      "artifact_id": "cn.song.artifact.example"
+    }
+  ]
+}

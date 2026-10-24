@@ -133,7 +133,23 @@
         "value": {
           "type": ["boolean", "number", "string"]
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"op": {"const": "set"}},
+            "required": ["op"]
+          },
+          "then": {"required": ["value"]}
+        },
+        {
+          "if": {
+            "properties": {"op": {"const": "add_discovery"}},
+            "required": ["op"]
+          },
+          "then": {"not": {"required": ["value"]}}
+        }
+      ]
     }
   }
 }

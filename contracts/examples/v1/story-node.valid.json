@@ -11,8 +11,7 @@
   "effects": [
     {
       "op": "add_discovery",
-      "path": "discoveries.stele_dated",
-      "value": "678"
+      "path": "discoveries.stele_dated"
     }
   ],
   "exits": [

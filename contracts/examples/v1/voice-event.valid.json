@@ -1,0 +1,9 @@
+{
+  "schema_version": "1",
+  "kind": "interrupt",
+  "source": "local_vad",
+  "connection_id": "voice_conn_001",
+  "local_turn_id": "turn_local_014",
+  "vendor_turn_id": null,
+  "occurred_at": "2026-10-24T12:00:00Z"
+}

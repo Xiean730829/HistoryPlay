@@ -58,6 +58,84 @@
         "relationship_graph",
         "compare"
       ]
+    },
+    "opaqueId": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "Session, request or receipt ID. Not a content namespaced ID and not a permission."
+    },
+    "nonNegativeInt": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sessionMode": {
+      "enum": ["explore", "story", "qa", "hypothesis"]
+    },
+    "commandAction": {
+      "enum": [
+        "open_artifact",
+        "enter_gallery",
+        "move_next",
+        "move_previous",
+        "locate_artifact",
+        "return_to_exhibit",
+        "enter_story",
+        "continue_story",
+        "pause_story",
+        "return_to_story",
+        "focus_detail",
+        "set_view",
+        "choose_action"
+      ],
+      "description": "Frozen command actions. New exhibits do not add tools; new mechanisms add an action."
+    },
+    "actionParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "intent": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[a-z][a-z0-9_]{0,79}$"
+        },
+        "input_text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400,
+          "description": "Untrusted player utterance. Must map to a declared intent before rules run."
+        },
+        "camera": {
+          "$ref": "common.schema.json#/$defs/cameraPose"
+        }
+      }
+    },
+    "cameraPose": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["yaw", "pitch", "zoom"],
+      "properties": {
+        "yaw": {"type": "number", "minimum": -180, "maximum": 180},
+        "pitch": {"type": "number", "minimum": -90, "maximum": 90},
+        "zoom": {"type": "number", "exclusiveMinimum": 0, "maximum": 8}
+      }
+    },
+    "variableValue": {
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      ]
     }
   }
 }

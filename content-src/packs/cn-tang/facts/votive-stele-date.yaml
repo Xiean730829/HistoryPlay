@@ -1,0 +1,9 @@
+id: cn.tang.fact.votive-stele.date
+claim: 馆方将这件造像碑断代为678年。
+grade: F
+applicable_time:
+  start_year: 678
+  end_year: 678
+  precision: year
+source_ids:
+  - cn.tang.source.a04-catalog

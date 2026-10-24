@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historyplay.dev/contracts/schemas/v1/receipt.schema.json",
+  "title": "CommandReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "request_id",
+    "session_id",
+    "status",
+    "revision",
+    "interaction_epoch"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1"
+    },
+    "receipt_id": {
+      "$ref": "common.schema.json#/$defs/opaqueId"
+    },
+    "request_id": {
+      "$ref": "common.schema.json#/$defs/opaqueId"
+    },
+    "session_id": {
+      "$ref": "common.schema.json#/$defs/opaqueId"
+    },
+    "status": {
+      "enum": ["committed", "rendered", "degraded", "render_pending", "rejected"],
+      "description": "committed means persisted; rendered means the named client presented it; render_pending must not be described as success."
+    },
+    "revision": {
+      "$ref": "common.schema.json#/$defs/nonNegativeInt"
+    },
+    "view_revision": {
+      "$ref": "common.schema.json#/$defs/nonNegativeInt"
+    },
+    "interaction_epoch": {
+      "$ref": "common.schema.json#/$defs/nonNegativeInt"
+    },
+    "action": {
+      "$ref": "common.schema.json#/$defs/commandAction"
+    },
+    "asset_id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "payload_digest": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9:_-]+$",
+      "description": "Digest of the original command payload. Same request_id with a different digest is a conflict."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": ["degraded", "rejected"]
+          }
+        },
+        "required": ["status"]
+      },
+      "then": {
+        "required": ["reason"]
+      }
+    }
+  ]
+}

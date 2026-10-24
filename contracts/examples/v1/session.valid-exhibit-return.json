@@ -1,0 +1,28 @@
+{
+  "schema_version": "1",
+  "session_id": "sess_return_001",
+  "pack_versions": {"cn.tang.core": "1.0.0"},
+  "gallery_id": "cn.tang.gallery.main",
+  "station_id": "cn.tang.station.ox",
+  "current_location_id": "cn.tang.station.ox",
+  "focused_entity_id": "cn.tang.artifact.ox",
+  "visible_entities": ["cn.tang.artifact.ox"],
+  "display_order": ["cn.tang.artifact.ox"],
+  "story_id": "cn.tang.story.ox",
+  "node_id": "cn.tang.node.ox.01",
+  "mode": "story",
+  "story_variables": {},
+  "return_stack": [],
+  "revision": 9,
+  "view_revision": 4,
+  "event_seq": 12,
+  "interaction_epoch": 7,
+  "camera_pose": {"yaw": 32, "pitch": -8, "zoom": 1.7},
+  "exhibit_return_point": {
+    "gallery_id": "cn.tang.gallery.main",
+    "station_id": "cn.tang.station.ox",
+    "focused_entity_id": "cn.tang.artifact.ox",
+    "view": {"yaw": 32, "pitch": -8, "zoom": 1.7},
+    "view_revision": 3
+  }
+}

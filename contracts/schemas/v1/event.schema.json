@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historyplay.dev/contracts/schemas/v1/event.schema.json",
+  "title": "SessionEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_seq",
+    "session_id",
+    "kind",
+    "revision",
+    "interaction_epoch"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1"
+    },
+    "event_seq": {
+      "$ref": "common.schema.json#/$defs/nonNegativeInt",
+      "description": "Monotonic delivery sequence. Clients that see a gap must request a snapshot."
+    },
+    "session_id": {
+      "$ref": "common.schema.json#/$defs/opaqueId"
+    },
+    "kind": {
+      "enum": [
+        "snapshot",
+        "focus_changed",
+        "story_entered",
+        "story_advanced",
+        "story_paused",
+        "returned_to_story",
+        "returned_to_exhibit",
+        "qa_entered",
+        "view_changed",
+        "command_committed",
+        "render_updated"
+      ]
+    },
+    "revision": {
+      "$ref": "common.schema.json#/$defs/nonNegativeInt"
+    },
+    "view_revision": {
+      "$ref": "common.schema.json#/$defs/nonNegativeInt"
+    },
+    "interaction_epoch": {
+      "$ref": "common.schema.json#/$defs/nonNegativeInt"
+    },
+    "request_id": {
+      "$ref": "common.schema.json#/$defs/opaqueId"
+    },
+    "receipt_id": {
+      "$ref": "common.schema.json#/$defs/opaqueId"
+    },
+    "projection": {
+      "$ref": "session.schema.json"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "snapshot"
+          }
+        },
+        "required": ["kind"]
+      },
+      "then": {
+        "required": ["projection"]
+      }
+    }
+  ]
+}

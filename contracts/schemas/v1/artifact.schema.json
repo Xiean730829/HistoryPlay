@@ -20,6 +20,17 @@
     "title": {
       "$ref": "common.schema.json#/$defs/nonEmptyText"
     },
+    "aliases": {
+      "type": "array",
+      "maxItems": 30,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      },
+      "description": "Explicit search aliases, including common Chinese names; never inferred from unpublished sources."
+    },
     "museum": {
       "type": "object",
       "additionalProperties": false,

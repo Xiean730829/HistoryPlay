@@ -1,0 +1,9 @@
+id: cn.tang.node.votive-stele.01
+story_id: cn.tang.story.votive-stele
+fact_grade: F
+narration: 先看这件石质造像碑。馆方将它的年代标为678年。你可以记住这个明确纪年，再回到展厅看看它与其他唐代实物如何并置。
+allowed_actions:
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.votive-stele.02

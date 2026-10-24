@@ -1,0 +1,17 @@
+id: cn.tang.core
+version: 0.2.0
+schema_version: "1"
+language: zh-CN
+region:
+  id: cn
+  label: 中国
+time_range:
+  start_year: 618
+  end_year: 907
+  precision: range
+  display_label: 唐朝
+required_capabilities:
+  - artifact3d
+  - comic
+publication_status: draft
+title: 唐朝长廊首批展位
