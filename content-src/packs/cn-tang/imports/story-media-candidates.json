@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "status": "candidate_not_published",
+  "source_manifest_version": "museum-art-handoff/0.1",
+  "source_created_on": "2026-10-24",
+  "story_id": "cn.tang.story.votive-stele",
+  "source_key": "A04",
+  "node_bindings": [
+    {
+      "node_id": "cn.tang.node.votive-stele.01",
+      "asset_id": "cn.tang.scene.t03.evidence-table.v1"
+    }
+  ],
+  "assets": [
+    {
+      "id": "cn.tang.scene.t03.evidence-table.v1",
+      "title": "石头与纸上的证据",
+      "kind": "image",
+      "format": "png",
+      "relative_path": "reused/08-t03-evidence-table.png",
+      "sha256": "46f60c2d205b0c2330016f11742fe9d0d74b65ae9ddd497eb7797dd90db7413a",
+      "byte_size": 5652806,
+      "review": {
+        "source_status": "available_previous_batch",
+        "review_status": "history_and_art_direction_pending",
+        "historical_review": null,
+        "art_direction_review": null,
+        "publication_status": "candidate_not_published"
+      }
+    }
+  ],
+  "notice": "候选素材清单；未通过审核或发布，不会进入运行时内容包。"
+}
