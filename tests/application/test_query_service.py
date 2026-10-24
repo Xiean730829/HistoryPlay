@@ -97,7 +97,20 @@ def make_pack(version: str = VERSION, alias: str = "佛碑") -> PublishedPack:
             "presentation": {"capability": "comic_scene"},
             "allowed_actions": ["observe", "continue_story"],
         },
+        "nodes/second.json": {
+            "id": "cn.tang.node.stele.02",
+            "story_id": STORY_ID,
+            "fact_grade": "interpretation",
+            "narration": "再看题记的位置。",
+            "allowed_actions": ["observe"],
+        },
     }
+    documents["artifacts/a.json"]["presentation"] = {
+        "background_node_id": NODE_ID,
+        "teaser": "观察碑额与题记。",
+    }
+    documents["stories/observation.json"]["node_ids"].append("cn.tang.node.stele.02")
+    documents["stories/observation.json"]["artifact_id"] = ARTIFACT_ID
     return PublishedPack(PACK_ID, version, "1", documents)
 
 
@@ -210,6 +223,114 @@ def test_fact_read_returns_grade_applicable_time_and_real_source_locator() -> No
     assert evidence.sources[0].id == SOURCE_ID
     assert evidence.sources[0].locator["label"] == "作品页面"
     assert state == make_state()
+
+
+def test_story_content_pages_are_stable_bounded_and_include_related_sources() -> None:
+    state = make_state()
+    service = QueryService(MemoryCatalog(make_pack()))
+
+    first = service.read_content(
+        state,
+        pack_id=PACK_ID,
+        version=VERSION,
+        content_id=STORY_ID,
+        limit=1,
+    )
+    second = service.read_content(
+        state,
+        pack_id=PACK_ID,
+        version=VERSION,
+        content_id=STORY_ID,
+        limit=1,
+        cursor=first.next_cursor,
+    )
+
+    assert first.paragraphs[0].content_id == NODE_ID
+    assert first.paragraphs[0].paragraph_number == 1
+    assert first.next_cursor is not None
+    assert second.paragraphs[0].content_id == "cn.tang.node.stele.02"
+    assert second.paragraphs[0].paragraph_number == 2
+    assert second.next_cursor is None
+    assert first.related_facts[0].sources[0].id == SOURCE_ID
+    assert first.text_bytes <= 4096
+    assert state == make_state()
+
+
+def test_content_pages_respect_utf8_budget_without_omitting_authored_text() -> None:
+    pack = make_pack()
+    documents = dict(pack.documents)
+    first = dict(documents["nodes/first.json"])
+    first["narration"] = "碑" * 800
+    second = dict(documents["nodes/second.json"])
+    second["narration"] = "题" * 800
+    documents["nodes/first.json"] = first
+    documents["nodes/second.json"] = second
+    catalog = MemoryCatalog(replace(pack, documents=documents))
+    service = QueryService(catalog)
+
+    first_page = service.read_content(
+        make_state(), pack_id=PACK_ID, version=VERSION, content_id=STORY_ID, byte_budget=2560
+    )
+    second_page = service.read_content(
+        make_state(),
+        pack_id=PACK_ID,
+        version=VERSION,
+        content_id=STORY_ID,
+        byte_budget=2560,
+        cursor=first_page.next_cursor,
+    )
+
+    assert len(first_page.paragraphs) == len(second_page.paragraphs) == 1
+    assert first_page.text_bytes == second_page.text_bytes == 2400
+    assert first_page.paragraphs[0].text + second_page.paragraphs[0].text == "碑" * 800 + "题" * 800
+
+
+def test_content_reader_rejects_wrong_version_and_cursor_scope() -> None:
+    service = QueryService(MemoryCatalog(make_pack()))
+    with pytest.raises(ValueError, match="固定"):
+        service.read_content(make_state(), pack_id=PACK_ID, version="2.0.0", content_id=STORY_ID)
+    with pytest.raises(ValueError, match="游标"):
+        service.read_content(
+            make_state(),
+            pack_id=PACK_ID,
+            version=VERSION,
+            content_id=STORY_ID,
+            cursor="not-a-cursor",
+        )
+    page = service.read_content(
+        make_state(), pack_id=PACK_ID, version=VERSION, content_id=STORY_ID, limit=1
+    )
+    with pytest.raises(ValueError, match="游标"):
+        service.read_content(
+            make_state(),
+            pack_id=PACK_ID,
+            version=VERSION,
+            content_id="cn.tang.node.stele.02",
+            cursor=page.next_cursor,
+        )
+
+
+def test_artifact_background_resolves_its_single_authored_story_node() -> None:
+    page = QueryService(MemoryCatalog(make_pack())).read_content(
+        make_state(), pack_id=PACK_ID, version=VERSION, content_id=ARTIFACT_ID
+    )
+
+    assert page.content_kind == "background"
+    assert page.paragraphs[0].content_id == NODE_ID
+    assert page.paragraphs[0].story_id == STORY_ID
+    assert page.paragraphs[0].text == "先观察碑额与题记。"
+    assert page.next_cursor is None
+
+
+def test_content_reader_rejects_byte_budgets_that_cannot_fit_a_paragraph() -> None:
+    with pytest.raises(ValueError, match="字节预算"):
+        QueryService(MemoryCatalog(make_pack())).read_content(
+            make_state(),
+            pack_id=PACK_ID,
+            version=VERSION,
+            content_id=STORY_ID,
+            byte_budget=128,
+        )
 
 
 def test_query_fails_closed_when_a_pinned_version_or_citation_is_missing() -> None:
