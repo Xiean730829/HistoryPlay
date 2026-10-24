@@ -222,6 +222,37 @@ def cmd_batch_record_preview(*, batch: Path, manifest: Path) -> int:
     return 0
 
 
+def cmd_rehearsal_pack(
+    *,
+    pack: Path,
+    sources: Path,
+    content_root: Path,
+    asset_root: Path,
+    version: str,
+) -> int:
+    try:
+        result = build_rehearsal_pack(
+            pack_dir=pack,
+            sources_path=sources,
+            content_root=content_root,
+            asset_root=asset_root,
+            version=version,
+        )
+    except (RehearsalPackError, AssetStageError) as exc:
+        print(f"联调包生成失败：{exc}", file=sys.stderr)
+        return 1
+    print(
+        f"已写入本机联调包：{result['pack_id']}@{result['runtime_version']} "
+        f"内容={result['pack_dir']} 资源={result['asset_dir']}"
+    )
+    print(
+        "作者稿未覆盖："
+        f"{result['author_manifest']} 仍为 {result['author_version']} "
+        f"{result['author_publication_status']}"
+    )
+    return 0
+
+
 def cmd_stage_assets(
     *, pack: Path, sources: Path, out: Path, require_all: bool
 ) -> int:
@@ -233,20 +264,6 @@ def cmd_stage_assets(
         print(f"资源暂存失败：{exc}", file=sys.stderr)
         return 1
     print(f"已写入版本化资源根：{dest}")
-    return 0
-
-
-def cmd_build_rehearsal(
-    *, pack: Path, sources: Path, out: Path, version: str
-) -> int:
-    try:
-        destination = build_rehearsal_pack(
-            pack_dir=pack, sources_path=sources, out_dir=out, version=version
-        )
-    except RehearsalPackError as exc:
-        print(f"本机联调包生成失败：{exc}", file=sys.stderr)
-        return 1
-    print(f"已生成隔离的本机联调包：{destination}")
     return 0
 
 
@@ -329,12 +346,16 @@ def main(argv: list[str] | None = None) -> int:
         help="内容包中每个资产都必须有本机源文件，缺文件则失败",
     )
     rehearsal = sub.add_parser(
-        "build-rehearsal", help="把draft作者包复制为仅本机可用的不可变联调版本"
+        "rehearsal-pack",
+        help="生成仅本机联调用的不可变published副本，不覆盖作者draft",
     )
-    rehearsal.add_argument("--pack", required=True, type=Path, help="draft作者包目录")
-    rehearsal.add_argument("--sources", required=True, type=Path, help="忽略目录中的本机资源来源JSON")
-    rehearsal.add_argument("--out", required=True, type=Path, help="新的本机联调包输出目录，不可覆盖")
-    rehearsal.add_argument("--version", required=True, help="新的运行时版本号，例如0.2.1")
+    rehearsal.add_argument("--pack", required=True, type=Path, help="作者包目录")
+    rehearsal.add_argument(
+        "--sources", required=True, type=Path, help="忽略目录中的本机来源映射JSON"
+    )
+    rehearsal.add_argument("--content-root", required=True, type=Path, help="版本化内容根目录")
+    rehearsal.add_argument("--asset-root", required=True, type=Path, help="版本化资源根目录")
+    rehearsal.add_argument("--version", required=True, help="联调published版本，必须是新的semver")
     args = parser.parse_args(argv)
     if args.command == "validate":
         return cmd_validate(args.pack)
@@ -392,9 +413,13 @@ def main(argv: list[str] | None = None) -> int:
             out=args.out,
             require_all=args.require_all,
         )
-    if args.command == "build-rehearsal":
-        return cmd_build_rehearsal(
-            pack=args.pack, sources=args.sources, out=args.out, version=args.version
+    if args.command == "rehearsal-pack":
+        return cmd_rehearsal_pack(
+            pack=args.pack,
+            sources=args.sources,
+            content_root=args.content_root,
+            asset_root=args.asset_root,
+            version=args.version,
         )
     parser.error("未知命令")
     return 2

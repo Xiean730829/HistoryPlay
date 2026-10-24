@@ -1,193 +1,392 @@
 from __future__ import annotations
 
 import asyncio
-import hashlib
 import json
+from hashlib import sha256
 from pathlib import Path
 
 import pytest
 import yaml
 from aiohttp.test_utils import TestClient, TestServer
-from content_pipeline.build.rehearsal_pack import (
-    RehearsalPackError,
-    build_rehearsal_pack,
-)
+from content_pipeline.build.rehearsal_pack import RehearsalPackError, build_rehearsal_pack
 from content_pipeline.cli import main
 from museum.adapters.assets.local_store import LocalAssetStore
-from museum.adapters.content.published_catalog import PublishedCatalog
+from museum.adapters.content.published_catalog import PackNotFound, PublishedCatalog
 from museum.adapters.sqlite.database import SQLiteDatabase
 from museum.main import create_app
-from test_reference_validator import write_pack
+from test_reference_validator import NODE_01, NODE_02, STORY, write_pack
+
+PACK = Path(__file__).resolve().parents[2] / "content-src" / "packs" / "cn-tang"
+PREVIEW_BYTES = b"\x89PNG\r\n\x1a\npreview-bytes"
+DISPLAY_BYTES = b"glTF\x02\x00\x00\x00display-bytes"
+PREVIEW_HASH = sha256(PREVIEW_BYTES).hexdigest()
+DISPLAY_HASH = sha256(DISPLAY_BYTES).hexdigest()
+
+ARTIFACTS = (
+    "cn.tang.artifact.votive-stele",
+    "cn.tang.artifact.kaiyuan-coin",
+    "cn.tang.artifact.gilt-bronze-bull",
+)
+SLUGS = ("votive-stele", "kaiyuan-coin", "gilt-bronze-bull")
 
 
-def make_source_map(pack: Path, tmp_path: Path, *, include_asset: bool = True) -> Path:
-    asset_path = pack / "assets" / "stele.yaml"
-    asset = yaml.safe_load(asset_path.read_text(encoding="utf-8"))
-    source = tmp_path / "stele.glb"
-    source.write_bytes(b"test-glb-content")
-    asset["sha256"] = hashlib.sha256(source.read_bytes()).hexdigest()
-    asset["byte_size"] = source.stat().st_size
-    asset_path.write_text(yaml.safe_dump(asset, sort_keys=False), encoding="utf-8")
-    mapping = {
-        "schema_version": 1,
-        "sources": {asset["id"]: str(source)} if include_asset else {},
-    }
-    sources_path = tmp_path / "asset-sources.json"
-    sources_path.write_text(json.dumps(mapping), encoding="utf-8")
-    return sources_path
+def _asset(asset_id: str, *, kind: str, fmt: str, digest: str, size: int, lod: str | None = None) -> str:
+    lod_line = f"\nlod: {lod}" if lod else ""
+    return (
+        f"id: {asset_id}\n"
+        f"kind: {kind}\n"
+        f"format: {fmt}\n"
+        f"sha256: {digest}\n"
+        f"byte_size: {size}{lod_line}\n"
+        "license:\n"
+        "  spdx: CC0-1.0\n"
+        "  attribution: test\n"
+    )
 
 
-def test_build_rehearsal_isolated_immutable_pack_and_keeps_candidate_status(
-    tmp_path: Path,
-) -> None:
-    pack = write_pack(tmp_path)
-    sources = make_source_map(pack, tmp_path)
-    gallery = {
-        "id": "cn.tang.gallery.main",
-        "title": "唐朝长廊",
-        "region": {"id": "cn", "label": "中国"},
-        "status": "open",
-        "default_station_id": "cn.tang.station.stele",
-        "stations": [
-            {
-                "id": "cn.tang.station.stele",
-                "order": 0,
-                "time_range": {"start_year": 678, "end_year": 678, "precision": "year"},
-                "placement_basis": "明确纪年展品作为入口。",
-                "artifact_id": "cn.tang.artifact.stele",
-            }
-        ],
-    }
+def _artifact(ident: str, slug: str) -> str:
+    return f"""id: {ident}
+title: {slug}
+museum:
+  name: Test Museum
+  accession: T-01
+time_range:
+  start_year: 678
+  end_year: 678
+  precision: year
+material: 石
+category: 测试
+asset_ids:
+  - cn.tang.asset.{slug}.glb
+  - cn.tang.asset.{slug}.preview
+  - cn.tang.asset.{slug}.display
+presentation:
+  preview_asset_id: cn.tang.asset.{slug}.preview
+  display:
+    kind: model3d
+    asset_id: cn.tang.asset.{slug}.display
+  default_camera:
+    orbit: front-upright
+    target_note: test
+  teaser: 三物联调切片。
+  background_node_id: cn.tang.node.{slug}.01
+fact_card_ids:
+  - cn.tang.fact.stele.dated-678
+story_entry_ids:
+  - cn.tang.story.{slug}
+"""
+
+
+def _story(slug: str, artifact_id: str) -> str:
+    return (
+        STORY.replace("cn.tang.story.stele-observation", f"cn.tang.story.{slug}")
+        .replace("cn.tang.node.stele-observation.01", f"cn.tang.node.{slug}.01")
+        .replace("cn.tang.node.stele-observation.02", f"cn.tang.node.{slug}.02")
+        .replace("cn.tang.artifact.stele", artifact_id)
+    )
+
+
+def _node(slug: str, body: str) -> str:
+    return body.replace("cn.tang.story.stele-observation", f"cn.tang.story.{slug}").replace(
+        "cn.tang.node.stele-observation", f"cn.tang.node.{slug}"
+    )
+
+
+def write_three_pack(root: Path) -> Path:
+    pack = write_pack(root)
+    (pack / "artifacts" / "stele.yaml").unlink()
+    (pack / "stories" / "observation.yaml").unlink()
+    (pack / "nodes" / "01.yaml").unlink()
+    (pack / "nodes" / "02.yaml").unlink()
+    extra_assets: list[str] = []
+    for slug, ident in zip(SLUGS, ARTIFACTS, strict=True):
+        (pack / "artifacts" / f"{slug}.yaml").write_text(_artifact(ident, slug), encoding="utf-8")
+        (pack / "stories" / f"{slug}.yaml").write_text(_story(slug, ident), encoding="utf-8")
+        (pack / "nodes" / f"{slug}-01.yaml").write_text(_node(slug, NODE_01), encoding="utf-8")
+        (pack / "nodes" / f"{slug}-02.yaml").write_text(_node(slug, NODE_02), encoding="utf-8")
+        extra_assets.extend(
+            [
+                _asset(
+                    f"cn.tang.asset.{slug}.glb",
+                    kind="model3d",
+                    fmt="glb",
+                    digest="9df4392c5d16e92fd704737f4037be19b55e69b28635ec3d47142e5180d87ed4",
+                    size=4855856,
+                    lod="source",
+                ),
+                _asset(
+                    f"cn.tang.asset.{slug}.preview",
+                    kind="preview",
+                    fmt="png",
+                    digest=PREVIEW_HASH,
+                    size=len(PREVIEW_BYTES),
+                ),
+                _asset(
+                    f"cn.tang.asset.{slug}.display",
+                    kind="model3d",
+                    fmt="glb",
+                    digest=DISPLAY_HASH,
+                    size=len(DISPLAY_BYTES),
+                    lod="display",
+                ),
+            ]
+        )
+    for index, asset in enumerate(extra_assets, start=1):
+        (pack / "assets" / f"extra-{index}.yaml").write_text(asset, encoding="utf-8")
     (pack / "galleries" / "main.yaml").write_text(
-        yaml.safe_dump(gallery, allow_unicode=True), encoding="utf-8"
+        """id: cn.tang.gallery.main
+title: 唐朝长廊
+region:
+  id: cn
+  label: 中国
+status: open
+default_station_id: cn.tang.station.votive-stele
+stations:
+  - id: cn.tang.station.votive-stele
+    order: 0
+    time_range:
+      start_year: 678
+      end_year: 678
+      precision: year
+    placement_basis: 入口。
+    artifact_id: cn.tang.artifact.votive-stele
+    side: center
+  - id: cn.tang.station.kaiyuan-coin
+    order: 1
+    time_range:
+      start_year: 718
+      end_year: 732
+      precision: range
+    placement_basis: 第二展位。
+    artifact_id: cn.tang.artifact.kaiyuan-coin
+    side: left
+  - id: cn.tang.station.gilt-bronze-bull
+    order: 2
+    time_range:
+      start_year: 700
+      end_year: 799
+      precision: century
+    placement_basis: 第三展位。
+    artifact_id: cn.tang.artifact.gilt-bronze-bull
+    side: right
+""",
+        encoding="utf-8",
     )
-    out = tmp_path / ".local" / "rehearsal"
+    return pack
 
+
+def _sources(tmp_path: Path, mapping: dict[str, Path]) -> Path:
+    path = tmp_path / "sources.json"
+    path.write_text(
+        json.dumps({"schema_version": 1, "sources": {key: str(value) for key, value in mapping.items()}}),
+        encoding="utf-8",
+    )
+    return path
+
+
+def _runtime_files(tmp_path: Path) -> dict[str, Path]:
+    preview = tmp_path / "preview.png"
+    display = tmp_path / "display.glb"
+    preview.write_bytes(PREVIEW_BYTES)
+    display.write_bytes(DISPLAY_BYTES)
+    mapping: dict[str, Path] = {}
+    for slug in SLUGS:
+        mapping[f"cn.tang.asset.{slug}.preview"] = preview
+        mapping[f"cn.tang.asset.{slug}.display"] = display
+    return mapping
+
+
+def test_rehearsal_pack_publishes_isolated_copy_and_keeps_author_draft(tmp_path: Path) -> None:
+    pack = write_three_pack(tmp_path / "src")
+    mapping = _runtime_files(tmp_path)
+    sources = _sources(tmp_path, mapping)
+    content_root = tmp_path / "published"
+    asset_root = tmp_path / "assets"
     result = build_rehearsal_pack(
-        pack_dir=pack, sources_path=sources, out_dir=out, version="0.1.1"
+        pack_dir=pack,
+        sources_path=sources,
+        content_root=content_root,
+        asset_root=asset_root,
+        version="0.2.1",
     )
+    author = yaml.safe_load((pack / "manifest.yaml").read_text(encoding="utf-8"))
+    runtime = json.loads((result["pack_dir"] / "manifest.json").read_text(encoding="utf-8"))
+    notice = json.loads((result["pack_dir"] / "rehearsal-notice.json").read_text(encoding="utf-8"))
+    assert author["version"] == "0.1.0"
+    assert author["publication_status"] == "draft"
+    assert runtime["version"] == "0.2.1"
+    assert runtime["publication_status"] == "published"
+    assert notice["story_review_status"]["cn.tang.story.votive-stele"] == "candidate"
+    assert "不冒称" in notice["note"]
+    catalog = PublishedCatalog(content_root)
+    loaded = catalog.get_published("cn.tang.core", "0.2.1")
+    assert loaded.version == "0.2.1"
+    with pytest.raises(PackNotFound):
+        catalog.get_published("cn.tang.core", "0.1.0")
+    index = json.loads((result["asset_dir"] / "asset-index.json").read_text(encoding="utf-8"))
+    assert index["version"] == "0.2.1"
+    assert "cn.tang.asset.votive-stele.preview" in index["assets"]
+    assert "cn.tang.asset.votive-stele.display" in index["assets"]
+    assert "cn.tang.asset.votive-stele.glb" not in index["assets"]
 
-    assert result == out
-    original_manifest = yaml.safe_load((pack / "manifest.yaml").read_text(encoding="utf-8"))
-    assert original_manifest["publication_status"] == "draft"
-    assert original_manifest["version"] == "0.1.0"
-    catalog = PublishedCatalog(out / "content")
-    runtime_pack = catalog.get_published("cn.tang.core", "0.1.1")
-    manifest = runtime_pack.documents["manifest.json"]
-    assert isinstance(manifest, dict)
-    assert manifest["publication_status"] == "published"
-    assert runtime_pack.documents["stories/observation.json"]["title"] == "造像碑三片段观察"
-    rehearsal = json.loads((out / "rehearsal-manifest.json").read_text(encoding="utf-8"))
-    assert rehearsal["scope"] == "local_rehearsal"
-    assert rehearsal["source"]["publication_status"] == "draft"
-    assert rehearsal["runtime"]["publication_status"] == "published"
-    assert rehearsal["story_review"] == [
-        {
-            "story_id": "cn.tang.story.stele-observation",
-            "title": "造像碑三片段观察",
-            "review_status": "candidate_unreviewed",
-        }
-    ]
+    origin = "http://localhost:5173"
 
-    async def smoke_runtime() -> None:
-        client = TestClient(
-            TestServer(
-                create_app(
-                    database=SQLiteDatabase(tmp_path / "rehearsal.sqlite3"),
-                    catalog=catalog,
-                    assets=LocalAssetStore(out / "assets"),
-                    allowed_origins=frozenset({"http://localhost:5173"}),
-                )
-            )
+    async def scenario() -> None:
+        app = create_app(
+            database=SQLiteDatabase(tmp_path / "http.sqlite3"),
+            catalog=PublishedCatalog(content_root),
+            assets=LocalAssetStore(asset_root),
+            allowed_origins=frozenset({origin}),
         )
+        client = TestClient(TestServer(app))
         await client.start_server()
-        origin = {"Origin": "http://localhost:5173"}
-        created_response = await client.post(
-            "/api/sessions", json={"pack_id": "cn.tang.core", "version": "0.1.1"}, headers=origin
+        created = await client.post(
+            "/api/sessions",
+            json={"pack_id": "cn.tang.core", "version": "0.2.1"},
+            headers={"Origin": origin},
         )
-        assert created_response.status == 201
-        created = await created_response.json()
-        session_id = created["state"]["session_id"]
-        auth = {**origin, "Authorization": f"Bearer {created['session_token']}"}
-        paired_response = await client.post(f"/api/sessions/{session_id}/pair", headers=auth)
-        assert paired_response.status == 201
-        paired = await paired_response.json()
-        bound = {**auth, "X-Museum-Connection": paired["connection_id"]}
-        gallery_response = await client.get(
-            f"/api/sessions/{session_id}/galleries/cn.tang.gallery.main", headers=bound
+        assert created.status == 201
+        payload = await created.json()
+        session_id = payload["state"]["session_id"]
+        token = payload["session_token"]
+        paired = await client.post(
+            f"/api/sessions/{session_id}/pair",
+            headers={"Origin": origin, "Authorization": f"Bearer {token}"},
         )
-        assert gallery_response.status == 200
-        gallery_data = await gallery_response.json()
-        assert gallery_data["stations"][0]["artifact"]["id"] == "cn.tang.artifact.stele"
-        asset_response = await client.get(
-            f"/api/sessions/{session_id}/assets/cn.tang.asset.stele.original", headers=auth
+        connection = (await paired.json())["connection_id"]
+        bound = {
+            "Origin": origin,
+            "Authorization": f"Bearer {token}",
+            "X-Museum-Connection": connection,
+        }
+        gallery = await client.get(
+            f"/api/sessions/{session_id}/galleries/cn.tang.gallery.main",
+            headers=bound,
         )
-        assert asset_response.status == 200
-        assert await asset_response.read() == b"test-glb-content"
+        assert gallery.status == 200
+        body = await gallery.json()
+        assert [item["artifact"]["id"] for item in body["stations"]] == list(ARTIFACTS)
+        preview = await client.get(
+            f"/api/sessions/{session_id}/assets/cn.tang.asset.votive-stele.preview",
+            headers={"Origin": origin, "Authorization": f"Bearer {token}"},
+        )
+        assert preview.status == 200
+        assert await preview.read() == PREVIEW_BYTES
+        display = await client.get(
+            f"/api/sessions/{session_id}/assets/cn.tang.asset.votive-stele.display",
+            headers={"Origin": origin, "Authorization": f"Bearer {token}"},
+        )
+        assert display.status == 200
+        assert await display.read() == DISPLAY_BYTES
+        draft = await client.post(
+            "/api/sessions",
+            json={"pack_id": "cn.tang.core", "version": "0.1.0"},
+            headers={"Origin": origin},
+        )
+        assert draft.status == 404
         await client.close()
 
-    asyncio.run(smoke_runtime())
-
-    with pytest.raises(RehearsalPackError, match="不可覆盖"):
-        build_rehearsal_pack(
-            pack_dir=pack, sources_path=sources, out_dir=out, version="0.1.1"
-        )
+    asyncio.run(scenario())
 
 
-def test_build_rehearsal_requires_all_assets_before_publishing_output(tmp_path: Path) -> None:
-    pack = write_pack(tmp_path)
-    sources = make_source_map(pack, tmp_path, include_asset=False)
-    out = tmp_path / ".local" / "rehearsal"
-
-    with pytest.raises(RehearsalPackError, match="资源校验失败"):
-        build_rehearsal_pack(
-            pack_dir=pack, sources_path=sources, out_dir=out, version="0.1.1"
-        )
-
-    assert not out.exists()
-
-
-def test_build_rehearsal_rejects_version_reuse_and_non_draft_sources(tmp_path: Path) -> None:
-    pack = write_pack(tmp_path)
-    sources = make_source_map(pack, tmp_path)
-    with pytest.raises(RehearsalPackError, match="不同于作者稿"):
-        build_rehearsal_pack(
-            pack_dir=pack, sources_path=sources, out_dir=tmp_path / "same", version="0.1.0"
-        )
-    with pytest.raises(RehearsalPackError, match="不能覆盖或包含"):
-        build_rehearsal_pack(
-            pack_dir=pack, sources_path=sources, out_dir=pack / "rehearsal", version="0.1.1"
-        )
-
-    manifest_path = pack / "manifest.yaml"
-    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
-    manifest["publication_status"] = "published"
-    manifest_path.write_text(yaml.safe_dump(manifest, sort_keys=False), encoding="utf-8")
-    with pytest.raises(RehearsalPackError, match="只接受draft"):
+def test_rehearsal_pack_rejects_missing_files_same_version_and_overwrite(tmp_path: Path) -> None:
+    pack = write_three_pack(tmp_path / "src")
+    mapping = _runtime_files(tmp_path)
+    mapping.pop("cn.tang.asset.gilt-bronze-bull.display")
+    sources = _sources(tmp_path, mapping)
+    with pytest.raises(RehearsalPackError, match="缺文件"):
         build_rehearsal_pack(
             pack_dir=pack,
             sources_path=sources,
-            out_dir=tmp_path / "published",
-            version="0.1.2",
+            content_root=tmp_path / "published",
+            asset_root=tmp_path / "assets",
+            version="0.2.1",
         )
+    assert not (tmp_path / "published" / "cn.tang.core" / "0.2.1").exists()
+    with pytest.raises(RehearsalPackError, match="semver"):
+        build_rehearsal_pack(
+            pack_dir=pack,
+            sources_path=_sources(tmp_path, mapping),
+            content_root=tmp_path / "published",
+            asset_root=tmp_path / "assets",
+            version="0.1.0",
+        )
+    sources = _sources(tmp_path, _runtime_files(tmp_path))
+    first = build_rehearsal_pack(
+        pack_dir=pack,
+        sources_path=sources,
+        content_root=tmp_path / "published",
+        asset_root=tmp_path / "assets",
+        version="0.2.1",
+    )
+    with pytest.raises(RehearsalPackError, match="不可覆盖"):
+        build_rehearsal_pack(
+            pack_dir=pack,
+            sources_path=sources,
+            content_root=tmp_path / "published",
+            asset_root=tmp_path / "assets",
+            version="0.2.1",
+        )
+    assert (first["pack_dir"] / "manifest.json").is_file()
 
 
-def test_cli_build_rehearsal_creates_requested_output(tmp_path: Path) -> None:
-    pack = write_pack(tmp_path)
-    sources = make_source_map(pack, tmp_path)
-    out = tmp_path / "rehearsal"
+def test_real_tang_author_draft_stays_when_runtime_files_missing(tmp_path: Path) -> None:
+    dummy = tmp_path / "missing.png"
+    dummy.write_bytes(PREVIEW_BYTES)
+    sources = _sources(tmp_path, {"cn.tang.asset.votive-stele.preview": dummy})
+    with pytest.raises(RehearsalPackError, match="缺文件"):
+        build_rehearsal_pack(
+            pack_dir=PACK,
+            sources_path=sources,
+            content_root=tmp_path / "published",
+            asset_root=tmp_path / "assets",
+            version="0.2.1",
+        )
+    author = yaml.safe_load((PACK / "manifest.yaml").read_text(encoding="utf-8"))
+    assert author["version"] == "0.2.0"
+    assert author["publication_status"] == "draft"
+    assert not (tmp_path / "published" / "cn.tang.core" / "0.2.1").exists()
 
-    assert main(
-        [
-            "build-rehearsal",
-            "--pack",
-            str(pack),
-            "--sources",
-            str(sources),
-            "--out",
-            str(out),
-            "--version",
-            "0.1.1",
-        ]
-    ) == 0
-    assert (out / "rehearsal-manifest.json").is_file()
+
+def test_cli_rehearsal_pack_writes_version_dirs(tmp_path: Path) -> None:
+    pack = write_three_pack(tmp_path / "src")
+    mapping = _runtime_files(tmp_path)
+    sources = _sources(tmp_path, mapping)
+    assert (
+        main(
+            [
+                "rehearsal-pack",
+                "--pack",
+                str(pack),
+                "--sources",
+                str(sources),
+                "--content-root",
+                str(tmp_path / "published"),
+                "--asset-root",
+                str(tmp_path / "assets"),
+                "--version",
+                "0.2.1",
+            ]
+        )
+        == 0
+    )
+    assert (tmp_path / "published" / "cn.tang.core" / "0.2.1" / "pack-index.json").is_file()
+    assert (tmp_path / "assets" / "cn.tang.core" / "0.2.1" / "asset-index.json").is_file()
+    assert (
+        main(
+            [
+                "rehearsal-pack",
+                "--pack",
+                str(pack),
+                "--sources",
+                str(sources),
+                "--content-root",
+                str(tmp_path / "published"),
+                "--asset-root",
+                str(tmp_path / "assets"),
+                "--version",
+                "0.2.1",
+            ]
+        )
+        == 1
+    )
