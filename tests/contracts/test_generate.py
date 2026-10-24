@@ -31,5 +31,11 @@ def test_generated_exports_include_session_and_command() -> None:
     assert "class Command(TypedDict):" in py
     assert "export interface VoiceEvent" in ts
     assert "export type McpToolCall" in ts
+    assert "export interface ArtifactPresentation" in ts
+    assert "display: ArtifactDisplay;" in ts
+    assert "audio_asset_id?: NamespacedId;" in ts
     assert "class VoiceEvent(TypedDict):" in py
+    assert "class ArtifactPresentation(TypedDict):" in py
+    assert "display: ArtifactDisplay" in py
+    assert "audio_asset_id: NotRequired[NamespacedId]" in py
     assert "type McpToolCall =" in py

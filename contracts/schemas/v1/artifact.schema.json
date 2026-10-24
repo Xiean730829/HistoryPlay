@@ -66,6 +66,59 @@
       },
       "description": "Logical digital asset IDs. Replacing a model does not change this artifact ID."
     },
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["preview_asset_id", "display", "teaser", "background_node_id"],
+      "properties": {
+        "preview_asset_id": {
+          "$ref": "common.schema.json#/$defs/namespacedId",
+          "description": "Stable ID of a real preview image; never inferred from asset_ids order."
+        },
+        "display": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "asset_id"],
+          "properties": {
+            "kind": {
+              "enum": ["model3d", "photo"],
+              "description": "Explicit display medium, checked against the referenced asset kind."
+            },
+            "asset_id": {
+              "$ref": "common.schema.json#/$defs/namespacedId",
+              "description": "Stable ID of the display model or photograph."
+            }
+          }
+        },
+        "default_camera": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["orbit"],
+          "properties": {
+            "orbit": {
+              "$ref": "common.schema.json#/$defs/nonEmptyText",
+              "maxLength": 80,
+              "description": "Curator-selected initial orbit preset for the bound display model."
+            },
+            "target_note": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        },
+        "teaser": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "description": "One-line exhibit introduction; the longer background remains in the referenced story node."
+        },
+        "background_node_id": {
+          "$ref": "common.schema.json#/$defs/namespacedId",
+          "description": "Stable story-node ID containing the single authored background narration."
+        }
+      },
+      "description": "Optional explicit presentation bindings. The display source is a model or a photo, never whichever asset happens to be first."
+    },
     "fact_card_ids": {
       "type": "array",
       "uniqueItems": true,

@@ -1,0 +1,8 @@
+{
+  "id": "cn.tang.asset.stele.photo",
+  "kind": "model3d",
+  "format": "jpg",
+  "sha256": "9df4392c5d16e92fd704737f4037be19b55e69b28635ec3d47142e5180d87ed4",
+  "byte_size": 2048,
+  "license": {"spdx": "CC0-1.0", "attribution": "Museum"}
+}

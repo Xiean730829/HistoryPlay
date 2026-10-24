@@ -1,0 +1,13 @@
+{
+  "id": "cn.tang.node.stele-observation.01",
+  "story_id": "cn.tang.story.stele-observation",
+  "fact_grade": "F",
+  "presentation": {
+    "capability": "artifact3d",
+    "asset_ids": ["cn.tang.asset.stele.original"],
+    "audio_asset_id": "cn.tang.asset.stele.audio"
+  },
+  "narration": "这块碑有明确纪年。",
+  "allowed_actions": ["observe", "continue_story"],
+  "exits": [{"action": "continue_story", "target_node_id": "cn.tang.node.stele-observation.02"}]
+}

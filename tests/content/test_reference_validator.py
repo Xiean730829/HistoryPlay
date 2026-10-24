@@ -87,6 +87,7 @@ NODE_01 = """
 id: cn.tang.node.stele-observation.01
 story_id: cn.tang.story.stele-observation
 fact_grade: F
+narration: A single authored background passage for the stele.
 allowed_actions:
   - continue_story
 exits:
@@ -106,7 +107,13 @@ exits:
 """
 
 
-def write_pack(root: Path, *, artifact: str = ARTIFACT, extra_asset: str | None = None) -> Path:
+def write_pack(
+    root: Path,
+    *,
+    artifact: str = ARTIFACT,
+    extra_asset: str | None = None,
+    extra_assets: list[str] | None = None,
+) -> Path:
     pack = root / "pack"
     (pack / "artifacts").mkdir(parents=True)
     (pack / "assets").mkdir()
@@ -125,6 +132,8 @@ def write_pack(root: Path, *, artifact: str = ARTIFACT, extra_asset: str | None 
     (pack / "nodes" / "02.yaml").write_text(NODE_02, encoding="utf-8")
     if extra_asset is not None:
         (pack / "assets" / "extra.yaml").write_text(extra_asset, encoding="utf-8")
+    for index, asset in enumerate(extra_assets or [], start=1):
+        (pack / "assets" / f"extra-{index}.yaml").write_text(asset, encoding="utf-8")
     return pack
 
 
@@ -139,6 +148,101 @@ def test_missing_asset_reference_fails(tmp_path: Path) -> None:
     )
     issues = validate_references(pack)
     assert any("缺少引用" in issue.message and "cn.tang.asset.missing" in issue.message for issue in issues)
+
+
+def test_explicit_artifact_presentation_bindings_pass(tmp_path: Path) -> None:
+    artifact = ARTIFACT.replace(
+        "story_entry_ids:",
+        """presentation:
+  preview_asset_id: cn.tang.asset.stele.preview
+  display:
+    kind: model3d
+    asset_id: cn.tang.asset.stele.display
+  default_camera:
+    orbit: three-quarter-front
+    target_note: Center the inscription.
+  teaser: A dated stele that records a donor's vow.
+  background_node_id: cn.tang.node.stele-observation.01
+story_entry_ids:""",
+    )
+    preview = ASSET.replace("cn.tang.asset.stele.original", "cn.tang.asset.stele.preview").replace(
+        "kind: model3d\nformat: glb", "kind: preview\nformat: jpg"
+    )
+    display = ASSET.replace("cn.tang.asset.stele.original", "cn.tang.asset.stele.display").replace(
+        "byte_size: 4855856", "byte_size: 123456"
+    ).replace("license:", "lod: display\nlicense:")
+    audio = ASSET.replace("cn.tang.asset.stele.original", "cn.tang.asset.stele.audio").replace(
+        "kind: model3d\nformat: glb", "kind: audio\nformat: mp3"
+    ).replace("byte_size: 4855856", "byte_size: 65432")
+    pack = write_pack(tmp_path, artifact=artifact, extra_assets=[preview, display, audio])
+    node = pack / "nodes" / "01.yaml"
+    node.write_text(
+        NODE_01.replace(
+            "narration:",
+            "presentation:\n  audio_asset_id: cn.tang.asset.stele.audio\nnarration:",
+        ),
+        encoding="utf-8",
+    )
+
+    assert validate_references(pack) == []
+
+
+def test_artifact_semantic_bindings_require_existing_typed_references(tmp_path: Path) -> None:
+    artifact = ARTIFACT.replace(
+        "story_entry_ids:",
+        """presentation:
+  preview_asset_id: cn.tang.asset.missing-preview
+  display:
+    kind: photo
+    asset_id: cn.tang.asset.stele.original
+  teaser: A short introduction.
+  background_node_id: cn.tang.node.missing
+story_entry_ids:""",
+    )
+    issues = validate_references(write_pack(tmp_path, artifact=artifact))
+
+    assert any("preview_asset_id 缺少引用" in issue.message for issue in issues)
+    assert any("background_node_id 缺少引用" in issue.message for issue in issues)
+    assert any("display.kind 与资产类型不一致" in issue.message for issue in issues)
+
+
+def test_artifact_background_node_must_belong_to_its_story(tmp_path: Path) -> None:
+    artifact = ARTIFACT.replace(
+        "story_entry_ids:",
+        """presentation:
+  preview_asset_id: cn.tang.asset.stele.original
+  display:
+    kind: model3d
+    asset_id: cn.tang.asset.stele.original
+  teaser: A short introduction.
+  background_node_id: cn.tang.node.stele-observation.02
+story_entry_ids:""",
+    )
+
+    pack = write_pack(tmp_path, artifact=artifact)
+    story = pack / "stories" / "observation.yaml"
+    story.write_text(STORY.replace("cn.tang.artifact.stele", "cn.tang.artifact.other"), encoding="utf-8")
+
+    issues = validate_references(pack)
+
+    assert any("展示版或移动版模型" in issue.message for issue in issues)
+    assert any("必须属于该文物的故事" in issue.message for issue in issues)
+
+
+def test_story_narration_audio_requires_audio_asset(tmp_path: Path) -> None:
+    pack = write_pack(tmp_path)
+    node = pack / "nodes" / "01.yaml"
+    node.write_text(
+        NODE_01.replace(
+            "narration:",
+            "presentation:\n  audio_asset_id: cn.tang.asset.stele.original\nnarration:",
+        ),
+        encoding="utf-8",
+    )
+
+    issues = validate_references(pack)
+
+    assert any("audio_asset_id 需要音频资产" in issue.message for issue in issues)
 
 
 def test_wrong_kind_reference_fails(tmp_path: Path) -> None:
