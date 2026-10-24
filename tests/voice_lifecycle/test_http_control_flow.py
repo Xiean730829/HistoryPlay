@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from dataclasses import replace
 
 import pytest
 from aiohttp import ClientSession
@@ -8,6 +9,7 @@ from aiohttp.test_utils import TestClient, TestServer
 from museum.adapters.http.helpers import SERVICES_KEY
 from museum.adapters.http.lifecycle_routes import register_voice_lifecycle_routes
 from museum.adapters.sqlite.database import SQLiteDatabase
+from museum.application.render_service import RenderService
 from museum.application.voice_lifecycle import VoiceLifecycle
 from museum.main import create_app
 from museum.ports.content_catalog import PublishedPack
@@ -67,13 +69,16 @@ class Catalog:
         return self.pack
 
 
-async def game_fixture(tmp_path):
+async def game_fixture(tmp_path, *, renders=None):
     app = create_app(
         database=SQLiteDatabase(tmp_path / "voice.sqlite3"),
         catalog=Catalog(),
         allowed_origins=frozenset({ORIGIN}),
     )
     services = app[SERVICES_KEY]
+    if renders is not None:
+        services = replace(services, renders=renders)
+        app[SERVICES_KEY] = services
     register_voice_lifecycle_routes(
         app,
         VoiceLifecycle(
@@ -115,13 +120,14 @@ async def game_fixture(tmp_path):
             },
         ) as response:
             assert response.status == 200
+            entered = await response.json()
     binding = BoundSession(base_url, session_id, created["session_token"], paired["connection_id"])
-    return server, binding
+    return server, binding, entered
 
 
 def test_real_http_action_uses_original_pair_and_old_scope_stays_invalid_after_context(tmp_path):
     async def run():
-        server, binding = await game_fixture(tmp_path)
+        server, binding, _ = await game_fixture(tmp_path)
         client = VoiceApplicationClient(binding, origin=ORIGIN)
         try:
             bridge = (await client.voice("bind"))["bridge_token"]
@@ -153,7 +159,7 @@ def test_browser_pcm_to_current_transport_stt_to_real_game_http(tmp_path, monkey
     from museum_voice.config import DeviceConfig
 
     async def run():
-        game, binding = await game_fixture(tmp_path)
+        game, binding, _ = await game_fixture(tmp_path)
         queue = asyncio.Queue()
         encoded = []
 
@@ -246,5 +252,64 @@ def test_browser_pcm_to_current_transport_stt_to_real_game_http(tmp_path, monkey
         finally:
             await browser.close()
             await game.close()
+
+    asyncio.run(run())
+
+
+def test_camera_requires_current_rendered_receipt_not_degraded_or_pending_target(tmp_path):
+    class QueryableRenders(RenderService):
+        # The public read contract A must install; reporting stays the real implementation.
+        def latest(self, session_id, connection_id):
+            with self._lock:
+                return self._latest.get((session_id, connection_id))
+
+    async def run():
+        server, binding, entered = await game_fixture(tmp_path, renders=QueryableRenders())
+        client = VoiceApplicationClient(binding, origin=ORIGIN)
+        headers = {
+            "Authorization": f"Bearer {binding.session_token}",
+            "X-Museum-Connection": binding.connection_id,
+            "Origin": ORIGIN,
+        }
+        try:
+            bridge = (await client.voice("bind"))["bridge_token"]
+            token = (await client.voice("begin", bridge_token=bridge))["input_token"]
+            scope = TrustedInput(bridge, token)
+            assert (await client.voice("view", scope=scope))["status"] == "pending"
+            with pytest.raises(GatewayError, match="尚未完整呈现"):
+                await ActionTools(client, scope).act("back")
+            acknowledgement = {
+                key: entered[key]
+                for key in (
+                    "request_id",
+                    "payload_digest",
+                    "revision",
+                    "view_revision",
+                    "interaction_epoch",
+                )
+            }
+            async with ClientSession() as http:
+                response = await http.post(
+                    f"{binding.base_url}/api/sessions/{binding.session_id}/render-receipts",
+                    headers=headers,
+                    json={**acknowledgement, "status": "degraded", "reason": "照片降级"},
+                )
+                assert response.status == 200
+                await response.release()
+                with pytest.raises(GatewayError, match="尚未完整呈现"):
+                    await ActionTools(client, scope).act("back")
+                response = await http.post(
+                    f"{binding.base_url}/api/sessions/{binding.session_id}/render-receipts",
+                    headers=headers,
+                    json={**acknowledgement, "status": "rendered"},
+                )
+                assert response.status == 200
+                await response.release()
+            result = await ActionTools(client, scope).act("back")
+            assert result["receipt"]["status"] == "committed"
+            assert (await client.state())["camera_pose"]["yaw"] == -180
+            assert (await client.voice("view", scope=scope))["status"] == "pending"
+        finally:
+            await server.close()
 
     asyncio.run(run())
