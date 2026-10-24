@@ -18,7 +18,7 @@
 暂不选路。先完成CW09p真实预检并记录工具发现、指定稿播放、打断竞态和来源关联证据。若直连不能满足旧任务隔离，优先采用选项2；不以
 点击确认替代语音控制，也不通过伪造 `hello.features` 宣称已接通。
 
-2026-10-24 21:15已通过现有官方MCP接入点观察到真实WSS连接、initialize、tools/list和museum_probe调用。该证据确认MCP管道已经进入真实工具调用阶段，不证明模型旧调用的输入来源、取消或授权关联；因此仍不开放未具备可信来源的游戏动作，也不据此关闭CW09p/H5。详见[能力报告](../integration/xiaozhi-capabilities.md)。
+2026-10-24 21:16已通过现有官方MCP接入点观察到真实WSS连接、initialize、tools/list、museum_probe与museum_probe_sentence调用；用户确认听到“这里是时空博物馆”。该证据确认MCP管道已经进入真实工具调用阶段及短句可听，不证明完整稿逐字一致、模型旧调用的输入来源、取消或授权关联；因此仍不开放未具备可信来源的游戏动作，也不据此关闭CW09p/H5。详见[能力报告](../integration/xiaozhi-capabilities.md)。
 
 ## 后果与验收
 

@@ -2,7 +2,7 @@
 
 日期：2026-10-24。独立工作目录为 `C:/Users/21711/.codex/worktrees/voice-mcp/HistroyPlay`。
 
-最新真实联调状态（北京时间21:15）：用户已经配置现有官方MCP接入点；开发者以probe模式建立真实WSS连接，收到initialize=1、tools/list=1和museum_probe=1。测试句、声音一致性、abort与可信输入轮次仍待验证。后文“尚无端点”属于早前工程交付记录，以本段和[能力报告](./xiaozhi-capabilities.md)为准。当前只运行诊断工具，不开放游戏动作，不抢占原网页语音设备。
+最新真实联调状态（北京时间21:16）：用户已经配置现有官方MCP接入点；开发者以probe模式建立真实WSS连接，收到initialize=1、tools/list=1、museum_probe=1和museum_probe_sentence=1。用户确认听到“这里是时空博物馆”；未确认整段固定句逐字一致，abort与可信输入轮次仍待验证。后文“尚无端点”属于早前工程交付记录，以本段和[能力报告](./xiaozhi-capabilities.md)为准。当前只运行诊断工具，不开放游戏动作，不抢占原网页语音设备。
 
 ## 已可运行的独立交付
 
