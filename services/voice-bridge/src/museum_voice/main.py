@@ -22,13 +22,13 @@ from museum_mcp.intent_adapter import interpret
 from museum_voice.codec import AudioCodec, pack_audio, unpack_audio
 from museum_voice.config import DeviceConfig
 from museum_voice.control_orchestrator import InputOrchestrator
-from museum_voice.game_binding import BINDING_FILE, GAME_BINDINGS, bind_game
+from museum_voice.game_binding import ACTIVE_AUDIO, BINDING_FILE, GAME_BINDINGS, bind_game
 from museum_voice.xiaozhi_client import connection_headers, hello_message
 
 DEVICE = web.AppKey("fixed_device", DeviceConfig)
 ORIGIN = web.AppKey("web_origin", str)
 HOST = web.AppKey("bridge_host", str)
-ACTIVE = web.AppKey("active_audio", set)
+ACTIVE = ACTIVE_AUDIO
 
 
 async def reject_redirect(*args) -> None:
@@ -75,6 +75,7 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
         orchestrator = InputOrchestrator(
             bound.client, TrustedInput(bound.bridge_token, granted["input_token"])
         )
+        bound.cancel_input = orchestrator.close
         input_started = False
         input_stopped = False
         pcm_frames = 0
