@@ -9,6 +9,8 @@ from museum.adapters.content.search_index import PublishedSearchIndex
 from museum.application.mappers import (
     ArtifactProjection,
     FactEvidence,
+    GalleryProjection,
+    GalleryStationProjection,
     SearchHit,
     SearchPage,
     SessionContext,
@@ -147,6 +149,59 @@ class QueryService:
             sources=tuple(sources),
         )
 
+    def gallery(self, state: SessionState, gallery_id: str) -> GalleryProjection:
+        packs = self._load_pinned_packs(state)
+        gallery = _find_gallery(packs, gallery_id)
+        stations = gallery.get("stations")
+        region = gallery.get("region")
+        if not isinstance(stations, list) or not isinstance(region, Mapping):
+            raise ContentUnavailable(f"展厅缺少展位或地域信息：{gallery_id}")
+
+        visible_ids = _ordered_visible_ids(state)
+        visible = set(visible_ids)
+        projected: list[GalleryStationProjection] = []
+        for station in sorted(
+            (item for item in stations if isinstance(item, Mapping)),
+            key=lambda item: item.get("order", 0),
+        ):
+            station_id = _required_text(station.get("id"), gallery_id)
+            artifact_id = _required_text(station.get("artifact_id"), station_id)
+            time_range = station.get("time_range")
+            if not isinstance(time_range, Mapping):
+                raise ContentUnavailable(f"展位缺少年代信息：{station_id}")
+            order = station.get("order")
+            if type(order) is not int or order < 0:
+                raise ContentUnavailable(f"展位顺序无效：{station_id}")
+            comparison_ids = _text_items(station.get("comparison_artifact_ids"))
+            projected.append(
+                GalleryStationProjection(
+                    id=station_id,
+                    order=order,
+                    time_range=dict(time_range),
+                    placement_basis=_required_text(station.get("placement_basis"), station_id),
+                    side=_optional_text(station.get("side")),
+                    artifact=self._artifact(packs, artifact_id),
+                    comparison_artifacts=tuple(
+                        self._artifact(packs, comparison_id) for comparison_id in comparison_ids
+                    ),
+                    is_visible=artifact_id in visible,
+                    is_focused=artifact_id == state.focused_entity_id,
+                )
+            )
+
+        return GalleryProjection(
+            id=gallery_id,
+            title=_required_text(gallery.get("title"), gallery_id),
+            region={
+                "id": _required_text(region.get("id"), gallery_id),
+                "label": _required_text(region.get("label"), gallery_id),
+            },
+            status=_required_text(gallery.get("status"), gallery_id),
+            default_station_id=_optional_text(gallery.get("default_station_id")),
+            stations=tuple(projected),
+            visible_artifacts=tuple(self._artifact(packs, item) for item in visible_ids),
+        )
+
     def _load_pinned_packs(self, state: SessionState) -> tuple[PublishedPack, ...]:
         packs = []
         for pack_id, version in state.pack_versions.items():
@@ -194,6 +249,25 @@ def _find_document(
             ):
                 return document
     raise ContentUnavailable(f"固定内容版本中找不到{kind}：{document_id}")
+
+
+def _find_gallery(packs: tuple[PublishedPack, ...], gallery_id: str) -> Mapping[str, Any]:
+    for pack in packs:
+        for path, document in pack.documents.items():
+            if (
+                path.startswith("galleries/")
+                and isinstance(document, Mapping)
+                and document.get("id") == gallery_id
+            ):
+                return document
+    raise ContentUnavailable(f"固定内容版本中找不到展厅：{gallery_id}")
+
+
+def _ordered_visible_ids(state: SessionState) -> tuple[str, ...]:
+    ordered = list(state.display_order) if state.display_order else list(state.visible_entities)
+    ordered = [item for item in ordered if item in state.visible_entities]
+    ordered.extend(item for item in state.visible_entities if item not in ordered)
+    return tuple(ordered)
 
 
 def _encode_cursor(

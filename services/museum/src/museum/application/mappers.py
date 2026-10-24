@@ -34,6 +34,30 @@ class ArtifactProjection:
 
 
 @dataclass(frozen=True, slots=True)
+class GalleryStationProjection:
+    id: str
+    order: int
+    time_range: dict[str, Any]
+    placement_basis: str
+    side: str | None
+    artifact: ArtifactProjection
+    comparison_artifacts: tuple[ArtifactProjection, ...]
+    is_visible: bool
+    is_focused: bool
+
+
+@dataclass(frozen=True, slots=True)
+class GalleryProjection:
+    id: str
+    title: str
+    region: dict[str, str]
+    status: str
+    default_station_id: str | None
+    stations: tuple[GalleryStationProjection, ...]
+    visible_artifacts: tuple[ArtifactProjection, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class StoryNodeProjection:
     story_id: str
     node_id: str

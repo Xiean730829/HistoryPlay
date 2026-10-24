@@ -41,6 +41,35 @@ def make_pack(version: str = VERSION, alias: str = "佛碑") -> PublishedPack:
         },
         "artifacts/a.json": make_artifact(ARTIFACT_ID, "一佛二菩萨造像碑", [alias]),
         "artifacts/b.json": make_artifact(artifact_b, "浮雕造像残片", ["佛碑残片"]),
+        "galleries/main.json": {
+            "id": "cn.tang.gallery.main",
+            "title": "唐朝长廊",
+            "region": {"id": "cn", "label": "中国"},
+            "status": "open",
+            "default_station_id": "cn.tang.station.first",
+            "stations": [
+                {
+                    "id": "cn.tang.station.first",
+                    "order": 0,
+                    "time_range": {"start_year": 678, "end_year": 678, "precision": "year"},
+                    "placement_basis": "以明确纪年作品作为入口。",
+                    "artifact_id": ARTIFACT_ID,
+                    "side": "center",
+                },
+                {
+                    "id": "cn.tang.station.second",
+                    "order": 1,
+                    "time_range": {
+                        "start_year": 700,
+                        "end_year": 799,
+                        "precision": "century",
+                    },
+                    "placement_basis": "依策展顺序衔接下一展位。",
+                    "artifact_id": artifact_b,
+                    "side": "right",
+                },
+            ],
+        },
         "facts/dated.json": {
             "id": FACT_ID,
             "claim": "造像碑题记记载其完成于678年。",
@@ -140,6 +169,34 @@ def test_context_preserves_server_order_and_projects_the_current_story_node() ->
     assert context.story_node.allowed_actions == ("observe", "continue_story")
     assert context.revision == state.revision
     assert context.event_seq == state.event_seq
+
+
+def test_gallery_keeps_curated_station_order_and_projects_read_only_visible_order() -> None:
+    state = make_state()
+    catalog = MemoryCatalog(make_pack())
+    service = QueryService(catalog)
+
+    gallery = service.gallery(state, "cn.tang.gallery.main")
+
+    assert tuple(item.order for item in gallery.stations) == (0, 1)
+    assert tuple(item.artifact.id for item in gallery.stations) == (
+        ARTIFACT_ID,
+        "cn.tang.artifact.stele.second",
+    )
+    assert tuple(item.id for item in gallery.visible_artifacts) == (
+        "cn.tang.artifact.stele.second",
+        ARTIFACT_ID,
+    )
+    assert gallery.stations[0].is_focused
+    assert all(item.is_visible for item in gallery.stations)
+    assert set(catalog.requests) == {(PACK_ID, VERSION)}
+    assert state == make_state()
+
+
+def test_gallery_query_fails_when_pinned_pack_has_no_requested_gallery() -> None:
+    service = QueryService(MemoryCatalog(make_pack()))
+    with pytest.raises(ContentUnavailable, match="找不到展厅"):
+        service.gallery(make_state(), "cn.tang.gallery.missing")
 
 
 def test_fact_read_returns_grade_applicable_time_and_real_source_locator() -> None:
