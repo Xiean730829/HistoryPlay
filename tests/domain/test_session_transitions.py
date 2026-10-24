@@ -139,6 +139,41 @@ def test_story_exhibit_return_anchor_is_separate_from_qa_return_stack() -> None:
     assert returned.event.kind.value == "returned_to_exhibit"
 
 
+def test_legacy_story_without_root_anchor_returns_to_saved_exhibit_and_view() -> None:
+    legacy_story = SessionState(
+        session_id="sess_legacy_story_01",
+        pack_versions={"cn.tang.core": "1.0.0"},
+        mode=SessionMode.STORY,
+        gallery_id="cn.tang.gallery.main",
+        station_id="cn.tang.station.ox",
+        current_location_id="cn.tang.station.ox",
+        story_id="cn.tang.story.ox",
+        node_id="cn.tang.node.ox.01",
+        focused_entity_id="cn.tang.artifact.ox",
+        visible_entities=("cn.tang.artifact.ox",),
+        display_order=("cn.tang.artifact.ox",),
+        camera_pose=CameraPose(yaw=32, pitch=-8, zoom=1.7),
+        revision=8,
+        view_revision=4,
+        event_seq=7,
+        interaction_epoch=6,
+    )
+
+    returned = return_to_exhibit(legacy_story)
+
+    assert returned.state.mode == SessionMode.EXPLORE
+    assert returned.state.gallery_id == "cn.tang.gallery.main"
+    assert returned.state.station_id == returned.state.current_location_id == "cn.tang.station.ox"
+    assert returned.state.focused_entity_id == "cn.tang.artifact.ox"
+    assert returned.state.camera_pose == CameraPose(yaw=32, pitch=-8, zoom=1.7)
+    assert returned.state.exhibit_return_point is None
+    assert returned.state.revision == 9
+    assert returned.state.event_seq == 8
+    assert returned.state.interaction_epoch == 7
+    with pytest.raises(InvalidTransition, match="没有可恢复的展台返回点"):
+        return_to_exhibit(make_session())
+
+
 def test_view_change_is_revisioned_and_explore_only() -> None:
     explored = SessionState(
         session_id="sess_view_0001",
