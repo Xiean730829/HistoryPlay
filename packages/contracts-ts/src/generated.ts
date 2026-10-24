@@ -112,6 +112,28 @@ export interface FactCard {
   reviewer?: string;
 }
 
+export interface GalleryStation {
+  id: NamespacedId;
+  /** Stable curator-defined order, independent from frame coordinates or uncertain date overlap. */
+  order: number;
+  time_range: TimeRange;
+  /** Why this object belongs at this point in the visitor route; do not imply a precise creation order when dates overlap. */
+  placement_basis: string;
+  artifact_id: NamespacedId;
+  /** Other real artifacts shown for comparison at this station, with their own identity and region retained. */
+  comparison_artifact_ids?: Array<NamespacedId>;
+  side?: "left" | "center" | "right";
+}
+
+export interface Gallery {
+  id: NamespacedId;
+  title: NonEmptyText;
+  region: ContentPackRegion;
+  status: "open" | "planned" | "closed";
+  default_station_id?: NamespacedId;
+  stations: Array<GalleryStation>;
+}
+
 export interface HistoricalEvent {
   id: NamespacedId;
   title: NonEmptyText;

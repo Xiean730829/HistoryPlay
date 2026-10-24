@@ -22,6 +22,7 @@ KIND_TO_SCHEMA = {
     "story-node": "story-node.schema.json",
     "event": "historical-event.schema.json",
     "relation": "relation.schema.json",
+    "gallery": "gallery.schema.json",
 }
 PACK_LAYOUT = (
     ("manifest.yaml", "manifest", False),
@@ -33,6 +34,7 @@ PACK_LAYOUT = (
     ("nodes", "story-node", True),
     ("events", "event", True),
     ("relations", "relation", True),
+    ("galleries", "gallery", True),
 )
 
 

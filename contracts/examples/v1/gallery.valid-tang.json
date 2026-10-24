@@ -1,0 +1,34 @@
+{
+  "id": "cn.tang.gallery.main",
+  "title": "唐朝长廊",
+  "region": {"id": "cn", "label": "中国"},
+  "status": "open",
+  "default_station_id": "cn.tang.station.stele",
+  "stations": [
+    {
+      "id": "cn.tang.station.stele",
+      "order": 0,
+      "time_range": {"start_year": 678, "end_year": 690, "precision": "range", "display_label": "7世纪后期"},
+      "placement_basis": "以有明确纪年依据的造像碑作为长廊入口展位。",
+      "artifact_id": "cn.tang.artifact.stele",
+      "side": "center"
+    },
+    {
+      "id": "cn.tang.station.coin",
+      "order": 1,
+      "time_range": {"start_year": 713, "end_year": 741, "precision": "range", "display_label": "开元年间"},
+      "placement_basis": "与卧牛断代区间重叠，按策展主题相邻陈列，不宣称二者制作先后。",
+      "artifact_id": "cn.tang.artifact.coin",
+      "comparison_artifact_ids": ["cn.tang.artifact.comparison-bowl"],
+      "side": "left"
+    },
+    {
+      "id": "cn.tang.station.ox",
+      "order": 2,
+      "time_range": {"start_year": 713, "end_year": 741, "precision": "range", "display_label": "开元年间"},
+      "placement_basis": "与开元通宝处于相同断代区间，保持稳定的策展陈列顺序。",
+      "artifact_id": "cn.tang.artifact.ox",
+      "side": "right"
+    }
+  ]
+}

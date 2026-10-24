@@ -102,6 +102,23 @@ class FactCard(TypedDict):
     dispute: NotRequired[str]
     reviewer: NotRequired[str]
 
+class GalleryStation(TypedDict):
+    id: NamespacedId
+    order: int
+    time_range: TimeRange
+    placement_basis: str
+    artifact_id: NamespacedId
+    comparison_artifact_ids: NotRequired[list[NamespacedId]]
+    side: NotRequired[Literal["left", "center", "right"]]
+
+class Gallery(TypedDict):
+    id: NamespacedId
+    title: NonEmptyText
+    region: ContentPackRegion
+    status: Literal["open", "planned", "closed"]
+    default_station_id: NotRequired[NamespacedId]
+    stations: list[GalleryStation]
+
 class HistoricalEvent(TypedDict):
     id: NamespacedId
     title: NonEmptyText

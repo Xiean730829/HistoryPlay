@@ -17,6 +17,8 @@ KIND_LABEL = {
     "story-node": "故事节点",
     "event": "历史事件",
     "relation": "关系",
+    "gallery": "展厅",
+    "gallery-station": "展位",
 }
 
 
@@ -52,6 +54,15 @@ def _iter_entities(pack_dir: Path) -> list[Entity]:
             ident = item.get("id")
             if isinstance(ident, str) and ident:
                 entities.append(Entity(ident, kind, path, item, index))
+            if kind == "gallery" and isinstance(item.get("stations"), list):
+                for station_index, station in enumerate(item["stations"]):
+                    if not isinstance(station, dict):
+                        continue
+                    station_id = station.get("id")
+                    if isinstance(station_id, str) and station_id:
+                        entities.append(
+                            Entity(station_id, "gallery-station", path, station, station_index)
+                        )
     return entities
 
 
@@ -199,4 +210,43 @@ def validate_references(pack_dir: Path) -> list[Issue]:
             issues.extend(_check_story(entity, by_id))
         elif entity.kind == "story-node":
             issues.extend(_check_story_node(entity, by_id))
+        elif entity.kind == "gallery":
+            issues.extend(_check_gallery(entity, by_id))
+    return issues
+
+
+def _check_gallery(entity: Entity, by_id: dict[str, Entity]) -> list[Issue]:
+    issues: list[Issue] = []
+    stations = entity.data.get("stations")
+    if not isinstance(stations, list):
+        return issues
+    station_ids: set[str] = set()
+    orders: set[int] = set()
+    for index, station in enumerate(stations):
+        if not isinstance(station, dict):
+            continue
+        station_id = station.get("id")
+        if isinstance(station_id, str):
+            if station_id in station_ids:
+                issues.append(entity.locate(f"展位标识重复：{station_id}"))
+            station_ids.add(station_id)
+        order = station.get("order")
+        if isinstance(order, int) and not isinstance(order, bool):
+            if order in orders:
+                issues.append(entity.locate(f"展位顺序重复：{order}"))
+            orders.add(order)
+        for field in ("artifact_id", "comparison_artifact_ids"):
+            for target_id in _as_ids(station.get(field)):
+                issues.extend(
+                    _check_target(
+                        entity,
+                        f"stations[{index}].{field}",
+                        target_id,
+                        "artifact",
+                        by_id,
+                    )
+                )
+    default_station_id = entity.data.get("default_station_id")
+    if isinstance(default_station_id, str) and default_station_id not in station_ids:
+        issues.append(entity.locate(f"默认展位不属于本展厅：{default_station_id}"))
     return issues
