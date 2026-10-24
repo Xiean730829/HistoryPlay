@@ -22,6 +22,7 @@ import { SessionProjectionStore } from "../state/sessionProjection";
 import { ExhibitList } from "./ExhibitList";
 import { StatusNotice } from "./StatusNotice";
 import { MuseumCorridor } from "../gallery/MuseumCorridor";
+import { SessionVoicePanel } from "../voice-ui/SessionVoicePanel";
 import { RenderReceiptReporter } from "../capabilities/RenderReceiptReporter";
 
 const SESSION_KEY = "history-play.session.v1";
@@ -238,6 +239,14 @@ export function MuseumShell() {
         navigationDisabled={busy}
         onMove={(direction) => void moveStation(direction)}
       />
+
+      {session && (
+        <SessionVoicePanel
+          key={`${session.session_id}:${session.connection_id}`}
+          packId={session.pack_id}
+          version={session.version}
+        />
+      )}
 
       {!session && health && (
         <div className="corridor-retry-row">
