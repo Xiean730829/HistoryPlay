@@ -86,6 +86,7 @@ function addLanding(hall: Group, x: number, landingY: number, z: number, side: n
   // A layered stone base gives the cabinet a dark, legible silhouette.
   box(hall, 2.32, 0.68, 2.08, x, landingY + 0.34, z, materials.plinth);
   box(hall, 2.42, 0.08, 2.18, x, landingY + 0.72, z, materials.stone);
+  box(hall, 2.24, 0.24, 2.02, x, landingY + 0.88, z, materials.plinth);
   box(hall, 2.24, 0.08, 2.02, x, landingY + PLINTH_HEIGHT - 0.04, z, materials.bronze);
   addShowcase(hall, materials, x, landingY, z);
 }
