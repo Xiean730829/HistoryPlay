@@ -32,6 +32,17 @@ def main() -> int:
                     if any(name == blocked or name.startswith(blocked + ".") for blocked in forbidden):
                         violations.append(f"{path.relative_to(ROOT)}:{node.lineno}: 禁止依赖 {name}")
 
+    mcp_root = ROOT / "services" / "mcp-gateway" / "src" / "museum_mcp"
+    for path in mcp_root.rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in ast.walk(tree):
+            module = node.module if isinstance(node, ast.ImportFrom) else None
+            names = [alias.name for alias in node.names] if isinstance(node, ast.Import) else []
+            imported = ([module] if module else []) + names
+            for name in imported:
+                if name == "sqlite3" or name == "museum" or name.startswith("museum."):
+                    violations.append(f"{path.relative_to(ROOT)}:{node.lineno}: 禁止依赖 {name}")
+
     if violations:
         print("\n".join(violations))
         return 1
