@@ -26,7 +26,9 @@ export class VoiceClient {
   }
 
   connect(): Promise<void> {
+    const preRoll = this.pending.slice();
     this.disconnect();
+    this.pending = preRoll;
     const connection = this.connection;
     const epoch = this.playback.epoch;
     this.callbacks.onState("connecting");
@@ -98,9 +100,11 @@ export class VoiceClient {
 
   /** Stop locally before abort. Reconnect explicitly; old transport cannot revive. */
   interrupt(): void {
+    const preRoll = this.pending.slice();
     this.playback.stop();
     if (this.ready) this.socket?.send(JSON.stringify({ op: "abort" }));
     this.disconnect();
+    this.pending = preRoll;
   }
 
   disconnect(): void {

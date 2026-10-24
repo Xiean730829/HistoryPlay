@@ -87,7 +87,7 @@ $env:MUSEUM_WEB_ORIGIN = 'http://127.0.0.1:5173'
 
 由于云端逐轮关联尚未证明，保守的 `interrupt()` 先本地stop，再abort并退休整个旧音频连接，下一轮须显式重连同一设备；旧连接上的tts.start不会升级为新代。该路径只保证本地音频隔离，**不证明云端旧MCP动作安全，也不承诺云端聊天上下文跨重连保持**。不能把此基础提交标为CW09b/CW09c/CW11b整卡完成。
 
-A线需在根uv成员/锁登记 `services/voice-bridge`（已固定aiohttp/av），CI覆盖 `tests/voice`。VoiceEntry首次操作应先解锁播放AudioContext并connect，再start采音；新轮onSpeechStarted先stop，若旧回复仍在播放则interrupt，重连成功后startListening；onSpeechEnded调用stopListening；每帧调用sendFrame。启动/重连期间要保留最近240ms预录，避免丢首字。浏览器显示“已连接”必须来自桥的ready，不能来自麦克风权限获准。
+A线需在根uv成员/锁登记 `services/voice-bridge`（已固定aiohttp/av），CI覆盖 `tests/voice`。VoiceEntry首次操作应先解锁播放AudioContext并connect，再start采音；新轮onSpeechStarted先stop，若旧回复仍在播放则interrupt，重连成功后startListening；onSpeechEnded调用stopListening；每帧调用sendFrame。VoiceClient已在interrupt/reconnect期间保留最近240ms预录，startListening按序补发，显式disconnect清空缓存；A线无需再复制一份预录队列。浏览器显示“已连接”必须来自桥的ready，不能来自麦克风权限获准。
 
 ## MCP真实发现探针与WSS管道（独立PR）
 
@@ -120,6 +120,6 @@ A线在故事/文物背景正文取到后调用player.play，画面保留在同�
 
 ## 接入回归补充
 
-额外执行真实stdio子进程经过管道的initialize→tools/list→tools/call回归（模拟云端传输，不连接云端账号），诊断工具调用成功且脱敏计数正确。收到新的tts.start只重置解码器，不提升音频generation；异常JSON形态明确拒绝。当前Python接入测试合计36项通过，Ruff与compileall通过；全网页19项、投影5项、TS和构建通过。
+额外执行真实stdio子进程经过管道的initialize→tools/list→tools/call回归（模拟云端传输，不连接云端账号），诊断工具调用成功且脱敏计数正确。收到新的tts.start只重置解码器，不提升音频generation；异常JSON形态明确拒绝。又修正了重连丢失预录的问题，并增加240ms帧顺序回归。当前Python接入测试合计36项通过，Ruff与compileall通过；全网页20项、投影5项、TS和构建通过。
 
 20:40又对正在运行的旧8780游戏预览执行真实HTTP烟测：创建独立临时会话，context成功，铜钱/牛/碑搜索分别命中1/5/5，取正文返回HTTP404。未修改用户当前展台，测试结束已撤销自己的配对。此结果说明真实HTTP认证/查询通道已通，但旧预览没有新的正文读取能力或新版内容装配；最终联调必须更新运行版本和联调包，不能仅以远程main合并代替重启验证。没有把该烟测声明为云端MCP或用户语音成功。
