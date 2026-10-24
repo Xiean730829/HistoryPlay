@@ -5,10 +5,13 @@ from dataclasses import replace
 import pytest
 from museum.application.query_service import ContentUnavailable, QueryService
 from museum.domain.session.models import SessionMode, SessionState
-from museum.ports.content_catalog import PublishedPack
+from museum.ports.content_catalog import PackReference, PublishedPack
 
 PACK_ID = "cn.tang.core"
 VERSION = "1.0.0"
+DEP_ID = "iq.abbasid.core"
+DEP_VERSION = "0.1.0"
+DEP_ARTIFACT_ID = "iq.abbasid.artifact.bowl"
 ARTIFACT_ID = "cn.tang.artifact.stele"
 FACT_ID = "cn.tang.fact.stele.dated-678"
 SOURCE_ID = "cn.tang.source.mia.stele"
@@ -112,6 +115,33 @@ def make_pack(version: str = VERSION, alias: str = "佛碑") -> PublishedPack:
     documents["stories/observation.json"]["node_ids"].append("cn.tang.node.stele.02")
     documents["stories/observation.json"]["artifact_id"] = ARTIFACT_ID
     return PublishedPack(PACK_ID, version, "1", documents)
+
+
+def make_dependency_pack() -> PublishedPack:
+    return PublishedPack(
+        DEP_ID,
+        DEP_VERSION,
+        "1",
+        {
+            "manifest.json": {
+                "id": DEP_ID,
+                "version": DEP_VERSION,
+                "publication_status": "published",
+            },
+            "artifacts/bowl.json": {
+                "id": DEP_ARTIFACT_ID,
+                "title": "伊拉克蓝釉碗",
+                "aliases": ["蓝釉碗"],
+                "museum": {"name": "比较馆", "accession": "IQ-01"},
+                "time_range": {"start_year": 800, "end_year": 900, "precision": "century"},
+                "material": "陶",
+                "category": "碗",
+                "asset_ids": [],
+                "fact_card_ids": [],
+                "story_entry_ids": [],
+            },
+        },
+    )
 
 
 class MemoryCatalog:
@@ -335,6 +365,65 @@ def test_content_reader_rejects_byte_budgets_that_cannot_fit_a_paragraph() -> No
             content_id=STORY_ID,
             byte_budget=128,
         )
+
+
+def test_gallery_projects_comparison_artifacts_from_pinned_dependency_pack() -> None:
+    pack = make_pack()
+    documents = dict(pack.documents)
+    gallery = dict(documents["galleries/main.json"])
+    stations = [dict(item) for item in gallery["stations"]]
+    stations[0] = dict(stations[0], comparison_artifact_ids=[DEP_ARTIFACT_ID])
+    gallery["stations"] = stations
+    documents["galleries/main.json"] = gallery
+    documents["manifest.json"] = {
+        **documents["manifest.json"],
+        "dependencies": [{"pack_id": DEP_ID, "version": DEP_VERSION}],
+    }
+    catalog = MemoryCatalog(
+        replace(
+            pack,
+            documents=documents,
+            dependencies=(PackReference(DEP_ID, DEP_VERSION),),
+        ),
+        make_dependency_pack(),
+        make_pack("9.9.9"),
+    )
+    state = replace(make_state(), pack_versions={PACK_ID: VERSION, DEP_ID: DEP_VERSION})
+    projected = QueryService(catalog).gallery(state, "cn.tang.gallery.main")
+
+    assert projected.stations[0].comparison_artifacts[0].id == DEP_ARTIFACT_ID
+    assert projected.stations[0].comparison_artifacts[0].title == "伊拉克蓝釉碗"
+    assert set(catalog.requests) == {(PACK_ID, VERSION), (DEP_ID, DEP_VERSION)}
+
+
+def test_old_session_keeps_pinned_versions_when_a_newer_dependency_exists() -> None:
+    catalog = MemoryCatalog(
+        make_pack(),
+        make_dependency_pack(),
+        PublishedPack(
+            DEP_ID,
+            "9.9.9",
+            "1",
+            {
+                "manifest.json": {"id": DEP_ID, "version": "9.9.9"},
+                "artifacts/bowl.json": {
+                    "id": DEP_ARTIFACT_ID,
+                    "title": "新版本不该被旧会话读取",
+                    "museum": {"name": "比较馆", "accession": "IQ-99"},
+                    "time_range": {"start_year": 800, "end_year": 900, "precision": "century"},
+                    "material": "陶",
+                    "category": "碗",
+                    "asset_ids": [],
+                    "fact_card_ids": [],
+                    "story_entry_ids": [],
+                },
+            },
+        ),
+    )
+    state = replace(make_state(), pack_versions={PACK_ID: VERSION, DEP_ID: DEP_VERSION})
+    QueryService(catalog).search(state, "蓝釉碗", kind="artifact")
+    assert (DEP_ID, "9.9.9") not in catalog.requests
+    assert (DEP_ID, DEP_VERSION) in catalog.requests
 
 
 def test_query_fails_closed_when_a_pinned_version_or_citation_is_missing() -> None:

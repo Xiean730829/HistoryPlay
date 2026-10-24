@@ -14,6 +14,7 @@ from museum.adapters.http.helpers import (
     services,
     state_projection,
 )
+from museum.application.pack_versions import RuntimePackError, resolve_runtime_pack_versions
 from museum.domain.session.models import SessionState
 
 
@@ -46,12 +47,14 @@ async def create_session(request: web.Request) -> web.Response:
     if not isinstance(pack_id, str) or not isinstance(version, str):
         raise web.HTTPBadRequest(text="pack_id和version必须是字符串")
     try:
-        configured.catalog.get_published(pack_id, version)
+        pack_versions = resolve_runtime_pack_versions(configured.catalog, pack_id, version)
+    except RuntimePackError as error:
+        raise web.HTTPConflict(text=str(error)) from error
     except LookupError as error:
         raise web.HTTPNotFound(text="指定的已发布内容包不可用") from error
 
     session_id = uuid4().hex
-    state = SessionState(session_id=session_id, pack_versions={pack_id: version})
+    state = SessionState(session_id=session_id, pack_versions=pack_versions)
     with configured.database.transaction() as unit:
         unit.sessions.create(state)
     token = configured.authenticator.issue(session_id)

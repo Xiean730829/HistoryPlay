@@ -13,6 +13,7 @@ class PublishedContentUnavailable(LookupError):
 class PackReference:
     pack_id: str
     version: str
+    sha256: str | None = None
 
 
 @dataclass(frozen=True)
@@ -21,6 +22,7 @@ class PublishedPack:
     version: str
     schema_version: str
     documents: Mapping[str, object]
+    dependencies: tuple[PackReference, ...] = ()
 
 
 class ContentCatalog(Protocol):
