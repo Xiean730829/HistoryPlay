@@ -1,0 +1,14 @@
+{
+  "schema_version": "1",
+  "session_id": "sess_old_001",
+  "pack_versions": {
+    "cn.tang.core": "1.0.0"
+  },
+  "current_location_id": "cn.tang.artifact.stele",
+  "mode": "explore",
+  "display_order": [],
+  "revision": 0,
+  "view_revision": 0,
+  "event_seq": 0,
+  "interaction_epoch": 0
+}
