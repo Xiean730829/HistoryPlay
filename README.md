@@ -37,10 +37,18 @@ uv run python tools/dev/run_local.py
 uv run --package museum-content-pipeline content-pipeline validate --pack <作者包目录>
 ```
 
-当前检查 YAML 形状和包内引用完整性，并可编译候选 JSON；不会发布。仓库已有 `content-src/packs/cn-tang/` 三物作者包，当前manifest为draft 0.2.0；校验/编译不等于已发布。
+当前检查 YAML 形状和包内引用完整性，并可编译候选 JSON；不会发布。跨包引用必须在作者包 `manifest.yaml` 的 `dependencies` 中声明精确的 `pack_id` 与 `version`，并对每个可用依赖重复传入 `--dependency-pack`。工具检查依赖闭包、版本和循环；未声明包不能提供引用目标。
+
+```yaml
+dependencies:
+  - pack_id: iq.abbasid.core
+    version: 0.1.0
+```
+
+仓库已有 `content-src/packs/cn-tang/` 三物作者包，当前manifest为draft 0.2.0；校验/编译不等于已发布。
 
 ```powershell
-uv run --package museum-content-pipeline content-pipeline build --pack <作者包目录> --out <候选JSON目录>
+uv run --package museum-content-pipeline content-pipeline build --pack <作者包目录> --dependency-pack <依赖包目录> --out <候选JSON目录>
 ```
 
 编译会先完整校验，按源稿相对路径写出 JSON，不联网补充史实，也不覆盖发布目录。
@@ -48,7 +56,7 @@ uv run --package museum-content-pipeline content-pipeline build --pack <作者�
 写入不可变版本目录（已存在的包版本会失败）：
 
 ```powershell
-uv run --package museum-content-pipeline content-pipeline stage --pack <作者包目录> --out <版本化内容根目录>
+uv run --package museum-content-pipeline content-pipeline stage --pack <作者包目录> --dependency-pack <依赖包目录> --out <版本化内容根目录>
 ```
 
-`stage` 会按 `包ID/版本` 写出规范 JSON 和哈希清单，不覆盖已有版本。这不是面向玩家的发布。
+需要多个依赖时重复 `--dependency-pack`。`stage` 会按 `包ID/版本` 写出规范 JSON 和哈希清单，并为每个直接依赖记录稳定源文档哈希；不覆盖已有版本。这不是面向玩家的发布。

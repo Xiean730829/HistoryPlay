@@ -5,6 +5,7 @@ from pathlib import Path
 
 from yaml import YAMLError
 
+from content_pipeline.validation.dependencies import resolve_dependencies
 from content_pipeline.validation.reference_validator import validate_references
 from content_pipeline.validation.schema_validator import (
     Issue,
@@ -14,9 +15,17 @@ from content_pipeline.validation.schema_validator import (
 )
 
 
-def compile_pack(pack_dir: Path) -> tuple[list[Issue], dict[str, object] | None]:
+def compile_pack(
+    pack_dir: Path, dependency_packs: list[Path] | None = None
+) -> tuple[list[Issue], dict[str, object] | None]:
+    resolution = resolve_dependencies(pack_dir, dependency_packs or [])
     issues = validate_pack(pack_dir)
-    issues.extend(validate_references(pack_dir))
+    issues.extend(resolution.issues)
+    for package in resolution.closure:
+        issues.extend(validate_pack(package))
+    for package in [pack_dir.resolve(), *resolution.closure]:
+        direct = resolution.direct.get(package, [])
+        issues.extend(validate_references(package, direct))
     if issues:
         return issues, None
     documents: dict[str, object] = {}

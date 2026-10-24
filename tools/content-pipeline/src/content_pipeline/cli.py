@@ -21,16 +21,13 @@ from content_pipeline.assets.stage_assets import AssetStageError, stage_assets
 from content_pipeline.build.compiler import compile_pack, write_documents
 from content_pipeline.build.pack_writer import write_immutable_pack
 from content_pipeline.build.rehearsal_pack import RehearsalPackError, build_rehearsal_pack
-from content_pipeline.validation.reference_validator import validate_references
-from content_pipeline.validation.schema_validator import validate_pack
 
 
-def cmd_validate(pack: Path) -> int:
+def cmd_validate(pack: Path, dependency_packs: list[Path] | None = None) -> int:
     if not pack.is_dir():
         print(f"内容包目录不存在：{pack}", file=sys.stderr)
         return 2
-    issues = validate_pack(pack)
-    issues.extend(validate_references(pack))
+    issues, _documents = compile_pack(pack, dependency_packs)
     if issues:
         for issue in issues:
             print(issue, file=sys.stderr)
@@ -40,11 +37,11 @@ def cmd_validate(pack: Path) -> int:
     return 0
 
 
-def cmd_build(pack: Path, out: Path) -> int:
+def cmd_build(pack: Path, out: Path, dependency_packs: list[Path] | None = None) -> int:
     if not pack.is_dir():
         print(f"内容包目录不存在：{pack}", file=sys.stderr)
         return 2
-    issues, documents = compile_pack(pack)
+    issues, documents = compile_pack(pack, dependency_packs)
     if issues or documents is None:
         for issue in issues:
             print(issue, file=sys.stderr)
@@ -55,17 +52,19 @@ def cmd_build(pack: Path, out: Path) -> int:
     return 0
 
 
-def cmd_stage(pack: Path, out: Path) -> int:
+def cmd_stage(
+    pack: Path, out: Path, dependency_packs: list[Path] | None = None
+) -> int:
     if not pack.is_dir():
         print(f"内容包目录不存在：{pack}", file=sys.stderr)
         return 2
-    issues, documents = compile_pack(pack)
+    issues, documents = compile_pack(pack, dependency_packs)
     if issues or documents is None:
         for issue in issues:
             print(issue, file=sys.stderr)
         print(f"写入失败：{len(issues)} 项", file=sys.stderr)
         return 1
-    write_issues, dest = write_immutable_pack(out, documents)
+    write_issues, dest = write_immutable_pack(out, documents, dependency_packs)
     if write_issues or dest is None:
         for issue in write_issues:
             print(issue, file=sys.stderr)
@@ -272,11 +271,14 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     validate = sub.add_parser("validate", help="按公共 Schema 和包内引用校验作者源稿")
     validate.add_argument("--pack", required=True, type=Path, help="作者包目录")
+    validate.add_argument("--dependency-pack", action="append", default=[], type=Path, help="一个可用的精确版本依赖包；可重复")
     build = sub.add_parser("build", help="编译作者源稿为运行时 JSON")
     build.add_argument("--pack", required=True, type=Path, help="作者包目录")
+    build.add_argument("--dependency-pack", action="append", default=[], type=Path, help="一个可用的精确版本依赖包；可重复")
     build.add_argument("--out", required=True, type=Path, help="候选 JSON 输出目录")
     stage = sub.add_parser("stage", help="写入不可变版本目录，不覆盖已有版本")
     stage.add_argument("--pack", required=True, type=Path, help="作者包目录")
+    stage.add_argument("--dependency-pack", action="append", default=[], type=Path, help="一个可用的精确版本依赖包；可重复")
     stage.add_argument("--out", required=True, type=Path, help="版本化内容根目录")
     preview = sub.add_parser(
         "record-preview",
@@ -358,11 +360,11 @@ def main(argv: list[str] | None = None) -> int:
     rehearsal.add_argument("--version", required=True, help="联调published版本，必须是新的semver")
     args = parser.parse_args(argv)
     if args.command == "validate":
-        return cmd_validate(args.pack)
+        return cmd_validate(args.pack, args.dependency_pack)
     if args.command == "build":
-        return cmd_build(args.pack, args.out)
+        return cmd_build(args.pack, args.out, args.dependency_pack)
     if args.command == "stage":
-        return cmd_stage(args.pack, args.out)
+        return cmd_stage(args.pack, args.out, args.dependency_pack)
     if args.command == "record-preview":
         return cmd_record_preview(
             asset_id=args.asset_id,
