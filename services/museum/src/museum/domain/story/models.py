@@ -25,6 +25,7 @@ class StoryAction(StrEnum):
 class ExitAction(StrEnum):
     CONTINUE_STORY = "continue_story"
     CHOOSE_ROUTE = "choose_route"
+    RETURN_TO_EXHIBIT = "return_to_exhibit"
 
 
 @dataclass(frozen=True, slots=True)
