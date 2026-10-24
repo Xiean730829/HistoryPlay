@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Read-only, offline inspection of the existing Xiaozhi web test bridge.
 
 This command never connects to Xiaozhi, opens credentials, or records audio.
