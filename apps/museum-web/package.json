@@ -10,6 +10,7 @@
     "check": "tsc -b --pretty false && vite build && node --test tests/corridorProjection.test.mjs && npm run test:web"
   },
   "dependencies": {
+    "@google/model-viewer": "4.4.0",
     "@history-play/contracts": "0.1.0",
     "react": "19.2.8",
     "react-dom": "19.2.8"

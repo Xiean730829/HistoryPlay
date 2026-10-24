@@ -9,7 +9,13 @@ dependencies = []
 package = false
 
 [tool.uv.workspace]
-members = ["services/museum", "packages/contracts-python", "tools/content-pipeline"]
+members = [
+  "services/museum",
+  "services/mcp-gateway",
+  "services/voice-bridge",
+  "packages/contracts-python",
+  "tools/content-pipeline",
+]
 
 [dependency-groups]
 dev = [
