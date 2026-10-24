@@ -9,6 +9,9 @@
 | `schemas/v1/common.schema.json` | 命名空间 ID、年代区间、事实等级与能力 ID | 02-a |
 | `schemas/v1/content-pack.schema.json` | 内容包身份、地域、时间范围、能力与发布状态 | 02-a |
 | `schemas/v1/artifact.schema.json` | 真实物件身份；数字模型另见资产契约 | 02-a |
+| `schemas/v1/asset.schema.json` | 逻辑资产 ID、哈希、许可、LOD 与降级 | 02-a |
+| `schemas/v1/source.schema.json` | 来源定位，不是无主张的链接列表 | 02-a |
+| `schemas/v1/fact-card.schema.json` | 主张、事实等级、适用时间与来源 ID | 02-a |
 
 公开样例在 `examples/v1/`。样例不含密钥、本机盘符或未授权路径。
 
