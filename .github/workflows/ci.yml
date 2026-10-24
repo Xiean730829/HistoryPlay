@@ -28,9 +28,9 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --all-packages --dev
-      - run: uv run ruff check services/museum tools/dev packages/contracts-python tools/content-pipeline
+      - run: uv run ruff check services/museum tools/dev tools/integration packages/contracts-python tools/content-pipeline
       - run: uv run python tools/dev/check_boundaries.py
-      - run: uv run python -m compileall -q services/museum/src tools/dev packages/contracts-python/src tools/content-pipeline/src
+      - run: uv run python -m compileall -q services/museum/src tools/dev tools/integration packages/contracts-python/src tools/content-pipeline/src
       - run: uv run python tools/dev/generate_contracts.py --check
       - run: uv run pytest tests/contracts tests/content -q
       - run: uv run pytest tests/domain tests/application -q
