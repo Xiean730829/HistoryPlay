@@ -37,6 +37,21 @@ class SQLiteDatabase:
         finally:
             connection.close()
 
+    @contextmanager
+    def read(self) -> Iterator[SQLiteUnitOfWork]:
+        """Provides a consistent read snapshot without acquiring the write reservation."""
+        connection = self._connect()
+        try:
+            connection.execute("PRAGMA query_only = ON")
+            connection.execute("BEGIN")
+            yield SQLiteUnitOfWork(connection)
+            connection.commit()
+        except BaseException:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+
     def _connect(self) -> sqlite3.Connection:
         connection = sqlite3.connect(self.path, timeout=5, isolation_level=None)
         connection.row_factory = sqlite3.Row
