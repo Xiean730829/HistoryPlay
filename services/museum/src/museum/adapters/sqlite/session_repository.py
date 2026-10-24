@@ -68,6 +68,8 @@ def _encode_state(state: SessionState) -> str:
             if state.world_time
             else None
         ),
+        "gallery_id": state.gallery_id,
+        "station_id": state.station_id,
         "current_location_id": state.current_location_id,
         "focused_entity_id": state.focused_entity_id,
         "visible_entities": state.visible_entities,
@@ -103,7 +105,9 @@ def _decode_state(raw: str) -> SessionState:
         pack_versions=payload["pack_versions"],
         mode=SessionMode(payload["mode"]),
         world_time=HistoricalTime(**world_time) if world_time else None,
-        current_location_id=payload["current_location_id"],
+        gallery_id=payload.get("gallery_id"),
+        station_id=payload.get("station_id"),
+        current_location_id=payload.get("current_location_id"),
         focused_entity_id=payload["focused_entity_id"],
         visible_entities=tuple(payload["visible_entities"]),
         display_order=tuple(payload["display_order"]),

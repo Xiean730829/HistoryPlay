@@ -9,6 +9,9 @@ from museum.application.control_tickets import ControlTickets
 COMMAND_ACTIONS = frozenset(
     {
         "open_artifact",
+        "enter_gallery",
+        "move_next",
+        "move_previous",
         "enter_story",
         "continue_story",
         "pause_story",

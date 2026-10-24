@@ -48,7 +48,47 @@ class MemoryCatalog:
                     "exits": [{"action": "continue_story", "target_node_id": NODE_TWO}],
                 },
                 "artifacts/stele.json": {"id": "cn.tang.artifact.stele"},
+                "artifacts/coin.json": {"id": "cn.tang.artifact.coin"},
+                "artifacts/ox.json": {"id": "cn.tang.artifact.ox"},
                 "artifacts/bowl.json": {"id": "cn.tang.artifact.bowl"},
+                "galleries/tang.json": {
+                    "id": "cn.tang.gallery.main",
+                    "status": "open",
+                    "default_station_id": "cn.tang.station.stele",
+                    "stations": [
+                        {
+                            "id": "cn.tang.station.stele",
+                            "order": 0,
+                            "artifact_id": "cn.tang.artifact.stele",
+                            "time_range": {
+                                "start_year": 678,
+                                "end_year": 690,
+                                "precision": "range",
+                            },
+                        },
+                        {
+                            "id": "cn.tang.station.coin",
+                            "order": 1,
+                            "artifact_id": "cn.tang.artifact.coin",
+                            "comparison_artifact_ids": ["cn.tang.artifact.bowl"],
+                            "time_range": {
+                                "start_year": 713,
+                                "end_year": 741,
+                                "precision": "range",
+                            },
+                        },
+                        {
+                            "id": "cn.tang.station.ox",
+                            "order": 2,
+                            "artifact_id": "cn.tang.artifact.ox",
+                            "time_range": {
+                                "start_year": 713,
+                                "end_year": 741,
+                                "precision": "range",
+                            },
+                        },
+                    ],
+                },
             },
         )
 
@@ -86,7 +126,9 @@ def make_service(tmp_path):
     token = tickets.issue(
         session_id=state.session_id,
         actor_id=ACTOR_ID,
-        actions=frozenset({"continue_story", "open_artifact"}),
+        actions=frozenset(
+            {"continue_story", "open_artifact", "enter_gallery", "move_next", "move_previous"}
+        ),
     )
     return database, state, tickets, token, CommandService(
         database.transaction, MemoryCatalog(), tickets
@@ -196,3 +238,209 @@ def test_stale_request_is_rejected_and_receipt_is_stable(tmp_path) -> None:
         assert unit.sessions.get(state.session_id) == newer_state
         assert unit.events.replay(state.session_id, after_seq=state.event_seq) == ()
     assert tickets.revoke_actor(session_id=state.session_id, actor_id=ACTOR_ID) == 1
+
+
+def _navigation_command(
+    token: str,
+    *,
+    action: str,
+    revision: int,
+    interaction_epoch: int,
+    view_revision: int,
+    request_id: str = "navigation-0001",
+    target_id: str | None = None,
+) -> dict:
+    payload = {
+        "schema_version": "1",
+        "request_id": request_id,
+        "expected_revision": revision,
+        "expected_view_revision": view_revision,
+        "interaction_epoch": interaction_epoch,
+        "action": action,
+        "control_ticket": token,
+    }
+    if target_id is not None:
+        payload["target_id"] = target_id
+    return payload
+
+
+def _exploration_service(tmp_path):
+    database, state, _, token, service = make_service(tmp_path)
+    exploring = replace(
+        state,
+        mode=SessionMode.EXPLORE,
+        focused_entity_id=None,
+        visible_entities=(),
+        display_order=(),
+        story_id=None,
+        node_id=None,
+        revision=state.revision + 1,
+    )
+    with database.transaction() as unit:
+        unit.sessions.save(exploring, expected_revision=state.revision)
+    return database, exploring, token, service
+
+
+def test_gallery_navigation_enters_and_moves_one_station_with_idempotent_retries(tmp_path) -> None:
+    database, state, token, service = _exploration_service(tmp_path)
+    enter = _navigation_command(
+        token,
+        action="enter_gallery",
+        request_id="navigation-enter-0001",
+        target_id="cn.tang.gallery.main",
+        revision=state.revision,
+        interaction_epoch=state.interaction_epoch,
+        view_revision=state.view_revision,
+    )
+
+    entered = service.execute(state.session_id, ACTOR_ID, enter)
+    assert entered.status == "committed"
+    with database.transaction() as unit:
+        saved = unit.sessions.get(state.session_id)
+    assert saved is not None
+    assert saved.current_location_id == "cn.tang.station.stele"
+    assert saved.focused_entity_id == "cn.tang.artifact.stele"
+    assert saved.world_time is not None and saved.world_time.start_year == 678
+
+    move = _navigation_command(
+        token,
+        action="move_next",
+        request_id="navigation-move-0001",
+        revision=entered.revision,
+        interaction_epoch=entered.interaction_epoch,
+        view_revision=entered.view_revision,
+    )
+    moved = service.execute(state.session_id, ACTOR_ID, move)
+    retry = service.execute(state.session_id, ACTOR_ID, move)
+    assert moved.status == "committed"
+    assert retry == moved
+    with database.transaction() as unit:
+        saved = unit.sessions.get(state.session_id)
+        events = unit.events.replay(state.session_id, after_seq=state.event_seq)
+    assert saved is not None
+    assert saved.gallery_id == "cn.tang.gallery.main"
+    assert saved.station_id == "cn.tang.station.coin"
+    assert saved.current_location_id == "cn.tang.station.coin"
+    assert saved.focused_entity_id == "cn.tang.artifact.coin"
+    assert "cn.tang.artifact.bowl" in saved.visible_entities
+    assert saved.world_time is not None and saved.world_time.start_year == 713
+    assert len(events) == 2
+
+
+def test_gallery_navigation_rejects_boundaries_without_changing_state(tmp_path) -> None:
+    database, state, token, service = _exploration_service(tmp_path)
+    entered = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_gallery",
+            request_id="navigation-enter-0002",
+            target_id="cn.tang.gallery.main",
+            revision=state.revision,
+            interaction_epoch=state.interaction_epoch,
+            view_revision=state.view_revision,
+        ),
+    )
+    first = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="move_previous",
+            request_id="navigation-prev-0001",
+            revision=entered.revision,
+            interaction_epoch=entered.interaction_epoch,
+            view_revision=entered.view_revision,
+        ),
+    )
+    assert first.status == "rejected"
+    assert "入口" in (first.reason or "")
+    with database.transaction() as unit:
+        saved = unit.sessions.get(state.session_id)
+    assert saved is not None
+    assert saved.current_location_id == "cn.tang.station.stele"
+    assert saved.revision == entered.revision
+
+    latest = entered
+    for index, station_id in enumerate(("cn.tang.station.coin", "cn.tang.station.ox")):
+        latest = service.execute(
+            state.session_id,
+            ACTOR_ID,
+            _navigation_command(
+                token,
+                action="move_next",
+                revision=latest.revision,
+                interaction_epoch=latest.interaction_epoch,
+                view_revision=latest.view_revision,
+                request_id=f"navigation-next-{index:04d}",
+            ),
+        )
+        assert latest.status == "committed"
+        with database.transaction() as unit:
+            saved = unit.sessions.get(state.session_id)
+        assert saved is not None and saved.current_location_id == station_id
+
+    last = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="move_next",
+            revision=latest.revision,
+            interaction_epoch=latest.interaction_epoch,
+            view_revision=latest.view_revision,
+            request_id="navigation-last-0001",
+        ),
+    )
+    assert last.status == "rejected"
+    assert "末尾" in (last.reason or "")
+    with database.transaction() as unit:
+        assert unit.sessions.get(state.session_id).revision == latest.revision
+
+
+def test_navigation_requires_current_view_revision_and_exploration_mode(tmp_path) -> None:
+    database, state, token, service = _exploration_service(tmp_path)
+    stale = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_gallery",
+            request_id="navigation-enter-stale",
+            target_id="cn.tang.gallery.main",
+            revision=state.revision,
+            interaction_epoch=state.interaction_epoch,
+            view_revision=state.view_revision + 1,
+        ),
+    )
+    assert stale.status == "rejected"
+    assert "视图修订号" in (stale.reason or "")
+
+    story_state = replace(
+        state,
+        mode=SessionMode.STORY,
+        focused_entity_id="cn.tang.artifact.stele",
+        visible_entities=("cn.tang.artifact.stele",),
+        display_order=("cn.tang.artifact.stele",),
+        story_id=STORY_ID,
+        node_id=NODE_ONE,
+        revision=state.revision + 1,
+    )
+    with database.transaction() as unit:
+        unit.sessions.save(story_state, expected_revision=state.revision)
+    blocked = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_gallery",
+            target_id="cn.tang.gallery.main",
+            revision=story_state.revision,
+            interaction_epoch=story_state.interaction_epoch,
+            view_revision=story_state.view_revision,
+            request_id="navigation-story-0001",
+        ),
+    )
+    assert blocked.status == "rejected"
+    assert "探索模式" in (blocked.reason or "")

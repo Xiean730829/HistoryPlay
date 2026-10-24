@@ -55,6 +55,8 @@ class SessionState:
     pack_versions: Mapping[str, str]
     mode: SessionMode = SessionMode.EXPLORE
     world_time: HistoricalTime | None = None
+    gallery_id: str | None = None
+    station_id: str | None = None
     current_location_id: str | None = None
     focused_entity_id: str | None = None
     visible_entities: tuple[str, ...] = ()
@@ -81,6 +83,8 @@ class SessionState:
             raise ValueError("故事模式必须包含故事和节点")
         if self.mode == SessionMode.QA and not self.return_stack:
             raise ValueError("问答模式必须保留主线返回点")
+        if (self.gallery_id is None) != (self.station_id is None):
+            raise ValueError("展厅锚点必须同时包含展厅和展位")
         if self.focused_entity_id and self.visible_entities and self.focused_entity_id not in self.visible_entities:
             raise ValueError("焦点展品必须是当前可见展品")
         object.__setattr__(self, "pack_versions", MappingProxyType(dict(self.pack_versions)))
