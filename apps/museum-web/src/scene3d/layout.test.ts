@@ -1,9 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
-import { Box3, BoxGeometry, Group, Mesh, MeshStandardMaterial, Texture, Vector3 } from "three";
+import { Box3, BoxGeometry, BufferGeometry, Group, Mesh, MeshStandardMaterial, Points, PointsMaterial, Texture, Vector3 } from "three";
 import { maintainSurfaceContact, nearbyModelIndices, seatModel, stairStepPlacement, stationPlacement } from "./layout";
 import { disposeTree } from "./resources";
 
 describe("physical exhibit placement", () => {
+  it("releases the new ruin dust geometry and particle material on unmount", () => {
+    const geometry = new BufferGeometry(); const material = new PointsMaterial();
+    const a = vi.spyOn(geometry, "dispose"); const b = vi.spyOn(material, "dispose");
+    const group = new Group().add(new Points(geometry, material));
+    disposeTree(group);
+    expect(a).toHaveBeenCalledTimes(1); expect(b).toHaveBeenCalledTimes(1);
+  });
   it("keeps a tilted object resting on the raised cabinet instead of intersecting its deck", () => {
     const root = new Group(); root.position.y = stationPlacement(2).plinthTop + 0.012;
     const spin = seatModel(new Group().add(new Mesh(new BoxGeometry(1, 2, 1)))); root.add(spin);

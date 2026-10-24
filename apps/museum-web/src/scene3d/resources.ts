@@ -1,4 +1,4 @@
-import { Material, Mesh, Object3D, Texture } from "three";
+import { Line, Material, Mesh, Object3D, Points, Texture } from "three";
 
 /** GLB and architectural resources are owned by this scene, never by another viewer. */
 export function disposeTree(root: Object3D): void {
@@ -6,7 +6,7 @@ export function disposeTree(root: Object3D): void {
   const materials = new Set<Material>();
   const textures = new Set<Texture>();
   root.traverse((object) => {
-    if (!(object instanceof Mesh)) return;
+    if (!(object instanceof Mesh) && !(object instanceof Points) && !(object instanceof Line)) return;
     geometries.add(object.geometry);
     for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
       materials.add(material);
