@@ -38,3 +38,11 @@ uv run --package museum-content-pipeline content-pipeline build --pack <作者�
 ```
 
 编译会先完整校验，按源稿相对路径写出 JSON，不联网补充史实，也不覆盖发布目录。
+
+写入不可变版本目录（已存在的包版本会失败）：
+
+```powershell
+uv run --package museum-content-pipeline content-pipeline stage --pack <作者包目录> --out <版本化内容根目录>
+```
+
+`stage` 会按 `包ID/版本` 写出规范 JSON 和哈希清单，不覆盖已有版本。这不是面向玩家的发布。
