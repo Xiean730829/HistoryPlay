@@ -1,6 +1,7 @@
 import React from "react";
 import type { ArtifactProjection, SessionCredentials } from "../application/museumApi";
 import { projectCorridor } from "./corridorProjection";
+import { CorridorMotion } from "./CorridorMotion";
 import { ArtifactStation } from "./ExhibitStation";
 import { FloorTimeline } from "./FloorTimeline";
 
@@ -10,6 +11,8 @@ interface MuseumCorridorProps {
   focusedId: string | null;
   session?: SessionCredentials | null;
   loading?: boolean;
+  navigationDisabled?: boolean;
+  onMove?: (direction: "next" | "previous") => void;
 }
 
 export function MuseumCorridor({
@@ -18,7 +21,11 @@ export function MuseumCorridor({
   focusedId,
   session = null,
   loading = false,
+  navigationDisabled = false,
+  onMove,
 }: MuseumCorridorProps) {
+  const motion = React.useRef(new CorridorMotion());
+  const [motionReady, setMotionReady] = React.useState(false);
   const [width, setWidth] = React.useState(() => window.innerWidth);
   React.useEffect(() => {
     const onResize = () => setWidth(window.innerWidth);
@@ -33,8 +40,13 @@ export function MuseumCorridor({
   const years = stations.map((item) => compactTimeLabel(item));
   const activeIndex = focusedId === null ? null : stations.findIndex((item) => item.id === focusedId);
 
+  React.useEffect(() => {
+    if (stations.length === 0) return;
+    if (motion.current.observe(focusedId).animate) setMotionReady(true);
+  }, [focusedId, stations.length]);
+
   return (
-    <section className="corridor" aria-label="唐朝长廊">
+    <section className="corridor" aria-label="唐朝长廊" data-motion-ready={motionReady}>
       <div className="corridor-ceiling" aria-hidden="true" />
       <div className="corridor-wall corridor-wall-left" aria-hidden="true" />
       <div className="corridor-wall corridor-wall-right" aria-hidden="true" />
@@ -54,6 +66,31 @@ export function MuseumCorridor({
       })}
 
       <FloorTimeline labels={years} activeIndex={activeIndex !== null && activeIndex >= 0 ? activeIndex : null} />
+      {onMove && (
+        <nav className="corridor-navigation" aria-label="展厅展位导航">
+          <button
+            aria-label="上一个展位"
+            className="corridor-navigation-button"
+            disabled={navigationDisabled || !session || stations.length === 0}
+            onClick={() => onMove("previous")}
+            type="button"
+          >
+            <span aria-hidden="true">←</span><span>上一个</span>
+          </button>
+          <span className="corridor-navigation-position" aria-live="polite">
+            {activeIndex !== null && activeIndex >= 0 ? `展位 ${activeIndex + 1} / ${stations.length}` : "未定位"}
+          </span>
+          <button
+            aria-label="下一个展位"
+            className="corridor-navigation-button"
+            disabled={navigationDisabled || !session || stations.length === 0}
+            onClick={() => onMove("next")}
+            type="button"
+          >
+            <span>下一个</span><span aria-hidden="true">→</span>
+          </button>
+        </nav>
+      )}
       {loading && <p className="corridor-state" role="status">正在连接唐朝长廊…</p>}
       {!loading && stations.length === 0 && (
         <p className="corridor-state" role="status">长廊空间已就绪，展位将在已发布内容载入后呈现。</p>

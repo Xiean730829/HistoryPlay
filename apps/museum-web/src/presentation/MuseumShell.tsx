@@ -4,6 +4,7 @@ import {
   restoreSession,
   searchArtifacts,
   openArtifact,
+  moveGalleryStation,
   enterGallery,
   unpairSession,
   requestEventTicket,
@@ -160,6 +161,28 @@ export function MuseumShell() {
     }
   }
 
+  async function moveStation(direction: "next" | "previous") {
+    if (!session) return;
+    setBusy(true);
+    try {
+      const result = await moveGalleryStation(session, direction);
+      const store = projectionStore.current;
+      if (store) await store.acceptQuery(result.session);
+      else setSession(result.session);
+      if (result.receipt.status === "committed") {
+        setNotice(direction === "next" ? "已前进到服务端确认的展位。" : "已后退到服务端确认的展位。");
+        setNoticeTone("success");
+      } else {
+        setNotice(result.receipt.reason ?? "展位未改变，当前焦点保持不变。");
+        setNoticeTone("error");
+      }
+    } catch (error) {
+      showError(error, setNotice, setNoticeTone);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function leaveMuseum() {
     let unpairFailed = false;
     if (session) {
@@ -201,6 +224,8 @@ export function MuseumShell() {
         focusedId={session?.context.focused_artifact?.id ?? session?.state.focused_entity_id ?? null}
         session={session}
         loading={!session && !healthError}
+        navigationDisabled={busy}
+        onMove={(direction) => void moveStation(direction)}
       />
 
       {!session && health && (
