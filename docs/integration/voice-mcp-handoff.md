@@ -41,7 +41,9 @@ $env:MUSEUM_MCP_BINDING_FILE = '<当前展台写出的本机私密绑定文件�
 
 设备连接配置保存在原浏览器该地址的localStorage；当前自动化浏览器不共享该存储。Windows Computer Use已找到原Edge窗口，但随后因无法可靠识别URL而强制终止UI操作，未读取或导出任何原设备凭据。
 
-等待用户在原浏览器打开测试台并恢复原固定设备。真实设备连接、云端MCP发现、指定稿逐字朗读、abort后的旧任务隔离、可信来源/轮次关联均保持“未测”。主线程负责一次性请求用户操作。
+用户已于本轮回复原测试页“已连接”。这是用户对原网页设备连接的确认，不等于新游戏语音桥已连接。开发者独立观察到8765健康接口正常；20:24的本机TCP快照未捕获到该进程的浏览器WS/443上游连接，因此不能据此补写双向音频实测。云端MCP发现、指定稿逐字朗读、abort后的旧任务隔离、可信来源/轮次关联均保持“未测”。
+
+原桥每个 `/ws` 独占上游连接，没有授权共享连接/诊断API。新桥不得在原设备仍在线时抢连同一设备。现有用户连接信息不会因新桥开发而再次要求用户重新配对。
 
 ## 已核实的上游路线
 
@@ -72,3 +74,23 @@ $env:MUSEUM_MCP_BINDING_FILE = '<当前展台写出的本机私密绑定文件�
 - 完成回调在本地音频节点排空后触发；操作系统/硬件缓冲可能仍有尾音，不宣称声学测量或精确毫秒恢复。
 
 `npm run check`通过，新增6个单测覆盖VAD连续120ms/静音650ms、两轮重开、噪声、旧代音频拒绝、播放排空、权限拒绝和取消时清理。真实麦克风/AEC/外放打断仍待H5/H6，CW09a仅交付可装配基础，不关闭整卡。
+
+## 固定设备本机音频桥（独立PR）
+
+`services/voice-bridge` 和网页 `voice/VoiceClient.ts` 已交付独立实现。设备MAC、UUID、WSS、Token只由服务端读取本机私密文件，浏览器只连接 `ws://127.0.0.1:8781/voice/ws`。桥限制Host/游戏Origin；拒绝上游跳转；默认只容许一个本地音频连接；日志不输出连接配置、异常repr或设备身份。
+
+```powershell
+uv pip install --python .venv/Scripts/python.exe -e services/voice-bridge
+$env:MUSEUM_XIAOZHI_DEVICE_FILE = '<本机已有设备配置JSON绝对路径>'
+$env:MUSEUM_VOICE_PORT = '8781'
+$env:MUSEUM_WEB_ORIGIN = 'http://127.0.0.1:5173'
+.venv/Scripts/python.exe -m museum_voice.main
+```
+
+配置文件兼容原网页导入格式：`device_id`、`client_id`、`websocket: {url,token,version}`。当前不自动复制原浏览器localStorage；不增加账号权限、不生成设备身份、不自动重新绑定。原工程的现有私密配置文件如无可用副本，需由后续可信的同源迁移流程实现，不能声称原页面连上就等于新桥拿到了凭据。
+
+桥实际通过 `av==17.1.0` Opus编码/解码测试，自动将3个20ms PCM帧合并为60ms Opus。协议1/2/3包头与长度校验、Host/Origin拒绝、固定设备两次加载身份不变等11项Python测试通过；网页新增2项连接generation/打断旧音频测试，`npm run check`全通过。
+
+由于云端逐轮关联尚未证明，保守的 `interrupt()` 先本地stop，再abort并退休整个旧音频连接，下一轮须显式重连同一设备；旧连接上的tts.start不会升级为新代。该路径只保证本地音频隔离，**不证明云端旧MCP动作安全，也不承诺云端聊天上下文跨重连保持**。不能把此基础提交标为CW09b/CW09c/CW11b整卡完成。
+
+A线需在根uv成员/锁登记 `services/voice-bridge`（已固定aiohttp/av），CI覆盖 `tests/voice`。VoiceEntry首次操作应先解锁播放AudioContext并connect，再start采音；新轮onSpeechStarted先stop，若旧回复仍在播放则interrupt，重连成功后startListening；onSpeechEnded调用stopListening；每帧调用sendFrame。启动/重连期间要保留最近240ms预录，避免丢首字。浏览器显示“已连接”必须来自桥的ready，不能来自麦克风权限获准。
