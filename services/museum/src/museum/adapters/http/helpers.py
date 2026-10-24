@@ -70,6 +70,10 @@ def state_projection(state: SessionState) -> dict[str, Any]:
     }
     if state.world_time is not None:
         result["world_time"] = _world_time(state)
+    if state.gallery_id is not None:
+        result["gallery_id"] = state.gallery_id
+    if state.station_id is not None:
+        result["station_id"] = state.station_id
     if state.current_location_id is not None:
         result["current_location_id"] = state.current_location_id
     if state.focused_entity_id is not None:

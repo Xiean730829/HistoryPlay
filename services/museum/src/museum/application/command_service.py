@@ -10,8 +10,9 @@ from typing import Any
 from uuid import uuid4
 
 from museum.application.control_tickets import ControlTickets
+from museum.domain.gallery.navigation import InvalidGalleryRoute, adjacent_station
 from museum.domain.session.events import SessionEvent, SessionEventKind, TransitionResult
-from museum.domain.session.models import SessionState
+from museum.domain.session.models import HistoricalTime, SessionState
 from museum.domain.session.transitions import (
     InvalidTransition,
     focus_entity,
@@ -35,6 +36,9 @@ NAMESPACED_ID = re.compile(r"^[a-z]{2}(?:\.[a-z0-9-]+){2,8}$")
 COMMAND_ACTIONS = frozenset(
     {
         "open_artifact",
+        "enter_gallery",
+        "move_next",
+        "move_previous",
         "enter_story",
         "continue_story",
         "pause_story",
@@ -213,6 +217,40 @@ class CommandService:
         )
 
     def _apply(self, state: SessionState, command: _Command) -> TransitionResult:
+        if command.action in {"enter_gallery", "move_next", "move_previous"}:
+            if state.mode.value != "explore":
+                raise InvalidTransition("只有长廊探索模式可以移动展位")
+            packs = self._pinned_packs(state)
+            if command.action == "enter_gallery":
+                gallery = _find_gallery(packs, _required_target(command))
+                if gallery.get("status") != "open":
+                    raise InvalidTransition("该展厅尚未开放")
+                stations = _gallery_stations(gallery)
+                default_id = gallery.get("default_station_id")
+                default_station = next(
+                    (station for station in stations if station.get("id") == default_id), None
+                )
+                if default_station is None:
+                    raise InvalidTransition("开放展厅的默认展位无效")
+                adjacent_station(stations, default_id, "next")
+                if state.gallery_id == _required_target(command) and state.station_id == default_id:
+                    raise InvalidTransition("当前已经位于展厅入口")
+                return _enter_station(state, gallery, default_station)
+
+            if state.gallery_id is None or state.station_id is None:
+                raise InvalidTransition("请先进入展厅再移动展位")
+            gallery = _find_gallery(packs, state.gallery_id)
+            if gallery.get("status") != "open":
+                raise InvalidTransition("当前展厅尚未开放")
+            direction = "next" if command.action == "move_next" else "previous"
+            target_station = adjacent_station(
+                _gallery_stations(gallery), state.station_id, direction
+            )
+            if target_station is None:
+                boundary = "末尾" if direction == "next" else "入口"
+                raise InvalidTransition(f"已经到达展厅{boundary}，不能继续移动")
+            return _enter_station(state, gallery, target_station)
+
         if command.action == "open_artifact":
             artifact_id = _required_target(command)
             _find_document(self._pinned_packs(state), artifact_id, "artifacts/")
@@ -282,13 +320,16 @@ def _parse_command(payload: Mapping[str, Any]) -> _Command:
     expected_view = payload.get("expected_view_revision")
     if expected_view is not None:
         expected_view = _non_negative_int(expected_view, "expected_view_revision")
-    if action == "set_view" and expected_view is None:
-        raise InvalidCommand("set_view必须携带expected_view_revision")
+    if (
+        action in {"set_view", "enter_gallery", "move_next", "move_previous"}
+        and expected_view is None
+    ):
+        raise InvalidCommand(f"{action}必须携带expected_view_revision")
     target = payload.get("target_id")
     if target is not None and (not isinstance(target, str) or not NAMESPACED_ID.fullmatch(target)):
         raise InvalidCommand("target_id不是有效的命名空间标识")
     if (
-        action in {"open_artifact", "enter_story", "focus_detail", "choose_action"}
+        action in {"open_artifact", "enter_gallery", "enter_story", "focus_detail", "choose_action"}
         and target is None
     ):
         raise InvalidCommand(f"{action}必须提供target_id")
@@ -360,7 +401,9 @@ def _stale_reason(state: SessionState, command: _Command) -> str | None:
         return "会话修订号已变化，请先读取最新状态"
     if command.interaction_epoch != state.interaction_epoch:
         return "交互轮次已变化，拒绝执行过期命令"
-    if command.action == "set_view" and command.expected_view_revision != state.view_revision:
+    if command.action in {"set_view", "enter_gallery", "move_next", "move_previous"} and (
+        command.expected_view_revision != state.view_revision
+    ):
         return "视图修订号已变化，请先读取最新状态"
     return None
 
@@ -421,6 +464,86 @@ def _find_document(
             ):
                 return document
     raise PinnedContentUnavailable(f"会话固定内容中找不到目标：{document_id}")
+
+
+def _find_gallery(packs: tuple[PublishedPack, ...], gallery_id: str) -> Mapping[str, Any]:
+    for pack in packs:
+        for path, document in pack.documents.items():
+            if (
+                path.startswith("galleries/")
+                and isinstance(document, Mapping)
+                and document.get("id") == gallery_id
+            ):
+                return document
+    raise PinnedContentUnavailable(f"会话固定内容中找不到展厅：{gallery_id}")
+
+
+def _gallery_stations(gallery: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    stations = gallery.get("stations")
+    if (
+        not isinstance(stations, list)
+        or not stations
+        or any(not isinstance(station, Mapping) for station in stations)
+    ):
+        raise InvalidGalleryRoute("展厅缺少有效展位清单")
+    return stations
+
+
+def _enter_station(
+    state: SessionState,
+    gallery: Mapping[str, Any],
+    station: Mapping[str, Any],
+) -> TransitionResult:
+    gallery_id = gallery.get("id")
+    station_id = station.get("id")
+    artifact_id = station.get("artifact_id")
+    time_range = station.get("time_range")
+    if (
+        not isinstance(gallery_id, str)
+        or not isinstance(station_id, str)
+        or not isinstance(artifact_id, str)
+    ):
+        raise InvalidGalleryRoute("展位缺少有效的站点或文物标识")
+    if not isinstance(time_range, Mapping):
+        raise InvalidGalleryRoute(f"展位缺少年代信息：{station_id}")
+    try:
+        historical_time = HistoricalTime(
+            start_year=time_range["start_year"],
+            end_year=time_range["end_year"],
+            precision=time_range["precision"],
+            display_label=time_range.get("display_label"),
+        )
+    except (KeyError, TypeError, ValueError) as error:
+        raise InvalidGalleryRoute(f"展位年代信息无效：{station_id}") from error
+
+    visible_entities = state.visible_entities
+    display_order = state.display_order
+    comparison_ids = station.get("comparison_artifact_ids", [])
+    if not isinstance(comparison_ids, list):
+        raise InvalidGalleryRoute(f"展位对比文物清单无效：{station_id}")
+    for entity_id in (artifact_id, *comparison_ids):
+        if not isinstance(entity_id, str):
+            raise InvalidGalleryRoute(f"展位关联文物标识无效：{station_id}")
+        if entity_id not in visible_entities:
+            visible_entities = (*visible_entities, entity_id)
+        if entity_id not in display_order:
+            display_order = (*display_order, entity_id)
+    updated = _next_state(
+        state,
+        gallery_id=gallery_id,
+        station_id=station_id,
+        current_location_id=station_id,
+        world_time=historical_time,
+        focused_entity_id=artifact_id,
+        visible_entities=visible_entities,
+        display_order=display_order,
+    )
+    kind = (
+        SessionEventKind.FOCUS_CHANGED
+        if artifact_id in state.visible_entities
+        else SessionEventKind.ARTIFACT_OPENED
+    )
+    return _transition(updated, kind, entity_id=artifact_id)
 
 
 def _load_story(packs: tuple[PublishedPack, ...], story_id: str) -> StoryDefinition:
