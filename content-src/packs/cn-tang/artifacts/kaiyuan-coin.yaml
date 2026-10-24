@@ -20,6 +20,17 @@ category: 钱币
 asset_ids:
   - cn.tang.asset.kaiyuan-coin.glb
   - cn.tang.asset.kaiyuan-coin.preview
+  - cn.tang.asset.kaiyuan-coin.display
+presentation:
+  preview_asset_id: cn.tang.asset.kaiyuan-coin.preview
+  display:
+    kind: model3d
+    asset_id: cn.tang.asset.kaiyuan-coin.display
+  default_camera:
+    orbit: inscription-face
+    target_note: 铭文面朝+X，開元通寶可读。
+  teaser: 本件718—732年开元通宝；621年是类型始铸，不是这枚钱。
+  background_node_id: cn.tang.node.kaiyuan-coin.01
 fact_card_ids:
   - cn.tang.fact.kaiyuan-coin.specimen-date
   - cn.tang.fact.kaiyuan-coin.type-start

@@ -18,6 +18,17 @@ category: 佛教造像碑
 asset_ids:
   - cn.tang.asset.votive-stele.glb
   - cn.tang.asset.votive-stele.preview
+  - cn.tang.asset.votive-stele.display
+presentation:
+  preview_asset_id: cn.tang.asset.votive-stele.preview
+  display:
+    kind: model3d
+    asset_id: cn.tang.asset.votive-stele.display
+  default_camera:
+    orbit: front-upright
+    target_note: 正面朝-Y，佛与二菩萨直立。
+  teaser: 678年石灰岩造像碑，一佛二菩萨直立。
+  background_node_id: cn.tang.node.votive-stele.01
 fact_card_ids:
   - cn.tang.fact.votive-stele.date
 story_entry_ids:

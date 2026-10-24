@@ -83,15 +83,24 @@ def stage_assets(
     sources_path: Path,
     out_root: Path,
     require_all: bool = False,
+    runtime_version: str | None = None,
+    include_ids: frozenset[str] | None = None,
 ) -> Path:
     if not pack_dir.is_dir():
         raise AssetStageError(f"内容包目录不存在：{pack_dir}")
     pack_id, version = _pack_identity(pack_dir)
+    if runtime_version is not None:
+        version = runtime_version
     authored = _pack_assets(pack_dir)
     sources = load_source_map(sources_path)
     unknown = sorted(asset_id for asset_id in sources if asset_id not in authored)
     if unknown:
         raise AssetStageError(f"来源配置包含内容包没有的资产：{unknown[0]}")
+    if include_ids is not None:
+        unknown_required = sorted(asset_id for asset_id in include_ids if asset_id not in authored)
+        if unknown_required:
+            raise AssetStageError(f"联调包缺少资产：{unknown_required[0]}")
+        authored = {asset_id: authored[asset_id] for asset_id in sorted(include_ids)}
     missing = sorted(asset_id for asset_id in authored if asset_id not in sources)
     if require_all and missing:
         raise AssetStageError(f"发布清单缺文件：{missing[0]}")
