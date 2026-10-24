@@ -19,6 +19,7 @@ material: 鎏金铜
 category: 小型动物造型器物
 asset_ids:
   - cn.tang.asset.gilt-bronze-bull.glb
+  - cn.tang.asset.gilt-bronze-bull.preview
 fact_card_ids:
   - cn.tang.fact.gilt-bronze-bull.date
   - cn.tang.fact.gilt-bronze-bull.use

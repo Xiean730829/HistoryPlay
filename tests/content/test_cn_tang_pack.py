@@ -49,6 +49,42 @@ def test_coin_keeps_specimen_date_apart_from_type_start() -> None:
     assert "621" in coin["time_range"]["uncertainty"]
 
 
+def test_three_preview_assets_are_inventoried_without_binding_source_display() -> None:
+    previews = [
+        load_yaml("assets/votive-stele.preview.yaml"),
+        load_yaml("assets/kaiyuan-coin.preview.yaml"),
+        load_yaml("assets/gilt-bronze-bull.preview.yaml"),
+    ]
+    expected = {
+        "cn.tang.asset.votive-stele.preview": (
+            "cn.tang.asset.votive-stele.glb",
+            "168b6bfeb4e07625bf265b2d6dcf0dbd7c566a40b33da1e510012c25fa078d46",
+            1488044,
+        ),
+        "cn.tang.asset.kaiyuan-coin.preview": (
+            "cn.tang.asset.kaiyuan-coin.glb",
+            "21b9127342f1a4f64ac13154f5dda15abe390f7b5a9a6b6ffdba594a8f62fbc2",
+            1187360,
+        ),
+        "cn.tang.asset.gilt-bronze-bull.preview": (
+            "cn.tang.asset.gilt-bronze-bull.glb",
+            "194fc122777f0e35e3c3b4732bcbd886414a57e977cf440df9494ff017e6701e",
+            855092,
+        ),
+    }
+    assert {item["id"] for item in previews} == set(expected)
+    for item in previews:
+        source_id, digest, size = expected[item["id"]]
+        assert item["kind"] == "preview"
+        assert item["format"] == "png"
+        assert item["derived_from"] == source_id
+        assert item["sha256"] == digest
+        assert item["byte_size"] == size
+        artifact = load_yaml(f"artifacts/{source_id.split('.')[-2]}.yaml")
+        assert item["id"] in artifact["asset_ids"]
+        assert "presentation" not in artifact
+
+
 def test_bull_keeps_century_dating_and_does_not_name_an_owner() -> None:
     bull = load_yaml("artifacts/gilt-bronze-bull.yaml")
     dated = load_yaml("facts/gilt-bronze-bull-date.yaml")

@@ -307,6 +307,51 @@ def test_blender_renderer_requires_exact_pinned_version_and_renders_real_glb(
     assert str(model.resolve()) in calls[1]
 
 
+def test_render_preview_copies_across_drive_boundaries(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from content_pipeline.assets import model_preview
+
+    model, _, manifest, values = _record(tmp_path)
+    renderer = tmp_path / "blender"
+    renderer.touch()
+    preview = tmp_path / "rendered.png"
+
+    def fake_run(command: list[str], timeout: int = 30):
+        if command[-1] == "--version":
+            return model_preview.subprocess.CompletedProcess(command, 0, "Blender 4.2.16", "")
+        output_path = Path(command[command.index("--") + 2])
+        output_path.write_bytes(_png(64, 64))
+        return model_preview.subprocess.CompletedProcess(command, 0, "", "")
+
+    copied: list[tuple[Path, Path]] = []
+    original_copy = model_preview.shutil.copyfile
+
+    def spy_copy(src: str | Path, dst: str | Path) -> Path:
+        copied.append((Path(src), Path(dst)))
+        return original_copy(src, dst)
+
+    monkeypatch.setattr(model_preview, "_run", fake_run)
+    monkeypatch.setattr(model_preview.shutil, "copyfile", spy_copy)
+    assert (
+        render_preview(
+            renderer_path=renderer,
+            expected_version="4.2.16",
+            model_path=model,
+            preview_path=preview,
+            manifest_path=manifest,
+            asset_id=str(values["asset_id"]),
+            preview_asset_id=str(values["preview_asset_id"]),
+            attribution=str(values["attribution"]),
+            framing=values["framing"],
+        )
+        is True
+    )
+    assert preview.is_file()
+    assert copied and copied[0][1] == preview
+    assert json.loads(manifest.read_text(encoding="utf-8"))["previews"][0]["preview_sha256"]
+
+
 def test_blender_failure_or_version_mismatch_never_registers_success(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
