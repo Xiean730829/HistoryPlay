@@ -212,6 +212,34 @@ input::placeholder { color: #a29a8d; }
 .session-strip strong { font-size: 13px; font-weight: 600; }
 .session-strip strong span { color: #7d7568; font-weight: 400; }
 
+.session-voice {
+  margin: 20px 0;
+  padding: 20px 24px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+.session-voice-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.session-voice-heading h2 { margin: 4px 0 0; font-family: var(--serif); font-size: 21px; font-weight: 600; }
+.session-voice .voice-entry { display: flex; align-items: center; gap: 12px; }
+.session-voice .voice-entry button {
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid var(--accent-dark);
+  background: var(--accent-dark);
+  color: white;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+.session-voice .voice-entry button:disabled { cursor: wait; opacity: .55; }
+.session-voice .voice-entry span, .session-voice-status, .session-voice-note { color: var(--muted); font-size: 12px; }
+.session-voice-status { margin: 14px 0 4px; }
+.session-voice-note { margin: 4px 0 0; }
+.session-voice-transcript { display: grid; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+.session-voice-transcript li { display: flex; align-items: baseline; gap: 10px; padding-top: 8px; border-top: 1px solid #eee9e0; font-size: 13px; line-height: 1.6; }
+.session-voice-transcript strong { flex: 0 0 44px; color: var(--accent-dark); font-weight: 600; }
+.session-voice-transcript span { min-width: 0; overflow-wrap: anywhere; }
+
 .search-panel { margin: 20px 0; }
 .search-form { display: flex; gap: 10px; margin-top: 19px; }
 .search-field { flex: 1; }
@@ -302,6 +330,9 @@ input::placeholder { color: #a29a8d; }
   .session-strip { flex-wrap: wrap; gap: 12px 18px; padding: 14px; }
   .session-strip > div:nth-child(2) { margin-left: 0; }
   .session-strip .button { margin-left: auto; }
+  .session-voice { padding: 17px; }
+  .session-voice-heading { align-items: flex-start; flex-direction: column; }
+  .session-voice .voice-entry { align-items: flex-start; flex-direction: column; }
   .search-caption { max-width: 48%; text-align: right; overflow-wrap: anywhere; }
   .search-form { align-items: stretch; }
   .search-form .button { padding-inline: 12px; }

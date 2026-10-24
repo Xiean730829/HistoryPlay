@@ -25,6 +25,7 @@ import { SessionProjectionStore } from "../state/sessionProjection";
 import { ExhibitList } from "./ExhibitList";
 import { StatusNotice } from "./StatusNotice";
 import { MuseumCorridor } from "../gallery/MuseumCorridor";
+import { SessionVoicePanel } from "../voice-ui/SessionVoicePanel";
 import { ArtifactStoryStage } from "../story/ArtifactStoryStage";
 import { RenderReceiptReporter } from "../capabilities/RenderReceiptReporter";
 
@@ -294,6 +295,14 @@ export function MuseumShell() {
           </button>
         </div>
       ) : null}
+
+      {session && (
+        <SessionVoicePanel
+          key={`${session.session_id}:${session.connection_id}`}
+          packId={session.pack_id}
+          version={session.version}
+        />
+      )}
 
       {!session && health && (
         <div className="corridor-retry-row">
