@@ -1,0 +1,11 @@
+id: cn.tang.story.equestrian-pair.segment-1
+story_id: cn.tang.story.equestrian-pair
+fact_grade: C
+narration: 755年，许遥原以为熟悉道路，就能算准抵达的日子。战乱改变了行程，每个路口的消息都不同。眼前的骑马俑只是主题入口，不是这段虚构旅途的遗物。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.equestrian-pair.segment-2

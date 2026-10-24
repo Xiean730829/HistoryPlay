@@ -1,0 +1,20 @@
+id: cn.tang.artifact.tomb-guardian
+title: 镇墓兽
+museum:
+  name: Mount Holyoke College Art Museum
+  accession: MH1960.5.J.OI
+  collection_url: https://sketchfab.com/3d-models/tang-dynasty-tomb-guardian-zhenmushou-46a7591d54a443248d95a6fa394ac210
+time_range:
+  start_year: 618
+  end_year: 906
+  precision: range
+  display_label: 唐代，618—906年
+  calendar_note: 作者稿精度标记：catalog_range；保留原始年代标签供审核。
+material: 带釉陶质器及彩色痕迹
+category: 陶制镇墓俑
+asset_ids: []
+fact_card_ids:
+- cn.tang.fact.tomb-guardian.catalog
+story_entry_ids:
+- cn.tang.story.tomb-guardian
+identity_unknown: true

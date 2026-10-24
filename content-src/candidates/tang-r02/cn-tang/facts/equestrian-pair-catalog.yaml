@@ -1,0 +1,12 @@
+id: cn.tang.fact.equestrian-pair.catalog
+claim: 骑马俑一对；Mount Holyoke College Art Museum；唐代，618—906年；陶
+grade: F
+applicable_time:
+  start_year: 618
+  end_year: 906
+  precision: range
+  display_label: 唐代，618—906年
+  calendar_note: 作者稿精度标记：catalog_range；保留原始年代标签供审核。
+source_ids:
+- cn.tang.source.a02-catalog
+evidence_note: 年代字段优先保存馆方原文；精确区间转换只是展示约定，不是新增鉴定。

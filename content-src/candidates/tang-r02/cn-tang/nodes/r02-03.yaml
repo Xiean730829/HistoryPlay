@@ -1,0 +1,12 @@
+id: cn.tang.story.gilt-bronze-bull.segment-3
+story_id: cn.tang.story.gilt-bronze-bull
+fact_grade: C
+narration: 回到三维模型，放大能看细节，尺度能帮助理解用途。两种看法放在一起，一件小东西就有了更具体的位置。
+allowed_actions:
+- ask
+- observe
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.tang.story.gilt-bronze-bull.segment-1
+return_checkpoint: true

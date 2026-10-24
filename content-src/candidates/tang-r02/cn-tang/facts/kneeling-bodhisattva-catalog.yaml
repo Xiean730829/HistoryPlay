@@ -1,0 +1,12 @@
+id: cn.tang.fact.kneeling-bodhisattva.catalog
+claim: 跪姿胁侍菩萨；Harvard Art Museums；7世纪晚期；未烧黏土，纤维和草，木骨架；彩绘与贴金
+grade: F
+applicable_time:
+  start_year: 601
+  end_year: 700
+  precision: century
+  display_label: 7世纪晚期
+  calendar_note: 作者稿精度标记：century_with_qualifier；保留原始年代标签供审核。
+source_ids:
+- cn.tang.source.r04-catalog
+evidence_note: 年代字段优先保存馆方原文；精确区间转换只是展示约定，不是新增鉴定。

@@ -1,0 +1,11 @@
+id: cn.tang.story.changsha-bird-bowl.segment-1
+story_id: cn.tang.story.changsha-bird-bowl
+fact_grade: C
+narration: 约830年代的创作故事里，许沅准备一批普通陶碗。她要想包装、装载和伙伴之间的约定。博物馆里的鸟纹碗引出这个话题，不是那批货中已经证实的一只。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.changsha-bird-bowl.segment-2

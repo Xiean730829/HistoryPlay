@@ -1,0 +1,12 @@
+id: cn.tang.story.dvarapala.segment-3
+story_id: cn.tang.story.dvarapala
+fact_grade: C
+narration: 回到真像，力量感不只是肌肉的大小，也来自动作、体量和观看位置。具体原始空间，仍要看本件的来源证据。
+allowed_actions:
+- ask
+- observe
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.tang.story.dvarapala.segment-1
+return_checkpoint: true

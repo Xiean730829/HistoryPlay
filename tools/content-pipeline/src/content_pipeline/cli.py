@@ -25,6 +25,10 @@ from content_pipeline.importers.story_assets import (
     StoryAssetImportError,
     import_story_asset_candidate,
 )
+from content_pipeline.importers.tang_cards import (
+    TangCardImportError,
+    import_tang_card_candidates,
+)
 
 
 def cmd_validate(pack: Path, dependency_packs: list[Path] | None = None) -> int:
@@ -296,6 +300,26 @@ def cmd_import_story_asset_candidate(
     return 0
 
 
+def cmd_import_tang_cards(
+    *,
+    source_root: Path,
+    candidate_root: Path,
+    id_map: Path,
+) -> int:
+    try:
+        result = import_tang_card_candidates(
+            source_root=source_root,
+            candidate_root=candidate_root,
+            id_map_path=id_map,
+        )
+    except TangCardImportError as exc:
+        print(f"唐朝作者卡候选导入失败：{exc}", file=sys.stderr)
+        return 1
+    print(f"已生成唐朝作者卡候选包：{candidate_root}")
+    print(f"状态：{result['status']}；文件：{len(result['written'])}；冲突：{len(result['conflicts'])}")
+    return 0 if result["status"] == "candidate_not_published" else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="内容制作命令")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -398,6 +422,18 @@ def main(argv: list[str] | None = None) -> int:
     story_assets.add_argument("--story-id", required=True, help="目标故事稳定ID")
     story_assets.add_argument("--node-id", required=True, action="append", help="目标故事节点ID，可重复")
     story_assets.add_argument("--out", required=True, type=Path, help="未发布候选清单输出路径")
+    tang_cards = sub.add_parser(
+        "import-tang-cards-candidate",
+        help="将本机作者卡转换为独立的未发布Schema候选包",
+    )
+    tang_cards.add_argument("--source-root", required=True, type=Path, help="作者content目录")
+    tang_cards.add_argument("--candidate-root", required=True, type=Path, help="独立候选输出目录")
+    tang_cards.add_argument(
+        "--id-map",
+        default=Path("content-src/imports/tang-r02/id-map.yaml"),
+        type=Path,
+        help="受版本控制的稳定ID映射表",
+    )
     args = parser.parse_args(argv)
     if args.command == "validate":
         return cmd_validate(args.pack, args.dependency_pack)
@@ -471,6 +507,12 @@ def main(argv: list[str] | None = None) -> int:
             binding_key=args.binding_key,
             story_id=args.story_id,
             node_ids=args.node_id,
+        )
+    if args.command == "import-tang-cards-candidate":
+        return cmd_import_tang_cards(
+            source_root=args.source_root,
+            candidate_root=args.candidate_root,
+            id_map=args.id_map,
         )
     parser.error("未知命令")
     return 2

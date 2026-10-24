@@ -1,0 +1,12 @@
+id: cn.tang.fact.gilt-bronze-bull.catalog
+claim: 鎏金卧牛；Cleveland Museum of Art；8世纪（700年代）；鎏金铜
+grade: F
+applicable_time:
+  start_year: 700
+  end_year: 799
+  precision: range
+  display_label: 8世纪（700年代）
+  calendar_note: 作者稿精度标记：catalog_range；保留原始年代标签供审核。
+source_ids:
+- cn.tang.source.r02-catalog
+evidence_note: 年代字段优先保存馆方原文；精确区间转换只是展示约定，不是新增鉴定。

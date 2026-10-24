@@ -1,0 +1,12 @@
+id: cn.tang.fact.kaiyuan-coin.catalog
+claim: 开元通宝；Mount Holyoke College Art Museum；本件：718—732年；钱币类型始铸于621年；铜合金
+grade: F
+applicable_time:
+  start_year: 718
+  end_year: 732
+  precision: range
+  display_label: 本件：718—732年；钱币类型始铸于621年
+  calendar_note: 作者稿精度标记：catalog_range；保留原始年代标签供审核。
+source_ids:
+- cn.tang.source.a07-catalog
+evidence_note: 年代字段优先保存馆方原文；精确区间转换只是展示约定，不是新增鉴定。

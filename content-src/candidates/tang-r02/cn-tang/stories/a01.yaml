@@ -1,0 +1,9 @@
+id: cn.tang.story.standing-woman-mhc
+title: 阿禾想给自己留一点时间
+entry_node_id: cn.tang.story.standing-woman-mhc.segment-1
+node_ids:
+- cn.tang.story.standing-woman-mhc.segment-1
+- cn.tang.story.standing-woman-mhc.segment-2
+- cn.tang.story.standing-woman-mhc.segment-3
+artifact_id: cn.tang.artifact.standing-woman-mhc
+return_to_exhibit: true

@@ -1,0 +1,12 @@
+id: cn.tang.fact.bronze-mirror.catalog
+claim: 狮葡萄纹铜镜；St. Cloud State University, William M. Lindgren Collection；馆方条目705—907年；铜合金
+grade: F
+applicable_time:
+  start_year: 705
+  end_year: 907
+  precision: range
+  display_label: 馆方条目705—907年
+  calendar_note: 作者稿精度标记：catalog_range；保留原始年代标签供审核。
+source_ids:
+- cn.tang.source.r03-catalog
+evidence_note: 年代字段优先保存馆方原文；精确区间转换只是展示约定，不是新增鉴定。

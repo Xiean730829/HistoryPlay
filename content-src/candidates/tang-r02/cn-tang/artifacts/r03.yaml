@@ -1,0 +1,20 @@
+id: cn.tang.artifact.bronze-mirror
+title: 狮葡萄纹铜镜
+museum:
+  name: St. Cloud State University, William M. Lindgren Collection
+  accession: Item 2037
+  collection_url: https://repository.stcloudstate.edu/wlindgren_3D/index.2.html
+time_range:
+  start_year: 705
+  end_year: 907
+  precision: range
+  display_label: 馆方条目705—907年
+  calendar_note: 作者稿精度标记：catalog_range；保留原始年代标签供审核。
+material: 铜合金
+category: 铜镜
+asset_ids: []
+fact_card_ids:
+- cn.tang.fact.bronze-mirror.catalog
+story_entry_ids:
+- cn.tang.story.bronze-mirror
+identity_unknown: true

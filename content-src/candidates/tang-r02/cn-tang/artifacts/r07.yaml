@@ -1,0 +1,19 @@
+id: cn.tang.artifact.dvarapala
+title: 佛教门卫守护像
+museum:
+  name: Minneapolis Institute of Art
+  accession: '2006.79'
+  collection_url: https://collections.artsmia.org/art/100842/dvarapala-china
+time_range:
+  start_year: 701
+  end_year: 800
+  precision: century
+  display_label: 8世纪
+material: 石
+category: 佛教造像
+asset_ids: []
+fact_card_ids:
+- cn.tang.fact.dvarapala.catalog
+story_entry_ids:
+- cn.tang.story.dvarapala
+identity_unknown: true

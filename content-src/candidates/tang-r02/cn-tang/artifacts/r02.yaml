@@ -1,0 +1,20 @@
+id: cn.tang.artifact.gilt-bronze-bull
+title: 鎏金卧牛
+museum:
+  name: Cleveland Museum of Art
+  accession: '1985.74'
+  collection_url: https://www.clevelandart.org/art/1985.74
+time_range:
+  start_year: 700
+  end_year: 799
+  precision: range
+  display_label: 8世纪（700年代）
+  calendar_note: 作者稿精度标记：catalog_range；保留原始年代标签供审核。
+material: 鎏金铜
+category: 鎏金铜器
+asset_ids: []
+fact_card_ids:
+- cn.tang.fact.gilt-bronze-bull.catalog
+story_entry_ids:
+- cn.tang.story.gilt-bronze-bull
+identity_unknown: true

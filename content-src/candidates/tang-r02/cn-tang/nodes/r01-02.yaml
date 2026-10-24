@@ -1,0 +1,11 @@
+id: cn.tang.story.seated-buddha-tianlongshan.segment-2
+story_id: cn.tang.story.seated-buddha-tianlongshan
+fact_grade: C
+narration: 你可以问哪些地方保存较好、怎样比较资料。研究者可以提出推测，但需要说明依据和不确定程度，不能让最漂亮的图代替证据。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.seated-buddha-tianlongshan.segment-3

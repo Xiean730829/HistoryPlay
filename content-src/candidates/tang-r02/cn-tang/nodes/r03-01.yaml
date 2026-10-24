@@ -1,0 +1,11 @@
+id: cn.tang.story.bronze-mirror.segment-1
+story_id: cn.tang.story.bronze-mirror
+fact_grade: C
+narration: 创作生活里，阿禾的伙伴喜欢一面普通镜子背后的图案。阿禾却想先知道，使用的时候怎样拿稳、放在哪里更合适。两个人关注的都可以是好问题。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.bronze-mirror.segment-2

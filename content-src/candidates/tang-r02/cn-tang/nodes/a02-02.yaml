@@ -1,0 +1,11 @@
+id: cn.tang.story.equestrian-pair.segment-2
+story_id: cn.tang.story.equestrian-pair
+fact_grade: C
+narration: 有人想等消息，有人想先走，有人担心一家人分开。你可以问消息来源，商量集合地点，或提出其他办法。许遥不能保证一切照计划发生，但可以先把变化时怎样联络说清。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.equestrian-pair.segment-3

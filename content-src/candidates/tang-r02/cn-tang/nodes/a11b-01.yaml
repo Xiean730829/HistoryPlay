@@ -1,0 +1,11 @@
+id: cn.tang.story.flute-musician.segment-1
+story_id: cn.tang.story.flute-musician
+fact_grade: C
+narration: 排练故事里，吹笛者想稍停一下，另一人却以为他不愿合作。阿禾没有马上评价，而是问：你是需要休息，还是没有听清刚才的提示？
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.flute-musician.segment-2

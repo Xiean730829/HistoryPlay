@@ -1,0 +1,20 @@
+id: cn.tang.artifact.kaiyuan-coin
+title: 开元通宝
+museum:
+  name: Mount Holyoke College Art Museum
+  accession: MH2012.20.39
+  collection_url: http://museums.fivecolleges.edu/detail.php?museum=all&t=objects&type=all&f=&s=mh_2012_20_39&record=0
+time_range:
+  start_year: 718
+  end_year: 732
+  precision: range
+  display_label: 本件：718—732年；钱币类型始铸于621年
+  calendar_note: 作者稿精度标记：catalog_range；保留原始年代标签供审核。
+material: 铜合金
+category: 钱币
+asset_ids: []
+fact_card_ids:
+- cn.tang.fact.kaiyuan-coin.catalog
+story_entry_ids:
+- cn.tang.story.kaiyuan-coin
+identity_unknown: true

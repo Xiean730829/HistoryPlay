@@ -1,0 +1,11 @@
+id: cn.tang.story.tomb-guardian.segment-2
+story_id: cn.tang.story.tomb-guardian
+fact_grade: C
+narration: 如果你想守护一段记忆、一位亲人留给你的习惯，或者一个朋友，你会选什么形状？这是今天的想象活动，不是请你替古人编造一套确定的仪式。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.tomb-guardian.segment-3
