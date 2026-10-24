@@ -68,23 +68,25 @@ def test_unconfigured_bridge_status_is_explicit_and_contains_no_credentials():
         await site.start()
         port = site._server.sockets[0].getsockname()[1]
         try:
-            async with ClientSession() as client:
-                async with client.get(
+            async with (
+                ClientSession() as client,
+                client.get(
                     f"http://127.0.0.1:{port}/voice/status",
                     headers={
                         "Host": "127.0.0.1:8782",
                         "Origin": "http://127.0.0.1:5174",
                     },
-                ) as response:
-                    result = await response.json()
-                    assert result == {
-                        "service": "museum-voice",
-                        "status": "ok",
-                        "device_configured": False,
-                    }
-                    assert (
-                        response.headers["Access-Control-Allow-Origin"] == "http://127.0.0.1:5174"
-                    )
+                ) as response,
+            ):
+                result = await response.json()
+                assert result == {
+                    "service": "museum-voice",
+                    "status": "ok",
+                    "device_configured": False,
+                }
+                assert (
+                    response.headers["Access-Control-Allow-Origin"] == "http://127.0.0.1:5174"
+                )
         finally:
             await runner.cleanup()
 
