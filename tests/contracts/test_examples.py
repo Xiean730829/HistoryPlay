@@ -38,13 +38,30 @@ def validate(example: Path) -> list[str]:
     return [error.message for error in validator.iter_errors(load_json(example))]
 
 
-@pytest.mark.parametrize("example", sorted(EXAMPLES.glob("*.valid.json")))
+def is_valid_example(path: Path) -> bool:
+    return ".valid." in path.name or ".valid-" in path.name
+
+
+def is_invalid_example(path: Path) -> bool:
+    return ".invalid-" in path.name
+
+
+VALID_EXAMPLES = sorted(path for path in EXAMPLES.glob("*.json") if is_valid_example(path))
+INVALID_EXAMPLES = sorted(path for path in EXAMPLES.glob("*.json") if is_invalid_example(path))
+
+
+@pytest.mark.parametrize("example", VALID_EXAMPLES, ids=lambda path: path.name)
 def test_valid_examples_pass(example: Path) -> None:
     errors = validate(example)
     assert errors == [], f"{example.name}: {errors}"
 
 
-@pytest.mark.parametrize("example", sorted(EXAMPLES.glob("*.invalid-*.json")))
+@pytest.mark.parametrize("example", INVALID_EXAMPLES, ids=lambda path: path.name)
 def test_invalid_examples_fail(example: Path) -> None:
     errors = validate(example)
     assert errors, f"{example.name} 应被拒绝"
+
+
+def test_stale_epoch_is_schema_legal_but_missing_view_revision_is_not() -> None:
+    assert validate(EXAMPLES / "command.valid-stale-epoch.json") == []
+    assert validate(EXAMPLES / "command.invalid-navigation-no-view.json")

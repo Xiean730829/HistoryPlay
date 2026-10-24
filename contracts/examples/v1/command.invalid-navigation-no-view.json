@@ -1,0 +1,7 @@
+{
+  "schema_version": "1",
+  "request_id": "request-nav-0001",
+  "expected_revision": 7,
+  "interaction_epoch": 12,
+  "action": "move_next"
+}
