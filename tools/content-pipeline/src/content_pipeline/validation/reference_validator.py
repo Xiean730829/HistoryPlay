@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -203,6 +204,8 @@ def validate_references(pack_dir: Path) -> list[Issue]:
             if not entity.ident.startswith(prefix):
                 issues.append(entity.locate(f"标识不属于内容包命名空间 {namespace}：{entity.ident}"))
 
+    issues.extend(_check_artifact_aliases(entities))
+
     for entity in entities:
         for field, expected_kind in _FIELD_REFS.get(entity.kind, ()):
             issues.extend(_check_field(entity, field, expected_kind, by_id))
@@ -222,6 +225,7 @@ def _check_gallery(entity: Entity, by_id: dict[str, Entity]) -> list[Issue]:
         return issues
     station_ids: set[str] = set()
     orders: set[int] = set()
+    primary_station_by_artifact: dict[str, int] = {}
     for index, station in enumerate(stations):
         if not isinstance(station, dict):
             continue
@@ -246,7 +250,41 @@ def _check_gallery(entity: Entity, by_id: dict[str, Entity]) -> list[Issue]:
                         by_id,
                     )
                 )
+        artifact_id = station.get("artifact_id")
+        if isinstance(artifact_id, str):
+            prior_order = primary_station_by_artifact.get(artifact_id)
+            if prior_order is not None:
+                issues.append(
+                    entity.locate(
+                        f"主展品只能有一个展位：{artifact_id} 已在顺序 {prior_order} 陈列"
+                    )
+                )
+            else:
+                primary_station_by_artifact[artifact_id] = order if isinstance(order, int) else index
     default_station_id = entity.data.get("default_station_id")
     if isinstance(default_station_id, str) and default_station_id not in station_ids:
         issues.append(entity.locate(f"默认展位不属于本展厅：{default_station_id}"))
+    return issues
+
+
+def _check_artifact_aliases(entities: list[Entity]) -> list[Issue]:
+    issues: list[Issue] = []
+    alias_owner: dict[str, tuple[str, str]] = {}
+    for entity in entities:
+        if entity.kind != "artifact":
+            continue
+        names = [entity.data.get("title"), *_as_ids(entity.data.get("aliases"))]
+        for name in names:
+            if not isinstance(name, str) or not name.strip():
+                continue
+            normalized = " ".join(unicodedata.normalize("NFKC", name).split()).casefold()
+            previous = alias_owner.get(normalized)
+            if previous is not None and previous[0] != entity.ident:
+                issues.append(
+                    entity.locate(
+                        f"文物名称或别名冲突：{name} 与 {previous[1]} 都指向不同文物"
+                    )
+                )
+            else:
+                alias_owner[normalized] = (entity.ident, name)
     return issues

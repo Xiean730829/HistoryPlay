@@ -1,0 +1,10 @@
+id: cn.tang.asset.kaiyuan-coin.glb
+kind: model3d
+format: glb
+sha256: 94acc94cf0ee0c55bb723b02522c73840688823fbc762281c1593c13f7c25898
+byte_size: 260393800
+license:
+  spdx: CC-BY-4.0
+  attribution: Laura Shea; Mount Holyoke College Art Museum, MH2012.20.39; model download and any derivatives must retain attribution.
+  url: https://sketchfab.com/3d-models/tang-dynasty-currency-kai-yuan-tong-boa-8949c4225c4b456488b0aae198cdfbb7
+lod: source

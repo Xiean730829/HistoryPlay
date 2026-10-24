@@ -1,0 +1,10 @@
+id: cn.tang.fact.gilt-bronze-bull.use
+claim: 馆方介绍这件鎏金卧牛可能用作书案镇纸。
+grade: F
+applicable_time:
+  start_year: 700
+  end_year: 799
+  precision: century
+source_ids:
+  - cn.tang.source.r02-catalog
+evidence_note: 采用馆方对用途的解释，不指认具体使用者。

@@ -1,0 +1,39 @@
+id: cn.tang.gallery.main
+title: 唐朝长廊
+region:
+  id: cn
+  label: 中国
+status: open
+default_station_id: cn.tang.station.stele
+stations:
+  - id: cn.tang.station.stele
+    order: 0
+    time_range:
+      start_year: 678
+      end_year: 678
+      precision: year
+      display_label: 678年
+    placement_basis: 以有明确纪年依据的造像碑作为长廊入口，连接可核查的实物年代与稍后的历史背景。
+    artifact_id: cn.tang.artifact.votive-stele
+    side: center
+  - id: cn.tang.station.coin
+    order: 1
+    time_range:
+      start_year: 718
+      end_year: 732
+      precision: range
+      display_label: 本件：718—732年
+    placement_basis: 钱币个体断代与卧牛的八世纪区间重叠；按故事主题安排在卧牛之前，不宣称两件物品的制作先后。
+    artifact_id: cn.tang.artifact.kaiyuan-coin
+    side: left
+  - id: cn.tang.station.ox
+    order: 2
+    time_range:
+      start_year: 700
+      end_year: 799
+      precision: century
+      display_label: 8世纪
+      uncertainty: 馆方给出世纪级断代，不推定具体年份。
+    placement_basis: 与开元通宝本件的断代区间重叠，稳定排在钱币之后；这是策展顺序，不是制作年代排序。
+    artifact_id: cn.tang.artifact.gilt-bronze-bull
+    side: right

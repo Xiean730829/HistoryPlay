@@ -1,0 +1,10 @@
+id: cn.tang.fact.kaiyuan-coin.type-start
+claim: 研究文章将开元通宝这一钱币类型的初铸时间置于621年。
+grade: F
+applicable_time:
+  start_year: 621
+  end_year: 621
+  precision: year
+source_ids:
+  - cn.tang.source.kaiyuan-type-start
+evidence_note: 类型始铸时间不等于馆藏这枚钱币的制作年代。

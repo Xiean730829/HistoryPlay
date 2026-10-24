@@ -1,0 +1,10 @@
+id: cn.tang.node.gilt-bronze-bull.02
+story_id: cn.tang.story.gilt-bronze-bull
+fact_grade: F
+narration: 八世纪是馆方给出的断代精度，我们不把它缩窄成某一年。你已看完这件小型器物的年代与馆方用途说明，可以返回长廊。
+allowed_actions:
+  - return_to_exhibit
+exits:
+  - action: return_to_exhibit
+    target_node_id: cn.tang.node.gilt-bronze-bull.01
+return_checkpoint: true

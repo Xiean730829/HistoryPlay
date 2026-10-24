@@ -1,0 +1,26 @@
+id: cn.tang.artifact.kaiyuan-coin
+title: 开元通宝
+aliases:
+  - 开元通宝铜钱
+  - 开元钱
+  - 铜钱
+  - A07
+museum:
+  name: Mount Holyoke College Art Museum
+  accession: MH2012.20.39
+  collection_url: http://museums.fivecolleges.edu/detail.php?museum=all&t=objects&type=all&f=&s=mh_2012_20_39&record=0
+time_range:
+  start_year: 718
+  end_year: 732
+  precision: range
+  display_label: 本件：718—732年
+  uncertainty: 621年是开元通宝类型的始铸时间，不是本件钱币的断代。
+material: 铜合金
+category: 钱币
+asset_ids:
+  - cn.tang.asset.kaiyuan-coin.glb
+fact_card_ids:
+  - cn.tang.fact.kaiyuan-coin.specimen-date
+  - cn.tang.fact.kaiyuan-coin.type-start
+story_entry_ids:
+  - cn.tang.story.kaiyuan-coin
