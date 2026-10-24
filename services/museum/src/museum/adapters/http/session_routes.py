@@ -26,7 +26,8 @@ def register_session_routes(app: web.Application) -> None:
     app.router.add_get("/api/sessions/{session_id}/galleries/{gallery_id}", get_gallery)
     app.router.add_get("/api/sessions/{session_id}/search", search_content)
     app.router.add_get("/api/sessions/{session_id}/facts/{fact_id}", read_fact)
-    app.router.add_get("/api/sessions/{session_id}/content", read_content)`r`n    app.router.add_post("/api/sessions/{session_id}/events/ticket", issue_event_ticket)
+    app.router.add_get("/api/sessions/{session_id}/content", read_content)
+    app.router.add_post("/api/sessions/{session_id}/events/ticket", issue_event_ticket)
 
 
 async def create_session(request: web.Request) -> web.Response:
