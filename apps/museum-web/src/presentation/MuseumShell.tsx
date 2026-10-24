@@ -15,6 +15,8 @@ import {
   continueStory,
   returnToExhibit,
   reportRenderReceipt,
+  prepareArtifactInspection,
+  setArtifactView,
   type ActiveSession,
   type ArtifactProjection,
   type SessionCredentials,
@@ -24,7 +26,7 @@ import { EventChannel } from "../api/eventChannel";
 import { SessionProjectionStore } from "../state/sessionProjection";
 import { ExhibitList } from "./ExhibitList";
 import { StatusNotice } from "./StatusNotice";
-import { MuseumCorridor } from "../gallery/MuseumCorridor";
+import { MuseumSpace } from "../scene3d/MuseumSpace";
 import { GameVoicePanel } from "../voice-ui/GameVoicePanel";
 import { ArtifactStoryStage } from "../story/ArtifactStoryStage";
 import { RenderReceiptReporter } from "../capabilities/RenderReceiptReporter";
@@ -47,11 +49,52 @@ export function MuseumShell() {
   const [query, setQuery] = React.useState("");
   const [results, setResults] = React.useState<SearchHit[]>([]);
   const [busy, setBusy] = React.useState(false);
+  const [inspection, setInspection] = React.useState(false);
+  const previousFocus = React.useRef<string | null>(null);
   const [notice, setNotice] = React.useState("正在连接本地游戏服务…");
   const [noticeTone, setNoticeTone] = React.useState<"info" | "error" | "success">("info");
   const restoreTask = React.useRef<Promise<OpenedMuseum> | null>(null);
   const projectionStore = React.useRef<SessionProjectionStore | null>(null);
   const renderReporter = React.useRef(new RenderReceiptReporter(reportRenderReceipt));
+
+  React.useEffect(() => {
+    const focus = session?.state.focused_entity_id ?? null;
+    if (previousFocus.current && focus !== previousFocus.current) setInspection(true);
+    previousFocus.current = focus;
+  }, [session?.state.focused_entity_id]);
+
+  async function selectExhibit(id: string) {
+    if (!session || busy || session.state.mode !== "explore") return;
+    const current = projectionStore.current?.snapshot ?? session;
+    setBusy(true);
+    try {
+      const result = await prepareArtifactInspection(current, id);
+      if (projectionStore.current) await projectionStore.current.acceptQuery(result.session);
+      else setSession(result.session);
+      if (result.receipt?.status === "committed") setRenderCommand(result.receipt);
+      if (result.session.state.focused_entity_id === id) setInspection(true);
+      else throw new Error(result.receipt?.reason ?? "暂时无法走近这件文物");
+    } catch (error) { showError(error, setNotice, setNoticeTone); }
+    finally { setBusy(false); }
+  }
+
+  async function observeExhibit(deltaYaw: number, deltaPitch: number, zoomFactor: number) {
+    if (!session || busy || session.state.mode !== "explore") return;
+    const pose = session.state.camera_pose ?? { yaw: 0, pitch: 0, zoom: 1 };
+    setBusy(true);
+    try {
+      const result = await setArtifactView(session, {
+        yaw: ((pose.yaw + deltaYaw + 540) % 360) - 180,
+        pitch: Math.max(-45, Math.min(45, pose.pitch + deltaPitch)),
+        zoom: Math.max(0.65, Math.min(2.3, pose.zoom * zoomFactor)),
+      });
+      if (projectionStore.current) await projectionStore.current.acceptQuery(result.session);
+      else setSession(result.session);
+      setRenderCommand(result.receipt.status === "committed" ? result.receipt : null);
+      if (result.receipt.status !== "committed") throw new Error(result.receipt.reason ?? "观察视角暂未改变");
+    } catch (error) { showError(error, setNotice, setNoticeTone); }
+    finally { setBusy(false); }
+  }
 
   React.useEffect(() => {
     if (!session) {
@@ -161,6 +204,7 @@ export function MuseumShell() {
       const store = projectionStore.current;
       if (store) await store.acceptQuery(result.session);
       else setSession(result.session);
+      setRenderCommand(result.receipt.status === "committed" ? result.receipt : null);
       if (result.receipt.status === "committed") {
         setNotice("展品已按服务端状态开放，并已更新展厅顺序。");
         setNoticeTone("success");
@@ -214,6 +258,7 @@ export function MuseumShell() {
       const store = projectionStore.current;
       if (store) await store.acceptQuery(result.session);
       else setSession(result.session);
+      setRenderCommand(result.receipt.status === "committed" ? result.receipt : null);
       if (result.receipt.status === "committed") {
         setNotice(action === "return" ? "故事已退出，正在恢复原展台与相机。" : "已切换到服务端提交的故事段落。");
         setNoticeTone("success");
@@ -248,7 +293,7 @@ export function MuseumShell() {
   }
 
   return (
-    <main className="museum-page">
+    <main className="museum-page museum-page-spatial">
       <header className="masthead">
         <div className="brand-mark" aria-hidden="true">时</div>
         <div>
@@ -261,34 +306,30 @@ export function MuseumShell() {
         </div>
       </header>
 
-      <StatusNotice message={notice} tone={noticeTone} />
+      {(noticeTone === "error" || SHOW_DIAGNOSTICS) && <StatusNotice message={notice} tone={noticeTone} />}
 
-      {session?.state.mode === "story" ? (
+      {session && <MuseumSpace
+        artifacts={galleryArtifacts.length ? galleryArtifacts : session.context.visible_artifacts}
+        session={session}
+        inspection={inspection}
+        onSelect={(id) => void selectExhibit(id)}
+        onObserve={(yaw, pitch, zoom) => void observeExhibit(yaw, pitch, zoom)}
+        onRender={(status, reason) => {
+          if (session.state.mode === "explore") void renderReporter.current.report(session, renderCommand, status, reason).catch(() => undefined);
+        }}
+      />}
+      {session?.state.mode === "story" && (
         <ArtifactStoryStage
           session={session}
           busy={busy}
           onContinue={() => void runStoryAction("continue")}
           onReturn={() => void runStoryAction("return")}
         />
-      ) : (
-        <MuseumCorridor
-          artifacts={galleryArtifacts.length ? galleryArtifacts : session?.context.visible_artifacts ?? []}
-          displayOrder={galleryArtifacts.length ? galleryArtifacts.map((artifact) => artifact.id) : session?.state.display_order ?? []}
-          focusedId={session?.context.focused_artifact?.id ?? session?.state.focused_entity_id ?? null}
-          session={session}
-          onRender={(status, reason) => {
-            if (session) void renderReporter.current.report(session, renderCommand, status, reason)
-              .catch(() => undefined);
-          }}
-          loading={!session && !healthError}
-          navigationDisabled={busy}
-          onMove={(direction) => void moveStation(direction)}
-        />
       )}
 
-      {session?.state.mode === "explore" && session.context.focused_artifact?.story_entry_ids?.length ? (
+      {session?.state.mode === "explore" && inspection && session.context.focused_artifact?.story_entry_ids?.length ? (
         <div className="story-entry-row">
-          <span>按需打开与当前文物绑定的已发布故事。</span>
+          <span>{session.context.focused_artifact.title} · 它经历了怎样的时代？</span>
           <button
             className="button"
             disabled={busy}
@@ -297,8 +338,15 @@ export function MuseumShell() {
           >
             {busy ? "正在打开…" : "进入故事"}
           </button>
+          <button className="button button-quiet" onClick={() => setInspection(false)} type="button">继续参观</button>
         </div>
       ) : null}
+
+      {session?.state.mode === "explore" && <nav className="museum-walk-controls" aria-label="长廊漫步">
+        <button disabled={busy} onClick={() => void moveStation("previous")} type="button">← 上一件</button>
+        <span>{session.context.focused_artifact?.title ?? "大唐文物"}</span>
+        <button disabled={busy} onClick={() => void moveStation("next")} type="button">下一件 →</button>
+      </nav>}
 
       {session && (
         <GameVoicePanel
@@ -312,6 +360,7 @@ export function MuseumShell() {
             if (store) await store.acceptQuery(active);
             else setSession(active);
             setRenderCommand(receipt?.status === "committed" ? receipt : null);
+            if (receipt?.status === "committed" && ["locate_artifact", "move_next", "move_previous", "set_view"].includes(receipt.action ?? "")) setInspection(true);
           }}
         />
       )}

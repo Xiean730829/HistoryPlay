@@ -137,9 +137,10 @@ async function dispatchSessionCommand(
   session: ActiveSession,
   action: CommandAction,
   targetId?: string,
+  params?: Record<string, unknown>,
 ): Promise<{ session: ActiveSession; receipt: CommandReceipt }> {
   const dispatchKey = [session.session_id, action, targetId ?? "", session.state.revision,
-    session.state.view_revision, session.state.interaction_epoch].join(":");
+    session.state.view_revision, session.state.interaction_epoch, JSON.stringify(params ?? {})].join(":");
   const receipt = await commandDispatcher.dispatch(dispatchKey, (requestId) => request<CommandReceipt>(
     `/api/sessions/${encodeURIComponent(session.session_id)}/commands`,
     {
@@ -154,11 +155,28 @@ async function dispatchSessionCommand(
         control_ticket: session.control_ticket,
         action,
         ...(targetId ? { target_id: targetId } : {}),
+        ...(params ? { params } : {}),
       }),
     },
     (status, body) => status === 409 && isCommandReceipt(body),
   ));
   return { session: await refreshSession(session), receipt };
+}
+
+export function locateArtifact(session: ActiveSession, artifactId: string) {
+  return dispatchSessionCommand(session, "locate_artifact", artifactId);
+}
+
+/** Opening the current exhibit's observation camera does not require another mutation. */
+export async function prepareArtifactInspection(session: ActiveSession, artifactId: string): Promise<{
+  session: ActiveSession; receipt: CommandReceipt | null;
+}> {
+  if (session.state.focused_entity_id === artifactId) return { session, receipt: null };
+  return locateArtifact(session, artifactId);
+}
+
+export function setArtifactView(session: ActiveSession, camera: { yaw: number; pitch: number; zoom: number }) {
+  return dispatchSessionCommand(session, "set_view", undefined, { camera });
 }
 
 interface SessionResponse {

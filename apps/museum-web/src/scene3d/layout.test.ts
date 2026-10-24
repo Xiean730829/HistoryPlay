@@ -1,9 +1,31 @@
 import { describe, expect, it, vi } from "vitest";
 import { Box3, BoxGeometry, Group, Mesh, MeshStandardMaterial, Texture, Vector3 } from "three";
-import { seatModel, stationPlacement } from "./layout";
+import { maintainSurfaceContact, nearbyModelIndices, seatModel, stairStepPlacement, stationPlacement } from "./layout";
 import { disposeTree } from "./resources";
 
 describe("physical exhibit placement", () => {
+  it("keeps a tilted object resting on the raised cabinet instead of intersecting its deck", () => {
+    const root = new Group(); root.position.y = stationPlacement(2).plinthTop + 0.012;
+    const spin = seatModel(new Group().add(new Mesh(new BoxGeometry(1, 2, 1)))); root.add(spin);
+    root.updateMatrixWorld(true);
+    spin.rotation.x = 0.4;
+    maintainSurfaceContact(spin, root.position.y);
+    expect(new Box3().setFromObject(spin).min.y).toBeCloseTo(root.position.y);
+  });
+  it("shares the actual stair, landing and load-bearing heights without treating a deck as floor", () => {
+    for (let index = 0; index < 3; index++) {
+      const p = stationPlacement(index);
+      expect(p.walkY).toBeCloseTo(stairStepPlacement(p.stepIndex).walkY);
+      expect(p.landingY).toBe(p.walkY);
+      expect(p.plinthTop - p.landingY).toBeCloseTo(1.08);
+      expect(p.top).toBe(p.plinthTop);
+    }
+    expect(stationPlacement(2).walkY).toBeGreaterThan(stationPlacement(1).walkY);
+  });
+  it("keeps the three-object slice visible while bounding later galleries to nearest models", () => {
+    expect([...nearbyModelIndices(3, 0)]).toEqual([0, 1, 2]);
+    expect([...nearbyModelIndices(19, 12)]).toEqual([12, 11, 13]);
+  });
   it("centers offset GLB geometry, keeps its aspect and places its bottom on the table", () => {
     const model = new Group();
     const mesh = new Mesh(new BoxGeometry(4, 8, 2)); mesh.position.set(20, -30, 7); model.add(mesh);
