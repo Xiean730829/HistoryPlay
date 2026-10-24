@@ -89,12 +89,11 @@ def test_unconfigured_bridge_status_is_explicit_and_contains_no_credentials(orig
                 assert (
                     response.headers["Access-Control-Allow-Origin"] == origin
                 )
-            async with ClientSession() as client:
-                async with client.get(
-                    f"http://127.0.0.1:{port}/voice/status",
-                    headers={"Host": "127.0.0.1:8782", "Origin": "http://127.0.0.1:5999"},
-                ) as denied:
-                    assert denied.status == 403
+            async with ClientSession() as client, client.get(
+                f"http://127.0.0.1:{port}/voice/status",
+                headers={"Host": "127.0.0.1:8782", "Origin": "http://127.0.0.1:5999"},
+            ) as denied:
+                assert denied.status == 403
         finally:
             await runner.cleanup()
 
