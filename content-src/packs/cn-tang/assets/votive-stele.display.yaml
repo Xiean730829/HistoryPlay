@@ -1,0 +1,14 @@
+id: cn.tang.asset.votive-stele.display
+kind: model3d
+format: glb
+sha256: 6bfdd2818663423c28a78523cdfc6e0929d403d93b091a3ba92fe2cb4dfd6bd5
+byte_size: 3536876
+derived_from: cn.tang.asset.votive-stele.glb
+license:
+  spdx: CC0-1.0
+  attribution: Minneapolis Institute of Art; Votive stele - Buddha and two Bodhisattvas
+  url: https://sketchfab.com/3d-models/votive-stele-buddha-and-two-bodhisattvas-e97f95d5781a4359b5a744b0cf0328fa
+lod: display
+framing:
+  camera_orbit: front-upright
+  orientation_note: 正面朝-Y，佛与二菩萨直立；gltf-transform 4.5.1 轻度减面，颜色贴图JPEG。
