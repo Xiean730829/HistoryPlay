@@ -1,9 +1,10 @@
-.museum-space { position: relative; width: 100%; height: min(82vh, 880px); min-height: 560px; overflow: hidden; background: #302a22; isolation: isolate; }
+.museum-space { position: relative; width: 100%; height: min(82vh, 880px); min-height: 560px; overflow: hidden; background: #302a22; isolation: isolate; color-scheme: dark; }
 .museum-webgl { position: absolute; inset: 0; }
 .museum-webgl canvas { display: block; width: 100%; height: 100%; cursor: pointer; }
-.museum-space-brand { position: absolute; left: 36px; top: 30px; color: #f7e6bc; text-shadow: 0 2px 14px #21140d; pointer-events: none; }
+.museum-space::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(180deg, rgb(20 15 11 / 44%), transparent 25%, transparent 70%, rgb(20 15 11 / 34%)), radial-gradient(ellipse at center, transparent 48%, rgb(17 13 10 / 20%) 100%); }
+.museum-space-brand { position: absolute; z-index: 2; left: 36px; top: 30px; padding: 16px 19px 13px; border-left: 1px solid #d4b77d99; color: #f2e5cb; text-shadow: 0 2px 14px #21140d; pointer-events: none; background: linear-gradient(90deg, rgb(31 24 17 / 48%), transparent); }
 .museum-space-brand span { font-size: 11px; letter-spacing: .36em; }
-.museum-space-brand h2 { margin: 10px 0; font: 28px "Songti SC", "SimSun", serif; letter-spacing: .15em; }
-.museum-space-brand p { font-size: 11px; letter-spacing: .32em; }
-.museum-space-guide { position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); padding: 10px 20px; border: 1px solid #b99b5a66; border-radius: 2px; color: #f4e5cb; background: #21180dbb; font-size: 13px; white-space: nowrap; pointer-events: none; }
+.museum-space-brand h2 { margin: 10px 0 7px; font: 28px "Songti SC", "SimSun", serif; letter-spacing: .15em; }
+.museum-space-brand p { margin: 0; color: #d5c19c; font-size: 11px; letter-spacing: .32em; }
+.museum-space-guide { position: absolute; z-index: 2; bottom: 28px; left: 50%; transform: translateX(-50%); padding: 11px 22px; border: 1px solid #ceb77e88; color: #f1e6d0; background: rgb(35 29 22 / 72%); box-shadow: 0 8px 32px rgb(14 10 7 / 35%), inset 0 1px rgb(255 255 255 / 9%); backdrop-filter: blur(8px); font-size: 13px; letter-spacing: .06em; white-space: nowrap; pointer-events: none; }
 @media (max-width: 650px) { .museum-space { height: 76vh; min-height: 480px; } .museum-space-brand { left: 20px; top: 20px; } .museum-space-brand h2 { font-size: 22px; } .museum-space-guide { font-size: 11px; max-width: 94%; white-space: normal; text-align: center; } }
