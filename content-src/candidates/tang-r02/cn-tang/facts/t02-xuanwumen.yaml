@@ -1,0 +1,11 @@
+id: cn.tang.fact.t02.xuanwumen
+claim: 626年武德九年，李世民仍为秦王；玄武门事件中，李建成与李元吉被杀，随后政治权力发生转移。
+grade: F
+applicable_time:
+  start_year: 626
+  end_year: 626
+  precision: range
+  display_label: 626年，武德九年
+source_ids:
+  - cn.tang.source.history-h03
+evidence_note: 依据《资治通鉴》卷191定位。人物心中动机、未载对白与宫门外普通人的具体遭遇不由此事实卡推断；本章的生活对白属于创作。
