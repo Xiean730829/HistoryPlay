@@ -142,6 +142,12 @@ def _check_story_node(entity: Entity, by_id: dict[str, Entity]) -> list[Issue]:
             issues.extend(
                 _check_target(entity, "presentation.asset_ids", target_id, "asset", by_id)
             )
+        audio_id = presentation.get("audio_asset_id")
+        if isinstance(audio_id, str) and audio_id:
+            issues.extend(_check_target(entity, "presentation.audio_asset_id", audio_id, "asset", by_id))
+            audio = by_id.get(audio_id)
+            if audio is not None and audio.kind == "asset" and audio.data.get("kind") != "audio":
+                issues.append(entity.locate(f"presentation.audio_asset_id 需要音频资产：{audio_id}"))
     exits = entity.data.get("exits")
     if isinstance(exits, list):
         for index, item in enumerate(exits):
@@ -161,6 +167,55 @@ def _check_story_node(entity: Entity, by_id: dict[str, Entity]) -> list[Issue]:
             node_ids = _as_ids(story.data.get("node_ids"))
             if entity.ident not in node_ids:
                 issues.append(entity.locate(f"节点未列入所属故事的 node_ids：{story_id}"))
+    return issues
+
+
+def _check_artifact(entity: Entity, by_id: dict[str, Entity]) -> list[Issue]:
+    issues: list[Issue] = []
+    presentation = entity.data.get("presentation")
+    if not isinstance(presentation, dict):
+        return issues
+
+    preview_id = presentation.get("preview_asset_id")
+    if isinstance(preview_id, str) and preview_id:
+        issues.extend(_check_target(entity, "presentation.preview_asset_id", preview_id, "asset", by_id))
+        preview = by_id.get(preview_id)
+        if preview is not None and preview.kind == "asset" and preview.data.get("kind") not in {"preview", "image"}:
+            issues.append(entity.locate(f"presentation.preview_asset_id 需要预览图或图片资产：{preview_id}"))
+
+    display = presentation.get("display")
+    if isinstance(display, dict):
+        asset_id = display.get("asset_id")
+        display_kind = display.get("kind")
+        if isinstance(asset_id, str) and asset_id:
+            issues.extend(_check_target(entity, "presentation.display.asset_id", asset_id, "asset", by_id))
+            asset = by_id.get(asset_id)
+            if asset is not None and asset.kind == "asset":
+                expected_kind = "model3d" if display_kind == "model3d" else "image"
+                if asset.data.get("kind") != expected_kind:
+                    issues.append(
+                        entity.locate(
+                            f"presentation.display.kind 与资产类型不一致：{display_kind} / {asset.data.get('kind')}"
+                        )
+                    )
+                if display_kind == "model3d" and asset.data.get("lod") not in {"display", "mobile"}:
+                    issues.append(
+                        entity.locate(
+                            f"presentation.display.asset_id 需要展示版或移动版模型：{asset_id}"
+                        )
+                    )
+
+    node_id = presentation.get("background_node_id")
+    if isinstance(node_id, str) and node_id:
+        issues.extend(_check_target(entity, "presentation.background_node_id", node_id, "story-node", by_id))
+        node = by_id.get(node_id)
+        if node is not None and node.kind == "story-node":
+            story_id = node.data.get("story_id")
+            story = by_id.get(story_id) if isinstance(story_id, str) else None
+            if not isinstance(story, Entity) or story.kind != "story" or story.data.get("artifact_id") != entity.ident:
+                issues.append(entity.locate(f"presentation.background_node_id 必须属于该文物的故事：{node_id}"))
+            if not isinstance(node.data.get("narration"), str) or not node.data["narration"].strip():
+                issues.append(entity.locate(f"presentation.background_node_id 指向没有讲稿正文的节点：{node_id}"))
     return issues
 
 
@@ -211,6 +266,8 @@ def validate_references(pack_dir: Path) -> list[Issue]:
             issues.extend(_check_field(entity, field, expected_kind, by_id))
         if entity.kind == "story":
             issues.extend(_check_story(entity, by_id))
+        elif entity.kind == "artifact":
+            issues.extend(_check_artifact(entity, by_id))
         elif entity.kind == "story-node":
             issues.extend(_check_story_node(entity, by_id))
         elif entity.kind == "gallery":

@@ -87,5 +87,19 @@
     "fallback_asset_id": {
       "$ref": "common.schema.json#/$defs/namespacedId"
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"kind": {"const": "model3d"}}, "required": ["kind"]},
+      "then": {"properties": {"format": {"const": "glb"}}}
+    },
+    {
+      "if": {"properties": {"kind": {"enum": ["image", "preview", "comic"]}}, "required": ["kind"]},
+      "then": {"properties": {"format": {"enum": ["jpg", "png", "webp"]}}}
+    },
+    {
+      "if": {"properties": {"kind": {"const": "audio"}}, "required": ["kind"]},
+      "then": {"properties": {"format": {"enum": ["mp3", "ogg"]}}}
+    }
+  ]
 }

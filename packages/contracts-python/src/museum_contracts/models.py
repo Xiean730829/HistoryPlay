@@ -31,6 +31,7 @@ class Artifact(TypedDict):
     material: NonEmptyText
     category: NonEmptyText
     asset_ids: list[NamespacedId]
+    presentation: NotRequired[ArtifactPresentation]
     fact_card_ids: NotRequired[list[NamespacedId]]
     story_entry_ids: NotRequired[list[NamespacedId]]
     identity_unknown: NotRequired[bool]
@@ -272,6 +273,13 @@ class ArtifactMuseum(TypedDict):
     accession: NonEmptyText
     collection_url: NotRequired[str]
 
+class ArtifactPresentation(TypedDict):
+    preview_asset_id: NamespacedId
+    display: ArtifactDisplay
+    default_camera: NotRequired[ArtifactDefaultCamera]
+    teaser: str
+    background_node_id: NamespacedId
+
 class AssetLicense(TypedDict):
     spdx: str
     attribution: str
@@ -312,10 +320,19 @@ class SourceLocator(TypedDict):
 class StoryNodePresentation(TypedDict):
     capability: CapabilityId
     asset_ids: NotRequired[list[NamespacedId]]
+    audio_asset_id: NotRequired[NamespacedId]
 
 class StoryNodeExits(TypedDict):
     action: Literal["continue_story", "choose_route", "enter_hypothesis", "return_to_exhibit"]
     target_node_id: NamespacedId
     when: NotRequired[StoryNodeCondition]
+
+class ArtifactDisplay(TypedDict):
+    kind: Literal["model3d", "photo"]
+    asset_id: NamespacedId
+
+class ArtifactDefaultCamera(TypedDict):
+    orbit: NonEmptyText
+    target_note: NotRequired[str]
 
 type McpToolCall = McpToolCallConnect | McpToolCallGetContext | McpToolCallSearch | McpToolCallReadContent | McpToolCallAct
