@@ -37,8 +37,17 @@
     "world_time": {
       "$ref": "common.schema.json#/$defs/timeRange"
     },
+    "gallery_id": {
+      "$ref": "common.schema.json#/$defs/namespacedId",
+      "description": "Published gallery fixed for this visit. Optional for sessions created before gallery navigation was introduced."
+    },
+    "station_id": {
+      "$ref": "common.schema.json#/$defs/namespacedId",
+      "description": "Authoritative current station; clients must not infer it from animation coordinates."
+    },
     "current_location_id": {
-      "$ref": "common.schema.json#/$defs/namespacedId"
+      "$ref": "common.schema.json#/$defs/namespacedId",
+      "description": "Legacy location anchor retained for older clients; new projections also provide station_id."
     },
     "focused_entity_id": {
       "$ref": "common.schema.json#/$defs/namespacedId"
@@ -168,6 +177,31 @@
         },
         "narration_checkpoint": {
           "$ref": "#/$defs/narrationCheckpoint"
+        },
+        "exhibit_return_point": {
+          "$ref": "#/$defs/exhibitReturnPoint"
+        }
+      }
+    },
+    "exhibitReturnPoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gallery_id", "station_id", "view"],
+      "properties": {
+        "gallery_id": {
+          "$ref": "common.schema.json#/$defs/namespacedId"
+        },
+        "station_id": {
+          "$ref": "common.schema.json#/$defs/namespacedId"
+        },
+        "focused_entity_id": {
+          "$ref": "common.schema.json#/$defs/namespacedId"
+        },
+        "view": {
+          "$ref": "common.schema.json#/$defs/cameraPose"
+        },
+        "view_revision": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt"
         }
       }
     },

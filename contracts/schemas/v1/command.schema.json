@@ -39,10 +39,11 @@
       "$ref": "common.schema.json#/$defs/commandAction"
     },
     "target_id": {
-      "$ref": "common.schema.json#/$defs/namespacedId"
+      "$ref": "common.schema.json#/$defs/namespacedId",
+      "description": "Target gallery for enter_gallery; target artifact for artifact-directed actions. Never a client-provided position."
     },
     "params": {
-      "$ref": "#/$defs/actionParams"
+      "$ref": "common.schema.json#/$defs/actionParams"
     }
   },
   "allOf": [
@@ -50,13 +51,26 @@
       "if": {
         "properties": {
           "action": {
-            "enum": ["open_artifact", "enter_story", "focus_detail", "choose_action"]
+            "enum": ["open_artifact", "enter_gallery", "locate_artifact", "enter_story", "focus_detail", "choose_action"]
           }
         },
         "required": ["action"]
       },
       "then": {
         "required": ["target_id"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "enum": ["enter_gallery", "move_next", "move_previous", "locate_artifact", "return_to_exhibit"]
+          }
+        },
+        "required": ["action"]
+      },
+      "then": {
+        "required": ["expected_view_revision"]
       }
     },
     {
@@ -85,50 +99,5 @@
         "required": ["params"]
       }
     }
-  ],
-  "$defs": {
-    "actionParams": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "intent": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 80,
-          "pattern": "^[a-z][a-z0-9_]{0,79}$"
-        },
-        "input_text": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 400,
-          "description": "Untrusted player utterance. Must map to a declared intent before rules run."
-        },
-        "camera": {
-          "$ref": "#/$defs/cameraPose"
-        }
-      }
-    },
-    "cameraPose": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["yaw", "pitch", "zoom"],
-      "properties": {
-        "yaw": {
-          "type": "number",
-          "minimum": -180,
-          "maximum": 180
-        },
-        "pitch": {
-          "type": "number",
-          "minimum": -90,
-          "maximum": 90
-        },
-        "zoom": {
-          "type": "number",
-          "exclusiveMinimum": 0,
-          "maximum": 8
-        }
-      }
-    }
-  }
+  ]
 }

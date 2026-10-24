@@ -1,9 +1,8 @@
 {
   "schema_version": "1",
-  "request_id": "req_continue_001",
-  "expected_revision": 3,
-  "interaction_epoch": 2,
-  "control_ticket": "tkt_epoch2_rev3",
-  "action": "continue_story",
-  "target_id": "cn.tang.story.stele-observation"
+  "request_id": "request-nav-0001",
+  "expected_revision": 7,
+  "expected_view_revision": 3,
+  "interaction_epoch": 12,
+  "action": "move_next"
 }
