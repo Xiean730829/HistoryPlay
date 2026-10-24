@@ -24,3 +24,11 @@ uv run python tools/dev/run_local.py
 ```
 
 网页默认在 `http://127.0.0.1:5173`，游戏服务健康检查在 `http://127.0.0.1:8780/health`。启动器从进程环境读取配置，不会自动加载 `.env.local`。运行 `npm run check` 可检查网页类型和生产构建。
+
+作者源稿按公共 Schema 校验：
+
+```powershell
+uv run --package museum-content-pipeline content-pipeline validate --pack <作者包目录>
+```
+
+当前只检查 YAML 形状，不检查引用完整性，也不编译或发布。仓库里还没有 `content-src/packs/` 作者包。

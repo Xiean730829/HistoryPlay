@@ -28,11 +28,11 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --all-packages --dev
-      - run: uv run ruff check services/museum tools/dev packages/contracts-python
+      - run: uv run ruff check services/museum tools/dev packages/contracts-python tools/content-pipeline
       - run: uv run python tools/dev/check_boundaries.py
-      - run: uv run python -m compileall -q services/museum/src tools/dev packages/contracts-python/src
+      - run: uv run python -m compileall -q services/museum/src tools/dev packages/contracts-python/src tools/content-pipeline/src
       - run: uv run python tools/dev/generate_contracts.py --check
-      - run: uv run pytest tests/contracts -q
+      - run: uv run pytest tests/contracts tests/content -q
       - name: Check PR and commit titles
         if: github.event_name == 'pull_request'
         env:
