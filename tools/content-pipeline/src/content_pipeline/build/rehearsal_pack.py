@@ -58,7 +58,8 @@ def build_rehearsal_pack(
     artifacts = _documents_of(documents, "artifacts/")
     stories = _documents_of(documents, "stories/")
     assets = {item["id"]: item for item in _documents_of(documents, "assets/") if "id" in item}
-    required_assets = _required_runtime_assets(artifacts, assets)
+    story_nodes = _documents_of(documents, "nodes/")
+    required_assets = _required_runtime_assets(artifacts, stories, story_nodes, assets)
     _assert_three_exhibits(artifacts, documents)
     try:
         _assert_required_files_ready(required_assets, assets, sources_path)
@@ -156,6 +157,8 @@ def _assert_three_exhibits(
 
 def _required_runtime_assets(
     artifacts: list[dict[str, Any]],
+    stories: list[dict[str, Any]],
+    story_nodes: list[dict[str, Any]],
     assets: dict[str, dict[str, Any]],
 ) -> frozenset[str]:
     required: set[str] = set()
@@ -173,8 +176,8 @@ def _required_runtime_assets(
         if display.get("kind") != "model3d" or not isinstance(display_id, str):
             raise RehearsalPackError(f"文物展示资产必须是model3d：{ident}")
         background = presentation.get("background_node_id")
-        stories = artifact.get("story_entry_ids")
-        if not isinstance(background, str) or not stories:
+        story_entry_ids = artifact.get("story_entry_ids")
+        if not isinstance(background, str) or not story_entry_ids:
             raise RehearsalPackError(f"文物缺少创作讲稿引用：{ident}")
         for asset_id, label in ((preview_id, "预览"), (display_id, "展示版")):
             meta = assets.get(asset_id)
@@ -182,6 +185,28 @@ def _required_runtime_assets(
                 raise RehearsalPackError(f"缺少{label}资产：{asset_id}")
             if meta.get("lod") == "source":
                 raise RehearsalPackError(f"不能把源模型作为联调{label}资产：{asset_id}")
+            required.add(asset_id)
+    story_ids = {item.get("id") for item in stories}
+    for node in story_nodes:
+        if node.get("story_id") not in story_ids:
+            continue
+        presentation = node.get("presentation")
+        if not isinstance(presentation, dict):
+            continue
+        references = presentation.get("asset_ids", [])
+        if not isinstance(references, list):
+            raise RehearsalPackError("故事节点presentation.asset_ids必须是数组")
+        audio_id = presentation.get("audio_asset_id")
+        if audio_id is not None:
+            references = [*references, audio_id]
+        for asset_id in references:
+            if not isinstance(asset_id, str):
+                raise RehearsalPackError("故事节点资源ID必须是字符串")
+            meta = assets.get(asset_id)
+            if meta is None:
+                raise RehearsalPackError(f"缺少故事资源资产：{asset_id}")
+            if meta.get("lod") == "source":
+                raise RehearsalPackError(f"不能把源模型作为故事资源：{asset_id}")
             required.add(asset_id)
     return frozenset(required)
 
