@@ -12,6 +12,7 @@ COMMAND_ACTIONS = frozenset(
         "enter_gallery",
         "move_next",
         "move_previous",
+        "locate_artifact",
         "enter_story",
         "continue_story",
         "pause_story",
