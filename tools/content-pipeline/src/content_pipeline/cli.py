@@ -14,6 +14,7 @@ from content_pipeline.assets.preview_manifest import (
 from content_pipeline.assets.stage_assets import AssetStageError, stage_assets
 from content_pipeline.build.compiler import compile_pack, write_documents
 from content_pipeline.build.pack_writer import write_immutable_pack
+from content_pipeline.build.rehearsal_pack import RehearsalPackError, build_rehearsal_pack
 from content_pipeline.validation.reference_validator import validate_references
 from content_pipeline.validation.schema_validator import validate_pack
 
@@ -176,6 +177,20 @@ def cmd_stage_assets(
     return 0
 
 
+def cmd_build_rehearsal(
+    *, pack: Path, sources: Path, out: Path, version: str
+) -> int:
+    try:
+        destination = build_rehearsal_pack(
+            pack_dir=pack, sources_path=sources, out_dir=out, version=version
+        )
+    except RehearsalPackError as exc:
+        print(f"本机联调包生成失败：{exc}", file=sys.stderr)
+        return 1
+    print(f"已生成隔离的本机联调包：{destination}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="内容制作命令")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -232,6 +247,13 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="内容包中每个资产都必须有本机源文件，缺文件则失败",
     )
+    rehearsal = sub.add_parser(
+        "build-rehearsal", help="把draft作者包复制为仅本机可用的不可变联调版本"
+    )
+    rehearsal.add_argument("--pack", required=True, type=Path, help="draft作者包目录")
+    rehearsal.add_argument("--sources", required=True, type=Path, help="忽略目录中的本机资源来源JSON")
+    rehearsal.add_argument("--out", required=True, type=Path, help="新的本机联调包输出目录，不可覆盖")
+    rehearsal.add_argument("--version", required=True, help="新的运行时版本号，例如0.2.1")
     args = parser.parse_args(argv)
     if args.command == "validate":
         return cmd_validate(args.pack)
@@ -271,6 +293,10 @@ def main(argv: list[str] | None = None) -> int:
             sources=args.sources,
             out=args.out,
             require_all=args.require_all,
+        )
+    if args.command == "build-rehearsal":
+        return cmd_build_rehearsal(
+            pack=args.pack, sources=args.sources, out=args.out, version=args.version
         )
     parser.error("未知命令")
     return 2
