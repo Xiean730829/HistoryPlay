@@ -44,7 +44,22 @@ def source_root(tmp_path: Path) -> Path:
         encoding="utf-8",
     )
     (tmp_path / "replacement-assets.json").write_text(
-        json.dumps({"replacements": {"t05-character": {"review_key": "t05-character-v2"}}}),
+        json.dumps(
+            {
+                "replacements": {
+                    name: {"review_key": f"{name}-v2"}
+                    for name in (
+                        "t05-character",
+                        "a02-road",
+                        "r01-color",
+                        "r06-gesture",
+                        "r07-door",
+                        "r08-fragment",
+                        "t06-ledger",
+                    )
+                }
+            }
+        ),
         encoding="utf-8",
     )
     content = tmp_path / "content"
