@@ -123,6 +123,40 @@ export interface HistoricalEvent {
   role_story_id?: NamespacedId;
 }
 
+export interface McpToolCallConnect {
+  tool: "museum_connect";
+  pair_code: string;
+}
+
+export interface McpToolCallGetContext {
+  tool: "museum_get_context";
+  cursor?: string;
+  receipt_id?: OpaqueId;
+}
+
+export interface McpToolCallSearch {
+  tool: "museum_search";
+  query: string;
+  kind?: "artifact" | "event" | "story" | "fact";
+  cursor?: string;
+}
+
+export interface McpToolCallReadContent {
+  tool: "museum_read_content";
+  content_id: NamespacedId;
+  cursor?: string;
+}
+
+export interface McpToolCallAct {
+  tool: "museum_act";
+  action: CommandAction;
+  target_id?: NamespacedId;
+  request_id: OpaqueId;
+  expected_revision: NonNegativeInt;
+  expected_view_revision?: NonNegativeInt;
+  control_ticket?: string;
+}
+
 export interface CommandReceipt {
   schema_version: "1";
   receipt_id: OpaqueId;
@@ -233,6 +267,21 @@ export interface Story {
   return_to_exhibit?: boolean;
 }
 
+export interface VoiceEvent {
+  schema_version: "1";
+  kind: "speech_started" | "speech_ended" | "transcript_partial" | "transcript_final" | "interrupt" | "playback_started" | "playback_drained" | "playback_stopped" | "connection_changed";
+  /** Provenance of this event. unknown must not be treated as a cloud turn id. */
+  source: "local_vad" | "local_player" | "browser" | "voice_bridge" | "unknown";
+  connection_id: OpaqueId;
+  /** Local input turn. Not a vendor task id and not mintable by the model. */
+  local_turn_id?: OpaqueId;
+  /** Vendor turn id when actually observed; null means unknown. Do not invent one. */
+  vendor_turn_id?: string | unknown;
+  occurred_at: string;
+  text?: string;
+  connected?: boolean;
+}
+
 export interface ArtifactMuseum {
   name: NonEmptyText;
   accession: NonEmptyText;
@@ -282,3 +331,5 @@ export interface StoryNodeExits {
   target_node_id: NamespacedId;
   when?: StoryNodeCondition;
 }
+
+export type McpToolCall = McpToolCallConnect | McpToolCallGetContext | McpToolCallSearch | McpToolCallReadContent | McpToolCallAct;

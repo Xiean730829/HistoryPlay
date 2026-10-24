@@ -1,0 +1,8 @@
+{
+  "tool": "museum_act",
+  "action": "continue_story",
+  "target_id": "cn.tang.story.stele-observation",
+  "request_id": "req_continue_001",
+  "expected_revision": 3,
+  "control_ticket": "tkt_epoch2_rev3"
+}

@@ -10,21 +10,6 @@ from referencing import Registry, Resource
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMAS = ROOT / "contracts" / "schemas" / "v1"
 EXAMPLES = ROOT / "contracts" / "examples" / "v1"
-SCHEMA_FILES = {
-    "content-pack": "content-pack.schema.json",
-    "artifact": "artifact.schema.json",
-    "asset": "asset.schema.json",
-    "source": "source.schema.json",
-    "fact-card": "fact-card.schema.json",
-    "story-node": "story-node.schema.json",
-    "story": "story.schema.json",
-    "historical-event": "historical-event.schema.json",
-    "relation": "relation.schema.json",
-    "session": "session.schema.json",
-    "command": "command.schema.json",
-    "event": "event.schema.json",
-    "receipt": "receipt.schema.json",
-}
 
 
 def load_json(path: Path) -> dict:
@@ -39,16 +24,15 @@ def schema_registry() -> Registry:
     return Registry().with_resources(resources)
 
 
-def schema_name_for(example: Path) -> str:
-    stem = example.name.split(".", 1)[0]
-    matches = [key for key in SCHEMA_FILES if stem == key]
-    if not matches:
+def schema_path_for(example: Path) -> Path:
+    path = SCHEMAS / f"{example.name.split('.', 1)[0]}.schema.json"
+    if not path.exists():
         raise AssertionError(f"没有对应 Schema：{example.name}")
-    return SCHEMA_FILES[matches[0]]
+    return path
 
 
 def validate(example: Path) -> list[str]:
-    schema = load_json(SCHEMAS / schema_name_for(example))
+    schema = load_json(schema_path_for(example))
     Validator = validator_for(schema)
     validator = Validator(schema, registry=schema_registry())
     return [error.message for error in validator.iter_errors(load_json(example))]
