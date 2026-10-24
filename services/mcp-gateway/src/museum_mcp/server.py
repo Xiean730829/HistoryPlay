@@ -7,7 +7,7 @@ from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
 
-from museum_mcp.action_tools import ActionTools, VoiceApplicationClient
+from museum_mcp.action_tools import ActionTools
 from museum_mcp.application_client import ApplicationClient, BoundSession, GatewayError
 from museum_mcp.tools import ReadTools
 
@@ -55,15 +55,18 @@ def load_binding() -> BoundSession:
         raise GatewayError("本机展台绑定文件缺失或格式无效") from None
 
 
+class CurrentBindingClient:
+    """Read the current dedicated display binding per query, never an action grant."""
+
+    async def get(self, route, params=None):
+        return await ApplicationClient(load_binding()).get(route, params)
+
+
 def main() -> None:
-    try:
-        binding = load_binding()
-    except GatewayError as error:
-        print(str(error), file=sys.stderr)
+    if not os.environ.get("MUSEUM_MCP_BINDING_FILE"):
+        print("请设置MUSEUM_MCP_BINDING_FILE，页面开启语音后自动登记当前展台", file=sys.stderr)
         raise SystemExit(2) from None
-    create_server(
-        ReadTools(ApplicationClient(binding)), ActionTools(VoiceApplicationClient(binding))
-    ).run(transport="stdio")
+    create_server(ReadTools(CurrentBindingClient()), ActionTools()).run(transport="stdio")
 
 
 if __name__ == "__main__":

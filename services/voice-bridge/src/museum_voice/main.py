@@ -22,7 +22,7 @@ from museum_mcp.intent_adapter import interpret
 from museum_voice.codec import AudioCodec, pack_audio, unpack_audio
 from museum_voice.config import DeviceConfig
 from museum_voice.control_orchestrator import InputOrchestrator
-from museum_voice.game_binding import GAME_BINDINGS, bind_game
+from museum_voice.game_binding import BINDING_FILE, GAME_BINDINGS, bind_game
 from museum_voice.xiaozhi_client import connection_headers, hello_message
 
 DEVICE = web.AppKey("fixed_device", DeviceConfig)
@@ -63,6 +63,8 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
     orchestrator = None
     try:
         await browser.prepare(request)
+        if request.app.get(DEVICE) is None:
+            raise ValueError("固定设备尚未配置，只读展台绑定可用")
         first = await asyncio.wait_for(browser.receive_json(), 5)
         if not isinstance(first, dict) or first.get("op") != "bind":
             raise ValueError("音频连接必须先绑定当前展台")
@@ -226,11 +228,21 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
 
 
 async def health(request: web.Request) -> web.Response:
-    return web.json_response({"service": "museum-voice", "status": "ok", "device_configured": True})
+    return web.json_response(
+        {
+            "service": "museum-voice",
+            "status": "ok",
+            "device_configured": request.app.get(DEVICE) is not None,
+        }
+    )
 
 
 def create_app(
-    device: DeviceConfig, *, port: int = 8782, origin: str = "http://127.0.0.1:5173"
+    device: DeviceConfig | None,
+    *,
+    port: int = 8782,
+    origin: str = "http://127.0.0.1:5173",
+    binding_file: Path | None = None,
 ) -> web.Application:
     if origin not in {"http://127.0.0.1:5173", "http://127.0.0.1:5174"}:
         raise ValueError("语音桥只允许本机5173或5174游戏页面")
@@ -240,7 +252,10 @@ def create_app(
     app[HOST] = f"127.0.0.1:{port}"
     app[ACTIVE] = set()
     app[GAME_BINDINGS] = {}
+    if binding_file is not None:
+        app[BINDING_FILE] = binding_file
     app.router.add_get("/health", health)
+    app.router.add_get("/voice/status", health)
     app.router.add_get("/voice/ws", bridge)
     app.router.add_post("/voice/bind", bind_game)
     app.router.add_options("/voice/bind", bind_game)
@@ -249,16 +264,23 @@ def create_app(
 
 def main() -> None:
     path = os.environ.get("MUSEUM_XIAOZHI_DEVICE_FILE")
-    if not path:
+    allow_unconfigured = os.environ.get("MUSEUM_VOICE_ALLOW_UNCONFIGURED") == "1"
+    if not path and not allow_unconfigured:
         raise SystemExit("请设置MUSEUM_XIAOZHI_DEVICE_FILE指向本机私密设备配置")
     try:
-        device = DeviceConfig.load(Path(path))
+        device = DeviceConfig.load(Path(path)) if path else None
     except ValueError as error:
         raise SystemExit(str(error)) from None
     port = int(os.environ.get("MUSEUM_VOICE_PORT", "8782"))
     origin = os.environ.get("MUSEUM_WEB_ORIGIN", "http://127.0.0.1:5173")
+    binding_file = os.environ.get("MUSEUM_MCP_BINDING_FILE")
     web.run_app(
-        create_app(device, port=port, origin=origin),
+        create_app(
+            device,
+            port=port,
+            origin=origin,
+            binding_file=Path(binding_file) if binding_file else None,
+        ),
         host="127.0.0.1",
         port=port,
         access_log=None,

@@ -205,7 +205,8 @@ def test_browser_pcm_to_current_transport_stt_to_real_game_http(tmp_path, monkey
             "wss://api.xiaozhi.me/v1/",
             "fake-test-token",
         )
-        app = voice_main.create_app(device, port=8782, origin=ORIGIN)
+        binding_file = tmp_path / "private-current-binding.json"
+        app = voice_main.create_app(device, port=8782, origin=ORIGIN, binding_file=binding_file)
         browser = TestClient(TestServer(app))
         await browser.start_server()
         headers = {"Host": "127.0.0.1:8782", "Origin": ORIGIN}
@@ -214,6 +215,12 @@ def test_browser_pcm_to_current_transport_stt_to_real_game_http(tmp_path, monkey
             assert response.status == 200
             bound = await response.json()
             assert set(bound) == {"binding_id", "status"}
+            import json
+
+            assert (
+                json.loads(binding_file.read_text(encoding="utf-8"))["connection_id"]
+                == binding.connection_id
+            )
             ws = await browser.ws_connect("/voice/ws", headers=headers)
             await ws.send_json({"op": "bind", "binding_id": bound["binding_id"]})
             assert (await ws.receive_json())["type"] == "ready"
