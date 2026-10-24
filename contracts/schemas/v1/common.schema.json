@@ -58,6 +58,48 @@
         "relationship_graph",
         "compare"
       ]
+    },
+    "opaqueId": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "Session, request or receipt ID. Not a content namespaced ID and not a permission."
+    },
+    "nonNegativeInt": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sessionMode": {
+      "enum": ["explore", "story", "qa", "hypothesis"]
+    },
+    "commandAction": {
+      "enum": [
+        "open_artifact",
+        "enter_story",
+        "continue_story",
+        "pause_story",
+        "return_to_story",
+        "focus_detail",
+        "set_view",
+        "choose_action"
+      ],
+      "description": "Frozen command actions. New exhibits do not add tools; new mechanisms add an action."
+    },
+    "variableValue": {
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      ]
     }
   }
 }

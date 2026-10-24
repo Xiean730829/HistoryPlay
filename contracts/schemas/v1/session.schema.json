@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historyplay.dev/contracts/schemas/v1/session.schema.json",
+  "title": "SessionProjection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "session_id",
+    "pack_versions",
+    "mode",
+    "display_order",
+    "revision",
+    "view_revision",
+    "event_seq",
+    "interaction_epoch"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1"
+    },
+    "session_id": {
+      "$ref": "common.schema.json#/$defs/opaqueId"
+    },
+    "pack_versions": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "$ref": "common.schema.json#/$defs/namespacedId"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+      },
+      "description": "Published pack versions fixed for this session. Runtime must not search unpublished drafts."
+    },
+    "world_time": {
+      "$ref": "common.schema.json#/$defs/timeRange"
+    },
+    "current_location_id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "focused_entity_id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "visible_entities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/namespacedId"
+      }
+    },
+    "display_order": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/namespacedId"
+      },
+      "description": "Server-authored order used to resolve 'the second one'. Clients must not reorder it."
+    },
+    "story_id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "node_id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "mode": {
+      "$ref": "common.schema.json#/$defs/sessionMode"
+    },
+    "story_variables": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "common.schema.json#/$defs/variableValue"
+      }
+    },
+    "return_stack": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/returnPoint"
+      }
+    },
+    "revision": {
+      "$ref": "common.schema.json#/$defs/nonNegativeInt",
+      "description": "Story, focus or scene commits. Not incremented by per-frame camera motion."
+    },
+    "view_revision": {
+      "$ref": "common.schema.json#/$defs/nonNegativeInt"
+    },
+    "event_seq": {
+      "$ref": "common.schema.json#/$defs/nonNegativeInt"
+    },
+    "interaction_epoch": {
+      "$ref": "common.schema.json#/$defs/nonNegativeInt",
+      "description": "Increments on a new local input or interrupt so old control tickets fail."
+    },
+    "discoveries": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "maxLength": 80,
+        "pattern": "^[a-z][a-z0-9_.]{0,79}$"
+      }
+    },
+    "narration_checkpoint": {
+      "$ref": "#/$defs/narrationCheckpoint"
+    },
+    "allowed_actions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/commandAction"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "story"
+          }
+        },
+        "required": ["mode"]
+      },
+      "then": {
+        "required": ["story_id", "node_id"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "qa"
+          }
+        },
+        "required": ["mode"]
+      },
+      "then": {
+        "properties": {
+          "return_stack": {
+            "minItems": 1
+          }
+        },
+        "required": ["return_stack"]
+      }
+    }
+  ],
+  "$defs": {
+    "returnPoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["story_id", "node_id", "revision"],
+      "properties": {
+        "story_id": {
+          "$ref": "common.schema.json#/$defs/namespacedId"
+        },
+        "node_id": {
+          "$ref": "common.schema.json#/$defs/namespacedId"
+        },
+        "revision": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt"
+        },
+        "story_variables": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "common.schema.json#/$defs/variableValue"
+          }
+        },
+        "narration_checkpoint": {
+          "$ref": "#/$defs/narrationCheckpoint"
+        }
+      }
+    },
+    "narrationCheckpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "last_started_node_id": {
+          "$ref": "common.schema.json#/$defs/namespacedId"
+        },
+        "last_completed_node_id": {
+          "$ref": "common.schema.json#/$defs/namespacedId"
+        }
+      }
+    }
+  }
+}

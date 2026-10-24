@@ -1,0 +1,33 @@
+{
+  "schema_version": "1",
+  "session_id": "sess_stele_001",
+  "pack_versions": {
+    "cn.tang.core": "1.0.0"
+  },
+  "world_time": {
+    "start_year": 678,
+    "end_year": 678,
+    "precision": "year",
+    "display_label": "678年"
+  },
+  "current_location_id": "cn.tang.hall.main",
+  "focused_entity_id": "cn.tang.artifact.stele",
+  "visible_entities": ["cn.tang.artifact.stele"],
+  "display_order": ["cn.tang.artifact.stele"],
+  "story_id": "cn.tang.story.stele-observation",
+  "node_id": "cn.tang.node.stele-observation.01",
+  "mode": "story",
+  "story_variables": {
+    "asked_date": true
+  },
+  "return_stack": [],
+  "revision": 3,
+  "view_revision": 1,
+  "event_seq": 5,
+  "interaction_epoch": 2,
+  "discoveries": ["discoveries.stele_dated"],
+  "narration_checkpoint": {
+    "last_started_node_id": "cn.tang.node.stele-observation.01"
+  },
+  "allowed_actions": ["continue_story", "focus_detail", "choose_action"]
+}
