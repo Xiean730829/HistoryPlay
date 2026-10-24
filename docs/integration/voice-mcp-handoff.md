@@ -91,6 +91,8 @@ A线需在根uv成员/锁登记 `services/voice-bridge`（已固定aiohttp/av）
 
 VoiceClient保留最近240ms预录；重连等待期间完整缓存本次输入，最多30秒，结束先于ready时也会按start→完整音频→stop补发，不上传结束后的静音。显式disconnect清空缓存；A线无需再复制预录或结束排队。每条输入新建上游连接可能增加延迟，云端聊天上下文跨重连仍未验证，游戏会话/展位不随之重建。浏览器显示“已连接”必须来自桥的ready，不能来自麦克风权限获准。
 
+VoiceEntry另提供可选 `beforeStart` 回调，由首次用户点击直接调用共享播放AudioContext.resume，避免浏览器自动播放限制；`onStop`在暂停和组件卸载时关闭VoiceClient并释放AudioFocus。仅停麦克风不能代替关闭上游连接。
+
 ## MCP真实发现探针与WSS管道（独立PR）
 
 新增 `museum_mcp.probe_server`（两个无私密信息、无游戏控制的诊断工具）和 `museum_mcp.xiaozhi_pipe`（兼容官方stdio↔WSS路径）。无需设备Token，也不会抢占原网页的音频连接。诊断模式不需要游戏绑定，可先验证云端发现；正式museum模式才读取已绑定展台。
