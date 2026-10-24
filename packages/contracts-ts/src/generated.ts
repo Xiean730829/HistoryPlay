@@ -6,7 +6,7 @@ export type NonNegativeInt = number;
 export type FactGrade = "F" | "R" | "C" | "H" | "U";
 export type CapabilityId = "artifact3d" | "comic" | "map" | "timeline" | "relationship_graph" | "compare";
 export type SessionMode = "explore" | "story" | "qa" | "hypothesis";
-export type CommandAction = "open_artifact" | "enter_story" | "continue_story" | "pause_story" | "return_to_story" | "focus_detail" | "set_view" | "choose_action";
+export type CommandAction = "open_artifact" | "enter_gallery" | "move_next" | "move_previous" | "locate_artifact" | "return_to_exhibit" | "enter_story" | "continue_story" | "pause_story" | "return_to_story" | "focus_detail" | "set_view" | "choose_action";
 export type VariableValue = boolean | number | string;
 
 export interface TimeRange {
@@ -48,19 +48,6 @@ export interface Asset {
   fallback_asset_id?: NamespacedId;
 }
 
-export interface CommandActionParams {
-  intent?: string;
-  /** Untrusted player utterance. Must map to a declared intent before rules run. */
-  input_text?: string;
-  camera?: CommandCameraPose;
-}
-
-export interface CommandCameraPose {
-  yaw: number;
-  pitch: number;
-  zoom: number;
-}
-
 export interface Command {
   schema_version: "1";
   /** Idempotency key. Same ID and payload retries the original receipt; same ID different payload conflicts. */
@@ -71,8 +58,9 @@ export interface Command {
   /** Opaque short-lived ticket issued by the application. Models must not mint this. */
   control_ticket?: string;
   action: CommandAction;
+  /** Target gallery for enter_gallery; target artifact for artifact-directed actions. Never a client-provided position. */
   target_id?: NamespacedId;
-  params?: CommandActionParams;
+  params?: CommandObject;
 }
 
 export interface ContentPack {
@@ -178,7 +166,10 @@ export interface McpToolCallAct {
   request_id: OpaqueId;
   expected_revision: NonNegativeInt;
   expected_view_revision?: NonNegativeInt;
+  /** Navigation actions require the current input epoch so interrupted commands cannot move the session. */
+  interaction_epoch?: NonNegativeInt;
   control_ticket?: string;
+  params?: CommandObject;
 }
 
 export interface CommandReceipt {
@@ -214,6 +205,15 @@ export interface SessionProjectionReturnPoint {
   revision: NonNegativeInt;
   story_variables?: Record<string, VariableValue>;
   narration_checkpoint?: SessionProjectionNarrationCheckpoint;
+  exhibit_return_point?: SessionProjectionExhibitReturnPoint;
+}
+
+export interface SessionProjectionExhibitReturnPoint {
+  gallery_id: NamespacedId;
+  station_id: NamespacedId;
+  focused_entity_id?: NamespacedId;
+  view: SessionProjectionObject;
+  view_revision?: NonNegativeInt;
 }
 
 export interface SessionProjectionNarrationCheckpoint {
@@ -227,6 +227,11 @@ export interface SessionProjection {
   /** Published pack versions fixed for this session. Runtime must not search unpublished drafts. */
   pack_versions: Record<NamespacedId, string>;
   world_time?: TimeRange;
+  /** Published gallery fixed for this visit. Optional for sessions created before gallery navigation was introduced. */
+  gallery_id?: NamespacedId;
+  /** Authoritative current station; clients must not infer it from animation coordinates. */
+  station_id?: NamespacedId;
+  /** Legacy location anchor retained for older clients; new projections also provide station_id. */
   current_location_id?: NamespacedId;
   focused_entity_id?: NamespacedId;
   visible_entities?: Array<NamespacedId>;
@@ -328,6 +333,13 @@ export interface AssetHotspots {
   label: NonEmptyText;
 }
 
+export interface CommandObject {
+  intent?: string;
+  /** Untrusted player utterance. Must map to a declared intent before rules run. */
+  input_text?: string;
+  camera?: SessionProjectionObject;
+}
+
 export interface ContentPackRegion {
   id: string;
   label: NonEmptyText;
@@ -336,6 +348,12 @@ export interface ContentPackRegion {
 export interface HistoricalEventPlace {
   label: NonEmptyText;
   region_id?: string;
+}
+
+export interface SessionProjectionObject {
+  yaw: number;
+  pitch: number;
+  zoom: number;
 }
 
 export interface SourceLocator {

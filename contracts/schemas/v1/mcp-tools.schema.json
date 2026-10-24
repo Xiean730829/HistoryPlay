@@ -118,13 +118,50 @@
         "expected_view_revision": {
           "$ref": "common.schema.json#/$defs/nonNegativeInt"
         },
+        "interaction_epoch": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt",
+          "description": "Navigation actions require the current input epoch so interrupted commands cannot move the session."
+        },
         "control_ticket": {
           "type": "string",
           "minLength": 8,
           "maxLength": 128,
           "pattern": "^[A-Za-z0-9._-]+$"
+        },
+        "params": {
+          "$ref": "common.schema.json#/$defs/actionParams"
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "tool": {"const": "museum_act"},
+          "action": {
+            "enum": ["enter_gallery", "move_next", "move_previous", "locate_artifact", "return_to_exhibit"]
+          }
+        },
+        "required": ["tool", "action"]
+      },
+      "then": {
+        "required": ["expected_view_revision", "interaction_epoch"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "tool": {"const": "museum_act"},
+          "action": {
+            "enum": ["enter_gallery", "locate_artifact"]
+          }
+        },
+        "required": ["tool", "action"]
+      },
+      "then": {
+        "required": ["target_id"]
+      }
+    }
+  ]
 }

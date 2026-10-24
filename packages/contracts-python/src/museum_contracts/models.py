@@ -11,7 +11,7 @@ type NonNegativeInt = int
 type FactGrade = Literal["F", "R", "C", "H", "U"]
 type CapabilityId = Literal["artifact3d", "comic", "map", "timeline", "relationship_graph", "compare"]
 type SessionMode = Literal["explore", "story", "qa", "hypothesis"]
-type CommandAction = Literal["open_artifact", "enter_story", "continue_story", "pause_story", "return_to_story", "focus_detail", "set_view", "choose_action"]
+type CommandAction = Literal["open_artifact", "enter_gallery", "move_next", "move_previous", "locate_artifact", "return_to_exhibit", "enter_story", "continue_story", "pause_story", "return_to_story", "focus_detail", "set_view", "choose_action"]
 type VariableValue = bool | int | float | str
 
 class TimeRange(TypedDict):
@@ -48,16 +48,6 @@ class Asset(TypedDict):
     hotspots: NotRequired[list[AssetHotspots]]
     fallback_asset_id: NotRequired[NamespacedId]
 
-class CommandActionParams(TypedDict):
-    intent: NotRequired[str]
-    input_text: NotRequired[str]
-    camera: NotRequired[CommandCameraPose]
-
-class CommandCameraPose(TypedDict):
-    yaw: float
-    pitch: float
-    zoom: float
-
 class Command(TypedDict):
     schema_version: Literal["1"]
     request_id: OpaqueId
@@ -67,7 +57,7 @@ class Command(TypedDict):
     control_ticket: NotRequired[str]
     action: CommandAction
     target_id: NotRequired[NamespacedId]
-    params: NotRequired[CommandActionParams]
+    params: NotRequired[CommandObject]
 
 class ContentPack(TypedDict):
     id: NamespacedId
@@ -157,7 +147,9 @@ class McpToolCallAct(TypedDict):
     request_id: OpaqueId
     expected_revision: NonNegativeInt
     expected_view_revision: NotRequired[NonNegativeInt]
+    interaction_epoch: NotRequired[NonNegativeInt]
     control_ticket: NotRequired[str]
+    params: NotRequired[CommandObject]
 
 class CommandReceipt(TypedDict):
     schema_version: Literal["1"]
@@ -187,6 +179,14 @@ class SessionProjectionReturnPoint(TypedDict):
     revision: NonNegativeInt
     story_variables: NotRequired[dict[str, VariableValue]]
     narration_checkpoint: NotRequired[SessionProjectionNarrationCheckpoint]
+    exhibit_return_point: NotRequired[SessionProjectionExhibitReturnPoint]
+
+class SessionProjectionExhibitReturnPoint(TypedDict):
+    gallery_id: NamespacedId
+    station_id: NamespacedId
+    focused_entity_id: NotRequired[NamespacedId]
+    view: SessionProjectionObject
+    view_revision: NotRequired[NonNegativeInt]
 
 class SessionProjectionNarrationCheckpoint(TypedDict):
     last_started_node_id: NotRequired[NamespacedId]
@@ -197,6 +197,8 @@ class SessionProjection(TypedDict):
     session_id: OpaqueId
     pack_versions: dict[NamespacedId, str]
     world_time: NotRequired[TimeRange]
+    gallery_id: NotRequired[NamespacedId]
+    station_id: NotRequired[NamespacedId]
     current_location_id: NotRequired[NamespacedId]
     focused_entity_id: NotRequired[NamespacedId]
     visible_entities: NotRequired[list[NamespacedId]]
@@ -281,6 +283,11 @@ class AssetHotspots(TypedDict):
     id: str
     label: NonEmptyText
 
+class CommandObject(TypedDict):
+    intent: NotRequired[str]
+    input_text: NotRequired[str]
+    camera: NotRequired[SessionProjectionObject]
+
 class ContentPackRegion(TypedDict):
     id: str
     label: NonEmptyText
@@ -288,6 +295,11 @@ class ContentPackRegion(TypedDict):
 class HistoricalEventPlace(TypedDict):
     label: NonEmptyText
     region_id: NotRequired[str]
+
+class SessionProjectionObject(TypedDict):
+    yaw: float
+    pitch: float
+    zoom: float
 
 class SourceLocator(TypedDict):
     label: str

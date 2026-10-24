@@ -10,7 +10,9 @@
     "precision": "year",
     "display_label": "678年"
   },
-  "current_location_id": "cn.tang.hall.main",
+  "gallery_id": "cn.tang.gallery.main",
+  "station_id": "cn.tang.station.stele",
+  "current_location_id": "cn.tang.station.stele",
   "focused_entity_id": "cn.tang.artifact.stele",
   "visible_entities": ["cn.tang.artifact.stele"],
   "display_order": ["cn.tang.artifact.stele"],
@@ -20,7 +22,19 @@
   "story_variables": {
     "asked_date": true
   },
-  "return_stack": [],
+  "return_stack": [
+    {
+      "story_id": "cn.tang.story.stele-observation",
+      "node_id": "cn.tang.node.stele-observation.01",
+      "revision": 3,
+      "exhibit_return_point": {
+        "gallery_id": "cn.tang.gallery.main",
+        "station_id": "cn.tang.station.stele",
+        "focused_entity_id": "cn.tang.artifact.stele",
+        "view": {"yaw": 0, "pitch": 0, "zoom": 1}
+      }
+    }
+  ],
   "revision": 3,
   "view_revision": 1,
   "event_seq": 5,
