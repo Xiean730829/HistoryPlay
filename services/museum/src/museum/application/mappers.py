@@ -96,3 +96,28 @@ class FactEvidence:
     evidence_note: str | None
     dispute: str | None
     sources: tuple[SourceProjection, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class ContentParagraph:
+    content_id: str
+    story_id: str | None
+    paragraph_number: int
+    text: str
+    fact_grade: str
+    presentation: dict[str, Any] | None
+    allowed_actions: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class ContentPage:
+    content_id: str
+    content_kind: str
+    pack_id: str
+    version: str
+    title: str
+    artifact_id: str | None
+    paragraphs: tuple[ContentParagraph, ...]
+    related_facts: tuple[FactEvidence, ...]
+    next_cursor: str | None
+    text_bytes: int

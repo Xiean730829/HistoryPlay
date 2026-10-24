@@ -26,6 +26,7 @@ def register_session_routes(app: web.Application) -> None:
     app.router.add_get("/api/sessions/{session_id}/galleries/{gallery_id}", get_gallery)
     app.router.add_get("/api/sessions/{session_id}/search", search_content)
     app.router.add_get("/api/sessions/{session_id}/facts/{fact_id}", read_fact)
+    app.router.add_get("/api/sessions/{session_id}/content", read_content)
     app.router.add_post("/api/sessions/{session_id}/events/ticket", issue_event_ticket)
 
 
@@ -192,5 +193,80 @@ async def read_fact(request: web.Request) -> web.Response:
                 }
                 for source in fact.sources
             ],
+        }
+    )
+
+
+async def read_content(request: web.Request) -> web.Response:
+    session_id = request.match_info["session_id"]
+    configured = require_session(request, session_id)
+    require_binding(request, configured, session_id)
+    state = load_state(configured, session_id)
+    pack_id = request.query.get("pack_id", "")
+    version = request.query.get("version", "")
+    content_id = request.query.get("content_id", "")
+    if not all((pack_id, version, content_id)):
+        raise web.HTTPBadRequest(text="必须提供pack_id、version和content_id")
+    try:
+        page = configured.query.read_content(
+            state,
+            pack_id=pack_id,
+            version=version,
+            content_id=content_id,
+            cursor=request.query.get("cursor"),
+            limit=int(request.query.get("limit", "10")),
+            byte_budget=int(request.query.get("byte_budget", "4096")),
+        )
+    except ValueError as error:
+        raise web.HTTPBadRequest(text=str(error)) from error
+    except LookupError as error:
+        raise web.HTTPNotFound(text=str(error)) from error
+    return web.json_response(
+        {
+            "content_id": page.content_id,
+            "content_kind": page.content_kind,
+            "pack_id": page.pack_id,
+            "version": page.version,
+            "title": page.title,
+            "artifact_id": page.artifact_id,
+            "paragraphs": [
+                {
+                    "content_id": item.content_id,
+                    "version": page.version,
+                    "paragraph_number": item.paragraph_number,
+                    "text": item.text,
+                    "authorship": {
+                        "node_id": item.content_id,
+                        "story_id": item.story_id,
+                        "fact_grade": item.fact_grade,
+                    },
+                    "presentation": item.presentation,
+                    "allowed_actions": list(item.allowed_actions),
+                }
+                for item in page.paragraphs
+            ],
+            "related_facts": [
+                {
+                    "id": fact.id,
+                    "claim": fact.claim,
+                    "grade": fact.grade,
+                    "applicable_time": fact.applicable_time,
+                    "evidence_note": fact.evidence_note,
+                    "dispute": fact.dispute,
+                    "sources": [
+                        {
+                            "id": source.id,
+                            "kind": source.kind,
+                            "title": source.title,
+                            "locator": source.locator,
+                            "citation_license": source.citation_license,
+                        }
+                        for source in fact.sources
+                    ],
+                }
+                for fact in page.related_facts
+            ],
+            "text_bytes": page.text_bytes,
+            "next_cursor": page.next_cursor,
         }
     )

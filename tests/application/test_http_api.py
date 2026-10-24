@@ -35,6 +35,12 @@ class MemoryCatalog:
                     "asset_ids": [],
                     "fact_card_ids": [FACT_ID],
                     "story_entry_ids": [],
+                    "presentation": {
+                        "preview_asset_id": "cn.tang.asset.stele.preview",
+                        "display": {"kind": "photo", "asset_id": "cn.tang.asset.stele.photo"},
+                        "teaser": "观察碑额与题记。",
+                        "background_node_id": "cn.tang.node.stele.01",
+                    },
                 },
                 "artifacts/bowl.json": {
                     "id": ARTIFACT_TWO_ID,
@@ -97,6 +103,27 @@ class MemoryCatalog:
                     "kind": "museum_record",
                     "title": "馆藏记录",
                     "locator": {"label": "作品页面", "url": "https://example.org/stele"},
+                },
+                "stories/stele.json": {
+                    "id": "cn.tang.story.stele",
+                    "title": "碑上的纪年",
+                    "entry_node_id": "cn.tang.node.stele.01",
+                    "node_ids": ["cn.tang.node.stele.01", "cn.tang.node.stele.02"],
+                    "artifact_id": ARTIFACT_ID,
+                },
+                "nodes/stele-01.json": {
+                    "id": "cn.tang.node.stele.01",
+                    "story_id": "cn.tang.story.stele",
+                    "fact_grade": "fact",
+                    "narration": "先观察题记。",
+                    "allowed_actions": ["continue_story"],
+                },
+                "nodes/stele-02.json": {
+                    "id": "cn.tang.node.stele.02",
+                    "story_id": "cn.tang.story.stele",
+                    "fact_grade": "interpretation",
+                    "narration": "再留意石面上的刻痕。",
+                    "allowed_actions": ["observe"],
                 },
             },
         )
@@ -198,6 +225,32 @@ def test_http_session_pairing_context_and_command_flow(tmp_path) -> None:
         assert fact_response.status == 200
         fact = await fact_response.json()
         assert fact["sources"][0]["id"] == SOURCE_ID
+
+        before = await client.get(f"/api/sessions/{session_id}", headers=headers)
+        before_revision = (await before.json())["revision"]
+        content_url = (
+            f"/api/sessions/{session_id}/content?pack_id={PACK_ID}&version={VERSION}"
+            "&content_id=cn.tang.story.stele&limit=1"
+        )
+        first_page = await client.get(content_url, headers=bound_headers)
+        assert first_page.status == 200
+        first_content = await first_page.json()
+        assert first_content["paragraphs"][0]["content_id"] == "cn.tang.node.stele.01"
+        assert first_content["paragraphs"][0]["paragraph_number"] == 1
+        assert first_content["related_facts"][0]["sources"][0]["id"] == SOURCE_ID
+        assert first_content["next_cursor"]
+        next_page = await client.get(
+            f"{content_url}&cursor={first_content['next_cursor']}", headers=bound_headers
+        )
+        assert (await next_page.json())["paragraphs"][0]["content_id"] == "cn.tang.node.stele.02"
+        after = await client.get(f"/api/sessions/{session_id}", headers=headers)
+        assert (await after.json())["revision"] == before_revision
+        wrong_version = await client.get(
+            content_url.replace(VERSION, "9.9.9"), headers=bound_headers
+        )
+        assert wrong_version.status == 400
+        unbound = await client.get(content_url, headers=headers)
+        assert unbound.status == 403
 
         replacement_response = await client.post(
             f"/api/sessions/{session_id}/pair", headers=headers
