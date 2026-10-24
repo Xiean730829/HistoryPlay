@@ -35,5 +35,7 @@ async def execute_command(request: web.Request) -> web.Response:
         raise web.HTTPConflict(text=str(error)) from error
     except SessionNotFound as error:
         raise web.HTTPNotFound(text=str(error)) from error
+    if receipt.status == "committed":
+        configured.event_hub.publish(session_id)
     body: dict[str, Any] = receipt.to_dict()
     return web.json_response(body, status=409 if receipt.status == "rejected" else 200)

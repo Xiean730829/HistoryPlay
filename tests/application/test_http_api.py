@@ -11,6 +11,7 @@ ORIGIN = "http://localhost:5173"
 PACK_ID = "cn.tang.core"
 VERSION = "1.0.0"
 ARTIFACT_ID = "cn.tang.artifact.stele"
+ARTIFACT_TWO_ID = "cn.tang.artifact.bowl"
 FACT_ID = "cn.tang.fact.stele.date"
 SOURCE_ID = "cn.tang.source.museum.stele"
 
@@ -33,6 +34,18 @@ class MemoryCatalog:
                     "category": "造像碑",
                     "asset_ids": [],
                     "fact_card_ids": [FACT_ID],
+                    "story_entry_ids": [],
+                },
+                "artifacts/bowl.json": {
+                    "id": ARTIFACT_TWO_ID,
+                    "title": "唐代花鸟纹银香囊",
+                    "aliases": [],
+                    "museum": {"name": "艺术博物馆", "accession": "A-02"},
+                    "time_range": {"start_year": 700, "end_year": 799, "precision": "century"},
+                    "material": "银",
+                    "category": "香具",
+                    "asset_ids": [],
+                    "fact_card_ids": [],
                     "story_entry_ids": [],
                 },
                 "facts/date.json": {
@@ -199,6 +212,97 @@ def test_create_session_rejects_unpublished_pack_and_untrusted_origin(tmp_path) 
             headers={"Origin": "https://attacker.test"},
         )
         assert bad_origin.status == 403
+        await client.close()
+
+    asyncio.run(scenario())
+
+
+def test_event_stream_replays_events_and_ignores_stale_render_receipt(tmp_path) -> None:
+    async def scenario() -> None:
+        client = TestClient(TestServer(make_app(tmp_path)))
+        await client.start_server()
+        origin = {"Origin": ORIGIN}
+        created = await client.post(
+            "/api/sessions",
+            json={"pack_id": PACK_ID, "version": VERSION},
+            headers=origin,
+        )
+        state = (await created.json())["state"]
+        session_id = state["session_id"]
+        token = (await created.json())["session_token"]
+        headers = {**origin, "Authorization": f"Bearer {token}"}
+        paired = await client.post(f"/api/sessions/{session_id}/pair", headers=headers)
+        binding = await paired.json()
+        bound = {**headers, "X-Museum-Connection": binding["connection_id"]}
+
+        socket = await client.ws_connect(
+            f"/api/sessions/{session_id}/events?after_seq=0", headers=bound
+        )
+        command = {
+            "schema_version": "1",
+            "request_id": "request-render-001",
+            "expected_revision": 0,
+            "interaction_epoch": 0,
+            "control_ticket": binding["control_ticket"],
+            "action": "open_artifact",
+            "target_id": ARTIFACT_ID,
+        }
+        response = await client.post(
+            f"/api/sessions/{session_id}/commands", json=command, headers=bound
+        )
+        receipt = await response.json()
+        pushed = await socket.receive_json(timeout=1)
+        assert pushed["type"] == "event"
+        assert pushed["event"]["event_seq"] == 1
+
+        render_receipt = {
+            "request_id": receipt["request_id"],
+            "payload_digest": receipt["payload_digest"],
+            "revision": receipt["revision"],
+            "view_revision": receipt["view_revision"],
+            "interaction_epoch": receipt["interaction_epoch"],
+            "status": "rendered",
+        }
+        rendered = await client.post(
+            f"/api/sessions/{session_id}/render-receipts",
+            json=render_receipt,
+            headers=bound,
+        )
+        assert rendered.status == 200
+        assert (await rendered.json())["status"] == "rendered"
+
+        replay = await client.ws_connect(
+            f"/api/sessions/{session_id}/events?after_seq=0", headers=bound
+        )
+        replayed = await replay.receive_json(timeout=1)
+        assert replayed["event"]["event_seq"] == 1
+
+        snapshot = await client.ws_connect(f"/api/sessions/{session_id}/events", headers=bound)
+        snapshot_message = await snapshot.receive_json(timeout=1)
+        assert snapshot_message["type"] == "snapshot"
+        assert snapshot_message["event_seq"] == 1
+
+        newer = {
+            **command,
+            "request_id": "request-render-002",
+            "expected_revision": 1,
+            "interaction_epoch": 1,
+            "action": "open_artifact",
+            "target_id": ARTIFACT_TWO_ID,
+        }
+        newer_response = await client.post(
+            f"/api/sessions/{session_id}/commands", json=newer, headers=bound
+        )
+        assert (await newer_response.json())["revision"] == 2
+        stale = await client.post(
+            f"/api/sessions/{session_id}/render-receipts",
+            json=render_receipt,
+            headers=bound,
+        )
+        assert stale.status == 409
+        await socket.close()
+        await replay.close()
+        await snapshot.close()
         await client.close()
 
     asyncio.run(scenario())
