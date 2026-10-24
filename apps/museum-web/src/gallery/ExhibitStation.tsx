@@ -1,10 +1,8 @@
 import React from "react";
 import type { CSSProperties } from "react";
-import {
-  loadSessionAssetObjectUrl,
-  type ActiveSession,
-  type ArtifactProjection,
-} from "../application/museumApi";
+import type { ActiveSession, ArtifactProjection } from "../application/museumApi";
+import { galleryAssets } from "../capabilities/galleryAssets";
+import type { AssetLease } from "../capabilities/assetLoader";
 import type { CorridorProjection } from "./corridorProjection";
 import { ArtifactCaption } from "./ArtifactCaption";
 import { resolvePreviewAssetId } from "./previewAsset";
@@ -25,35 +23,36 @@ export function ArtifactStation({ artifact, projection, session }: ExhibitStatio
     zIndex: projection.zIndex,
   } as CSSProperties;
   const previewId = resolvePreviewAssetId(artifact);
-  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
-  const [previewFailed, setPreviewFailed] = React.useState(false);
+  const [preview, setPreview] = React.useState<{
+    assetId: string;
+    url: string | null;
+    failed: boolean;
+  } | null>(null);
+  const previewUrl = preview?.assetId === previewId ? preview.url : null;
+  const previewFailed = preview?.assetId === previewId && preview.failed;
 
   React.useEffect(() => {
-    let cancelled = false;
-    let objectUrl: string | null = null;
-    setPreviewUrl(null);
-    setPreviewFailed(false);
-    if (!session || !previewId) return;
+    const controller = new AbortController();
+    let lease: AssetLease | null = null;
+    if (!session || !previewId || !projection.isVisible) {
+      setPreview(null);
+      return;
+    }
 
-    void loadSessionAssetObjectUrl(session, previewId)
-      .then((url) => {
-        objectUrl = url;
-        if (cancelled) {
-          URL.revokeObjectURL(url);
-          objectUrl = null;
-          return;
-        }
-        setPreviewUrl(url);
+    void galleryAssets.acquire(session, previewId, "preview", controller.signal)
+      .then((assetLease) => {
+        lease = assetLease;
+        setPreview({ assetId: previewId, url: assetLease.url, failed: false });
       })
       .catch(() => {
-        if (!cancelled) setPreviewFailed(true);
+        if (!controller.signal.aborted) setPreview({ assetId: previewId, url: null, failed: true });
       });
 
     return () => {
-      cancelled = true;
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      controller.abort();
+      lease?.release();
     };
-  }, [session?.session_id, session?.session_token, previewId]);
+  }, [session?.session_id, session?.session_token, previewId, projection.isVisible]);
 
   const waiting = Boolean(session && previewId && !previewUrl && !previewFailed);
   const objectLabel = previewUrl
