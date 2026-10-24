@@ -32,6 +32,7 @@ ARTIFACTS = (
     "cn.tang.artifact.gilt-bronze-bull",
 )
 SLUGS = ("votive-stele", "kaiyuan-coin", "gilt-bronze-bull")
+EXTRA_ARTIFACT = "cn.tang.artifact.extra-rehearsal-exhibit"
 
 
 def _asset(asset_id: str, *, kind: str, fmt: str, digest: str, size: int, lod: str | None = None) -> str:
@@ -235,6 +236,48 @@ def _runtime_files(tmp_path: Path) -> dict[str, Path]:
     return mapping
 
 
+def _add_extra_exhibit(pack: Path, tmp_path: Path) -> dict[str, Path]:
+    slug = "extra-rehearsal-exhibit"
+    (pack / "artifacts" / f"{slug}.yaml").write_text(_artifact(EXTRA_ARTIFACT, slug), encoding="utf-8")
+    (pack / "stories" / f"{slug}.yaml").write_text(_story(slug, EXTRA_ARTIFACT), encoding="utf-8")
+    (pack / "nodes" / f"{slug}-01.yaml").write_text(_node(slug, NODE_01), encoding="utf-8")
+    (pack / "nodes" / f"{slug}-02.yaml").write_text(_node(slug, NODE_02), encoding="utf-8")
+    source_hash = "9df4392c5d16e92fd704737f4037be19b55e69b28635ec3d47142e5180d87ed4"
+    (pack / "assets" / f"{slug}-source.yaml").write_text(
+        _asset(f"cn.tang.asset.{slug}.glb", kind="model3d", fmt="glb", digest=source_hash, size=100, lod="source"),
+        encoding="utf-8",
+    )
+    (pack / "assets" / f"{slug}-preview.yaml").write_text(
+        _asset(f"cn.tang.asset.{slug}.preview", kind="preview", fmt="png", digest=PREVIEW_HASH, size=len(PREVIEW_BYTES)),
+        encoding="utf-8",
+    )
+    (pack / "assets" / f"{slug}-display.yaml").write_text(
+        _asset(f"cn.tang.asset.{slug}.display", kind="model3d", fmt="glb", digest=DISPLAY_HASH, size=len(DISPLAY_BYTES), lod="display"),
+        encoding="utf-8",
+    )
+    gallery_path = pack / "galleries" / "main.yaml"
+    gallery = yaml.safe_load(gallery_path.read_text(encoding="utf-8"))
+    gallery["stations"].append(
+        {
+            "id": f"cn.tang.station.{slug}",
+            "order": 3,
+            "time_range": {"start_year": 700, "end_year": 799, "precision": "century"},
+            "placement_basis": "额外联调展位。",
+            "artifact_id": EXTRA_ARTIFACT,
+            "side": "right",
+        }
+    )
+    gallery_path.write_text(yaml.safe_dump(gallery, allow_unicode=True, sort_keys=False), encoding="utf-8")
+    extra_preview = tmp_path / "extra-preview.png"
+    extra_display = tmp_path / "extra-display.glb"
+    extra_preview.write_bytes(PREVIEW_BYTES)
+    extra_display.write_bytes(DISPLAY_BYTES)
+    return {
+        f"cn.tang.asset.{slug}.preview": extra_preview,
+        f"cn.tang.asset.{slug}.display": extra_display,
+    }
+
+
 def test_rehearsal_pack_publishes_isolated_copy_and_keeps_author_draft(tmp_path: Path) -> None:
     pack = write_three_pack(tmp_path / "src")
     mapping = _runtime_files(tmp_path)
@@ -383,6 +426,44 @@ def test_rehearsal_pack_rejects_missing_files_same_version_and_overwrite(tmp_pat
     assert (first["pack_dir"] / "manifest.json").is_file()
 
 
+def test_rehearsal_pack_can_include_explicit_additional_exhibits(tmp_path: Path) -> None:
+    pack = write_three_pack(tmp_path / "src")
+    mapping = _runtime_files(tmp_path)
+    mapping.update(_add_extra_exhibit(pack, tmp_path))
+    result = build_rehearsal_pack(
+        pack_dir=pack,
+        sources_path=_sources(tmp_path, mapping),
+        content_root=tmp_path / "published",
+        asset_root=tmp_path / "assets",
+        version="0.2.2",
+        artifact_ids=[*ARTIFACTS, EXTRA_ARTIFACT],
+    )
+    runtime = PublishedCatalog(tmp_path / "published").get_published("cn.tang.core", "0.2.2")
+    assert runtime.version == "0.2.2"
+    gallery = json.loads((result["pack_dir"] / "galleries" / "main.json").read_text(encoding="utf-8"))
+    assert [station["artifact_id"] for station in gallery["stations"]] == [*ARTIFACTS, EXTRA_ARTIFACT]
+    index = json.loads((result["asset_dir"] / "asset-index.json").read_text(encoding="utf-8"))
+    assert f"cn.tang.asset.{EXTRA_ARTIFACT.split('.')[-1]}.display" in index["assets"]
+    assert f"cn.tang.asset.{EXTRA_ARTIFACT.split('.')[-1]}.preview" in index["assets"]
+    assert f"cn.tang.asset.{EXTRA_ARTIFACT.split('.')[-1]}.glb" not in index["assets"]
+
+
+def test_rehearsal_pack_rejects_implicit_exhibits_outside_explicit_selection(tmp_path: Path) -> None:
+    pack = write_three_pack(tmp_path / "src")
+    mapping = _runtime_files(tmp_path)
+    mapping.update(_add_extra_exhibit(pack, tmp_path))
+    with pytest.raises(RehearsalPackError, match="全部展品"):
+        build_rehearsal_pack(
+            pack_dir=pack,
+            sources_path=_sources(tmp_path, mapping),
+            content_root=tmp_path / "published",
+            asset_root=tmp_path / "assets",
+            version="0.2.2",
+            artifact_ids=list(ARTIFACTS),
+        )
+    assert not (tmp_path / "published" / "cn.tang.core" / "0.2.2").exists()
+
+
 def test_real_tang_author_draft_stays_when_runtime_files_missing(tmp_path: Path) -> None:
     dummy = tmp_path / "missing.png"
     dummy.write_bytes(PREVIEW_BYTES)
@@ -404,7 +485,9 @@ def test_real_tang_author_draft_stays_when_runtime_files_missing(tmp_path: Path)
 def test_cli_rehearsal_pack_writes_version_dirs(tmp_path: Path) -> None:
     pack = write_three_pack(tmp_path / "src")
     mapping = _runtime_files(tmp_path)
+    mapping.update(_add_extra_exhibit(pack, tmp_path))
     sources = _sources(tmp_path, mapping)
+    artifact_args = [argument for ident in (*ARTIFACTS, EXTRA_ARTIFACT) for argument in ("--artifact-id", ident)]
     assert (
         main(
             [
@@ -418,13 +501,14 @@ def test_cli_rehearsal_pack_writes_version_dirs(tmp_path: Path) -> None:
                 "--asset-root",
                 str(tmp_path / "assets"),
                 "--version",
-                "0.2.1",
+                "0.2.2",
+                *artifact_args,
             ]
         )
         == 0
     )
-    assert (tmp_path / "published" / "cn.tang.core" / "0.2.1" / "pack-index.json").is_file()
-    assert (tmp_path / "assets" / "cn.tang.core" / "0.2.1" / "asset-index.json").is_file()
+    assert (tmp_path / "published" / "cn.tang.core" / "0.2.2" / "pack-index.json").is_file()
+    assert (tmp_path / "assets" / "cn.tang.core" / "0.2.2" / "asset-index.json").is_file()
     assert (
         main(
             [
@@ -438,7 +522,8 @@ def test_cli_rehearsal_pack_writes_version_dirs(tmp_path: Path) -> None:
                 "--asset-root",
                 str(tmp_path / "assets"),
                 "--version",
-                "0.2.1",
+                "0.2.2",
+                *artifact_args,
             ]
         )
         == 1

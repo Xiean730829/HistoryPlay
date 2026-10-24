@@ -16,7 +16,7 @@ from content_pipeline.build.pack_writer import write_immutable_pack
 from content_pipeline.validation.schema_validator import Issue
 
 VERSION = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
-REQUIRED_ARTIFACTS = (
+DEFAULT_REHEARSAL_ARTIFACTS = (
     "cn.tang.artifact.votive-stele",
     "cn.tang.artifact.kaiyuan-coin",
     "cn.tang.artifact.gilt-bronze-bull",
@@ -34,6 +34,7 @@ def build_rehearsal_pack(
     content_root: Path,
     asset_root: Path,
     version: str,
+    artifact_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     if not pack_dir.is_dir():
         raise RehearsalPackError(f"内容包目录不存在：{pack_dir}")
@@ -55,12 +56,18 @@ def build_rehearsal_pack(
     if version == author_version:
         raise RehearsalPackError("联调版本不能覆盖作者稿版本，须指定新的semver")
 
+    selected_artifact_ids = tuple(artifact_ids or DEFAULT_REHEARSAL_ARTIFACTS)
+    if len(selected_artifact_ids) != len(set(selected_artifact_ids)):
+        raise RehearsalPackError("联调展品ID不能重复")
+
     artifacts = _documents_of(documents, "artifacts/")
     stories = _documents_of(documents, "stories/")
     assets = {item["id"]: item for item in _documents_of(documents, "assets/") if "id" in item}
     story_nodes = _documents_of(documents, "nodes/")
-    required_assets = _required_runtime_assets(artifacts, stories, story_nodes, assets)
-    _assert_three_exhibits(artifacts, documents)
+    required_assets = _required_runtime_assets(
+        artifacts, stories, story_nodes, assets, selected_artifact_ids
+    )
+    _assert_selected_exhibits(artifacts, documents, selected_artifact_ids)
     try:
         _assert_required_files_ready(required_assets, assets, sources_path)
     except AssetStageError as exc:
@@ -134,25 +141,31 @@ def _documents_of(documents: dict[str, object], prefix: str) -> list[dict[str, A
     return found
 
 
-def _assert_three_exhibits(
-    artifacts: list[dict[str, Any]], documents: dict[str, object]
+def _assert_selected_exhibits(
+    artifacts: list[dict[str, Any]],
+    documents: dict[str, object],
+    selected_artifact_ids: tuple[str, ...],
 ) -> None:
     found = {item.get("id") for item in artifacts}
-    missing = [ident for ident in REQUIRED_ARTIFACTS if ident not in found]
+    missing = [ident for ident in selected_artifact_ids if ident not in found]
     if missing:
-        raise RehearsalPackError(f"联调包缺少三件文物：{missing[0]}")
+        raise RehearsalPackError(f"联调包找不到指定展品：{missing[0]}")
+    unselected = sorted(ident for ident in found - set(selected_artifact_ids) if isinstance(ident, str))
+    if unselected:
+        raise RehearsalPackError(f"本机联调包必须显式包含作者包中的全部展品：{unselected[0]}")
     galleries = _documents_of(documents, "galleries/")
     if not galleries:
         raise RehearsalPackError("联调包缺少展厅")
-    stations = galleries[0].get("stations")
-    if not isinstance(stations, list):
-        raise RehearsalPackError("展厅缺少展位")
-    station_artifacts = [
-        station.get("artifact_id") for station in stations if isinstance(station, dict)
-    ]
-    for ident in REQUIRED_ARTIFACTS:
-        if ident not in station_artifacts:
-            raise RehearsalPackError(f"展厅未编排三件文物：{ident}")
+    for gallery in galleries:
+        stations = gallery.get("stations")
+        if not isinstance(stations, list):
+            continue
+        station_artifacts = [
+            station.get("artifact_id") for station in stations if isinstance(station, dict)
+        ]
+        if all(ident in station_artifacts for ident in selected_artifact_ids):
+            return
+    raise RehearsalPackError("没有展厅完整编排本机联调包中的全部展品")
 
 
 def _required_runtime_assets(
@@ -160,11 +173,16 @@ def _required_runtime_assets(
     stories: list[dict[str, Any]],
     story_nodes: list[dict[str, Any]],
     assets: dict[str, dict[str, Any]],
+    selected_artifact_ids: tuple[str, ...],
 ) -> frozenset[str]:
     required: set[str] = set()
     by_id = {item.get("id"): item for item in artifacts}
-    for ident in REQUIRED_ARTIFACTS:
-        artifact = by_id[ident]
+    selected_artifacts = []
+    for ident in selected_artifact_ids:
+        artifact = by_id.get(ident)
+        if artifact is None:
+            raise RehearsalPackError(f"联调包找不到指定展品：{ident}")
+        selected_artifacts.append(artifact)
         presentation = artifact.get("presentation")
         if not isinstance(presentation, dict):
             raise RehearsalPackError(f"文物缺少展示绑定：{ident}")
@@ -186,9 +204,16 @@ def _required_runtime_assets(
             if meta.get("lod") == "source":
                 raise RehearsalPackError(f"不能把源模型作为联调{label}资产：{asset_id}")
             required.add(asset_id)
+    selected_story_ids = {
+        story_id
+        for artifact in selected_artifacts
+        for story_id in artifact.get("story_entry_ids", [])
+        if isinstance(story_id, str)
+    }
     story_ids = {item.get("id") for item in stories}
+    selected_story_ids.intersection_update(story_ids)
     for node in story_nodes:
-        if node.get("story_id") not in story_ids:
+        if node.get("story_id") not in selected_story_ids:
             continue
         presentation = node.get("presentation")
         if not isinstance(presentation, dict):
