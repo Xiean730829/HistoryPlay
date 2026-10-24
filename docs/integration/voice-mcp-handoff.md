@@ -2,6 +2,8 @@
 
 日期：2026-10-24。独立工作目录为 `C:/Users/21711/.codex/worktrees/voice-mcp/HistroyPlay`。
 
+最新真实联调状态（北京时间21:15）：用户已经配置现有官方MCP接入点；开发者以probe模式建立真实WSS连接，收到initialize=1、tools/list=1和museum_probe=1。测试句、声音一致性、abort与可信输入轮次仍待验证。后文“尚无端点”属于早前工程交付记录，以本段和[能力报告](./xiaozhi-capabilities.md)为准。当前只运行诊断工具，不开放游戏动作，不抢占原网页语音设备。
+
 ## 已可运行的独立交付
 
 `services/mcp-gateway` 提供正式 MCP SDK 的 stdio 服务，包含 `museum_get_context`、`museum_search`、`museum_read_content` 三个只读工具。绑定来自本机配置，不接收模型传入会话ID。网关只访问游戏HTTP，不导入游戏领域或数据库。
