@@ -1,4 +1,4 @@
-import { Mesh, Object3D, Raycaster } from "three";
+import { Mesh, MeshPhysicalMaterial, Object3D, Raycaster } from "three";
 
 /** Glass and labels do not consume a click; opaque architecture still occludes a case. */
 export function pickArtifact(raycaster: Raycaster, objects: Object3D[]): string | null {
@@ -9,7 +9,7 @@ export function pickArtifact(raycaster: Raycaster, objects: Object3D[]): string 
     if (hit.object.userData.pickThrough) continue;
     if (hit.object instanceof Mesh) {
       const materials = Array.isArray(hit.object.material) ? hit.object.material : [hit.object.material];
-      if (materials.every((material) => material.transparent)) continue;
+      if (materials.every((material) => material.transparent || (material instanceof MeshPhysicalMaterial && material.transmission > 0.2))) continue;
       // The nearest solid wall/column prevents selecting another case behind it.
       return null;
     }

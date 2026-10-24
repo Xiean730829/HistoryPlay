@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BoxGeometry, Group, Mesh, MeshBasicMaterial, Raycaster, Vector3 } from "three";
+import { BoxGeometry, Group, Mesh, MeshBasicMaterial, MeshPhysicalMaterial, Raycaster, Vector3 } from "three";
 import { pickArtifact } from "./picking";
 
 function volume(id: string, z: number) {
@@ -21,5 +21,10 @@ describe("museum case picking", () => {
     const exhibit = volume("bull", -3);
     const scene = new Group(); scene.add(exhibit, column); scene.updateMatrixWorld(true);
     expect(pickArtifact(new Raycaster(new Vector3(0, 0, 5), new Vector3(0, 0, -1)), scene.children)).toBeNull();
+  });
+  it("passes through physically transmissive display glass even when transparent=false", () => {
+    const glass = new Mesh(new BoxGeometry(2, 3, 0.02), new MeshPhysicalMaterial({ transmission: 0.95, transparent: false }));
+    const scene = new Group(); scene.add(glass, volume("stele", -2)); scene.updateMatrixWorld(true);
+    expect(pickArtifact(new Raycaster(new Vector3(0, 0, 5), new Vector3(0, 0, -1)), scene.children)).toBe("stele");
   });
 });
