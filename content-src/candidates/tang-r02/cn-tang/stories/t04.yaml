@@ -1,0 +1,16 @@
+id: cn.tang.story.t04
+title: 热闹不是全部
+entry_node_id: cn.tang.node.t04.n01
+node_ids:
+  - cn.tang.node.t04.n01
+  - cn.tang.node.t04.n02
+  - cn.tang.node.t04.n03
+  - cn.tang.node.t04.n04
+  - cn.tang.node.t04.n05
+  - cn.tang.node.t04.n06
+  - cn.tang.node.t04.n07
+fact_card_ids:
+  - cn.tang.fact.t04.kaiyuan-period
+  - cn.tang.fact.standing-woman-mhc.catalog
+artifact_id: cn.tang.artifact.standing-woman-mhc
+return_to_exhibit: true

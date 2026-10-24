@@ -1,0 +1,16 @@
+id: cn.tang.node.t04.n01
+story_id: cn.tang.story.t04
+fact_grade: F
+narration: >-
+  这尊女立俑的馆藏记录给出的年代范围是唐代（618—906年），没有指出她是谁，也没有把她定到某一个具体年份。你可以先读馆藏记录，再走进许宁在736年写下的创作场景；这两种时间不能混成一件事。
+allowed_actions:
+  - ask
+  - observe
+  - continue_story
+  - return_to_exhibit
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.t04.n02
+  - action: return_to_exhibit
+    target_node_id: cn.tang.node.t04.n01
+return_checkpoint: true
