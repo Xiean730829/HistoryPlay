@@ -163,6 +163,13 @@ def test_http_session_pairing_context_and_command_flow(tmp_path) -> None:
         ]
         assert gallery["visible_artifacts"] == []
 
+        context_after_gallery_response = await client.get(
+            f"/api/sessions/{session_id}/context", headers=bound_headers
+        )
+        assert context_after_gallery_response.status == 200
+        context_after_gallery = await context_after_gallery_response.json()
+        assert context_after_gallery["revision"] == context["revision"]
+
         search_response = await client.get(
             f"/api/sessions/{session_id}/search?q=佛碑&kind=artifact",
             headers=bound_headers,
