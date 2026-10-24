@@ -53,3 +53,16 @@ $env:MUSEUM_MCP_BINDING_FILE = '<当前展台写出的本机私密绑定文件�
 - `tests/mcp` 18项通过：真实stdio子进程initialize与tools/list、三个工具Schema、本地HTTP请求头与只读请求、无效绑定、拒绝跳转、凭据不外泄、UTF-8字节预算、分页和保留资料出处。
 - Ruff通过。SDK搭配当前解析的pydantic-settings发出一条lifespan前向引用警告；本机stdio握手、工具发现和工具错误返回均通过，该警告不是云端兼容结论。
 - stdio测试使用测试进程的假绑定，只核实本机协议行为，不声称已连接用户设备或控制浏览器。
+
+## 网页采音与止声基础（独立PR）
+
+新增 `voice/VadController.ts`、`MicrophoneCapture.ts`、`PlaybackQueue.ts`、`capture-worklet.js` 和 `voice-ui/VoiceEntry.tsx`。由A线在MuseumShell装配，B线没有修改主界面。
+
+- `VoiceEntry`只提供首次权限开启与暂停，状态写“麦克风已开启”，不会把采音成功显示为“小智已连接”。
+- `MicrophoneCapture`回调顺序是 `onSpeechStarted` 在 `onFrame` 前；A线必须在该回调同步执行队列stop，再通知本机桥abort/生命周期。
+- worklet发送16kHz单声道PCM16的20ms帧；上游Opus编码前需要由桥积累为60ms，不能直接把20ms帧交给旧桥的60ms编码函数。
+- PlaybackQueue采用本地generation，stop同步撤下所有排队节点，旧代音频不能重新进入。新云端tts.start不能擅自提升到当前代，云端轮次关联依然需要预检。
+- 权限拒绝、等待权限期间停止、设备断开有清理路径；关闭页面必须调用stop。浏览器报告AEC不等于外放真实无回声。
+- 完成回调在本地音频节点排空后触发；操作系统/硬件缓冲可能仍有尾音，不宣称声学测量或精确毫秒恢复。
+
+`npm run check`通过，新增6个单测覆盖VAD连续120ms/静音650ms、两轮重开、噪声、旧代音频拒绝、播放排空、权限拒绝和取消时清理。真实麦克风/AEC/外放打断仍待H5/H6，CW09a仅交付可装配基础，不关闭整卡。
