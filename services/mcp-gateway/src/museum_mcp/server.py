@@ -7,11 +7,12 @@ from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
 
+from museum_mcp.action_tools import ActionTools, VoiceApplicationClient
 from museum_mcp.application_client import ApplicationClient, BoundSession, GatewayError
 from museum_mcp.tools import ReadTools
 
 
-def create_server(tools: ReadTools) -> FastMCP:
+def create_server(tools: ReadTools, actions: ActionTools | None = None) -> FastMCP:
     server = FastMCP("时空博物馆")
 
     @server.tool()
@@ -33,6 +34,13 @@ def create_server(tools: ReadTools) -> FastMCP:
         """读取指定文物或故事的一段固定正文和资料出处；有next_cursor时可继续读。"""
         return await tools.read_content(pack_id, version, content_id, cursor)
 
+    if actions is not None:
+
+        @server.tool()
+        async def museum_act(action: str, target_id: str | None = None) -> dict:
+            """请求受限导航/观察/故事动作。只有可信本机输入作用域可执行，云端无来源时拒绝。"""
+            return await actions.act(action, target_id)
+
     return server
 
 
@@ -53,7 +61,9 @@ def main() -> None:
     except GatewayError as error:
         print(str(error), file=sys.stderr)
         raise SystemExit(2) from None
-    create_server(ReadTools(ApplicationClient(binding))).run(transport="stdio")
+    create_server(
+        ReadTools(ApplicationClient(binding)), ActionTools(VoiceApplicationClient(binding))
+    ).run(transport="stdio")
 
 
 if __name__ == "__main__":

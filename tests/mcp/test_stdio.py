@@ -36,7 +36,7 @@ def test_real_stdio_initialize_and_discover_without_cloud_credentials(tmp_path):
             initialized = await client.initialize()
             assert initialized.serverInfo.name == "时空博物馆"
             tools = await client.list_tools()
-            assert len(tools.tools) == 3
+            assert len(tools.tools) == 4
             result = await client.call_tool("museum_get_context", {})
             assert result.isError is True
             text = " ".join(item.text for item in result.content if item.type == "text")
