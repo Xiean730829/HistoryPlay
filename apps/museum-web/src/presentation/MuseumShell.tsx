@@ -10,6 +10,9 @@ import {
   requestEventTicket,
   refreshSession,
   loadGalleryArtifacts,
+  enterStory,
+  continueStory,
+  returnToExhibit,
   type ActiveSession,
   type ArtifactProjection,
   type SessionCredentials,
@@ -20,6 +23,7 @@ import { SessionProjectionStore } from "../state/sessionProjection";
 import { ExhibitList } from "./ExhibitList";
 import { StatusNotice } from "./StatusNotice";
 import { MuseumCorridor } from "../gallery/MuseumCorridor";
+import { ArtifactStoryStage } from "../story/ArtifactStoryStage";
 
 const SESSION_KEY = "history-play.session.v1";
 const DEFAULT_PACK_ID = import.meta.env.VITE_MUSEUM_PACK_ID?.trim() || "cn.tang.core";
@@ -183,6 +187,35 @@ export function MuseumShell() {
     }
   }
 
+  async function runStoryAction(action: "enter" | "continue" | "return") {
+    if (!session) return;
+    const focused = session.context.focused_artifact;
+    const storyId = focused?.story_entry_ids?.[0];
+    if (action === "enter" && !storyId) return;
+    setBusy(true);
+    try {
+      const result = action === "enter"
+        ? await enterStory(session, storyId!)
+        : action === "continue"
+          ? await continueStory(session)
+          : await returnToExhibit(session);
+      const store = projectionStore.current;
+      if (store) await store.acceptQuery(result.session);
+      else setSession(result.session);
+      if (result.receipt.status === "committed") {
+        setNotice(action === "return" ? "故事已退出，正在恢复原展台与相机。" : "已切换到服务端提交的故事段落。");
+        setNoticeTone("success");
+      } else {
+        setNotice(result.receipt.reason ?? "故事状态未提交，展台保持当前状态。");
+        setNoticeTone("error");
+      }
+    } catch (error) {
+      showError(error, setNotice, setNoticeTone);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function leaveMuseum() {
     let unpairFailed = false;
     if (session) {
@@ -218,15 +251,38 @@ export function MuseumShell() {
 
       <StatusNotice message={notice} tone={noticeTone} />
 
-      <MuseumCorridor
-        artifacts={galleryArtifacts.length ? galleryArtifacts : session?.context.visible_artifacts ?? []}
-        displayOrder={galleryArtifacts.length ? galleryArtifacts.map((artifact) => artifact.id) : session?.state.display_order ?? []}
-        focusedId={session?.context.focused_artifact?.id ?? session?.state.focused_entity_id ?? null}
-        session={session}
-        loading={!session && !healthError}
-        navigationDisabled={busy}
-        onMove={(direction) => void moveStation(direction)}
-      />
+      {session?.state.mode === "story" ? (
+        <ArtifactStoryStage
+          session={session}
+          busy={busy}
+          onContinue={() => void runStoryAction("continue")}
+          onReturn={() => void runStoryAction("return")}
+        />
+      ) : (
+        <MuseumCorridor
+          artifacts={galleryArtifacts.length ? galleryArtifacts : session?.context.visible_artifacts ?? []}
+          displayOrder={galleryArtifacts.length ? galleryArtifacts.map((artifact) => artifact.id) : session?.state.display_order ?? []}
+          focusedId={session?.context.focused_artifact?.id ?? session?.state.focused_entity_id ?? null}
+          session={session}
+          loading={!session && !healthError}
+          navigationDisabled={busy}
+          onMove={(direction) => void moveStation(direction)}
+        />
+      )}
+
+      {session?.state.mode === "explore" && session.context.focused_artifact?.story_entry_ids?.length ? (
+        <div className="story-entry-row">
+          <span>按需打开与当前文物绑定的已发布故事。</span>
+          <button
+            className="button"
+            disabled={busy}
+            onClick={() => void runStoryAction("enter")}
+            type="button"
+          >
+            {busy ? "正在打开…" : "进入故事"}
+          </button>
+        </div>
+      ) : null}
 
       {!session && health && (
         <div className="corridor-retry-row">

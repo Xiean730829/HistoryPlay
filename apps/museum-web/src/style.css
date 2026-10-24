@@ -239,6 +239,44 @@ input::placeholder { color: #a29a8d; }
 
 .page-footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 22px; color: #91897d; font-size: 11px; }
 
+.story-stage {
+  position: relative;
+  display: grid;
+  min-height: min(690px, 76vh);
+  min-height: min(690px, 76svh);
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgb(231 197 141 / 24%);
+  background: #141717;
+  color: var(--hall-ink);
+}
+.story-stage-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 35%, rgb(205 161 99 / 20%), transparent 44%), linear-gradient(145deg, #24201a, #101416 72%);
+}
+.story-frame {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(720px, calc(100% - 36px));
+  gap: 16px;
+  justify-items: center;
+  padding: clamp(24px, 6vw, 56px);
+  border: 1px solid rgb(231 197 141 / 22%);
+  background: rgb(13 16 17 / 78%);
+  text-align: center;
+}
+.story-kicker, .story-fact-grade { margin: 0; color: var(--hall-muted); font-size: 12px; letter-spacing: .08em; }
+.story-frame h2 { margin: 0; color: var(--hall-ink); font: 500 clamp(22px, 4vw, 34px)/1.2 var(--serif); }
+.story-images { display: flex; max-width: 100%; max-height: 36vh; justify-content: center; gap: 12px; }
+.story-images img { max-width: min(100%, 420px); max-height: 36vh; object-fit: contain; }
+.story-assets-note { margin: 0; color: var(--hall-muted); font-size: 12px; }
+.story-subtitle { max-width: 38em; margin: 4px 0; color: #fff1d6; font: 500 clamp(16px, 2.5vw, 21px)/1.8 var(--serif); }
+.story-load-error { margin: 0; color: #ffb8a8; }
+.story-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.story-entry-row { display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding: 12px 2px; color: var(--muted); font-size: 12px; }
+
 @media (max-width: 760px) {
   .museum-page { width: min(100% - 28px, 560px); padding-top: 18px; }
   .hero-panel { min-height: 205px; margin-top: 22px; padding: 27px 22px; }
@@ -269,4 +307,8 @@ input::placeholder { color: #a29a8d; }
   .search-form .button { padding-inline: 12px; }
   .exhibit-section { padding: 20px 17px; }
   .current-label { font-size: 10px; }
+  .story-stage { min-height: min(620px, 73svh); }
+  .story-frame { width: calc(100% - 24px); padding: 24px 18px; }
+  .story-subtitle { line-height: 1.65; }
+  .story-entry-row { flex-wrap: wrap; justify-content: space-between; }
 }
