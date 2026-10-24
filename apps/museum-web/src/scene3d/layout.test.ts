@@ -1,9 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
 import { Box3, BoxGeometry, Group, Mesh, MeshStandardMaterial, Texture, Vector3 } from "three";
-import { nearbyModelIndices, seatModel, stairStepPlacement, stationPlacement } from "./layout";
+import { maintainSurfaceContact, nearbyModelIndices, seatModel, stairStepPlacement, stationPlacement } from "./layout";
 import { disposeTree } from "./resources";
 
 describe("physical exhibit placement", () => {
+  it("keeps a tilted object resting on the raised cabinet instead of intersecting its deck", () => {
+    const root = new Group(); root.position.y = stationPlacement(2).plinthTop + 0.012;
+    const spin = seatModel(new Group().add(new Mesh(new BoxGeometry(1, 2, 1)))); root.add(spin);
+    root.updateMatrixWorld(true);
+    spin.rotation.x = 0.4;
+    maintainSurfaceContact(spin, root.position.y);
+    expect(new Box3().setFromObject(spin).min.y).toBeCloseTo(root.position.y);
+  });
   it("shares the actual stair, landing and load-bearing heights without treating a deck as floor", () => {
     for (let index = 0; index < 3; index++) {
       const p = stationPlacement(index);
