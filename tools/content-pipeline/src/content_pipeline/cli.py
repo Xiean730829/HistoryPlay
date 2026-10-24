@@ -21,6 +21,10 @@ from content_pipeline.assets.stage_assets import AssetStageError, stage_assets
 from content_pipeline.build.compiler import compile_pack, write_documents
 from content_pipeline.build.pack_writer import write_immutable_pack
 from content_pipeline.build.rehearsal_pack import RehearsalPackError, build_rehearsal_pack
+from content_pipeline.importers.story_assets import (
+    StoryAssetImportError,
+    import_story_asset_candidate,
+)
 
 
 def cmd_validate(pack: Path, dependency_packs: list[Path] | None = None) -> int:
@@ -266,6 +270,32 @@ def cmd_stage_assets(
     return 0
 
 
+def cmd_import_story_asset_candidate(
+    *,
+    source_root: Path,
+    pack: Path,
+    out: Path,
+    binding_key: str,
+    story_id: str,
+    node_ids: list[str],
+) -> int:
+    try:
+        candidate = import_story_asset_candidate(
+            source_root=source_root,
+            pack_dir=pack,
+            output_file=out,
+            binding_key=binding_key,
+            story_id=story_id,
+            node_ids=node_ids,
+        )
+    except StoryAssetImportError as exc:
+        print(f"故事素材候选导入失败：{exc}", file=sys.stderr)
+        return 1
+    print(f"已写入未发布的故事素材候选清单：{out}")
+    print(f"故事：{candidate['story_id']}；素材：{candidate['assets'][0]['id']}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="内容制作命令")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -358,6 +388,16 @@ def main(argv: list[str] | None = None) -> int:
     rehearsal.add_argument("--content-root", required=True, type=Path, help="版本化内容根目录")
     rehearsal.add_argument("--asset-root", required=True, type=Path, help="版本化资源根目录")
     rehearsal.add_argument("--version", required=True, help="联调published版本，必须是新的semver")
+    story_assets = sub.add_parser(
+        "import-story-asset-candidate",
+        help="校验本机已选场景图并生成待审核清单，不发布到运行时内容包",
+    )
+    story_assets.add_argument("--source-root", required=True, type=Path, help="本机生成素材批次目录")
+    story_assets.add_argument("--pack", required=True, type=Path, help="目标作者内容包目录")
+    story_assets.add_argument("--binding-key", required=True, help="scene-bindings中的素材选择键")
+    story_assets.add_argument("--story-id", required=True, help="目标故事稳定ID")
+    story_assets.add_argument("--node-id", required=True, action="append", help="目标故事节点ID，可重复")
+    story_assets.add_argument("--out", required=True, type=Path, help="未发布候选清单输出路径")
     args = parser.parse_args(argv)
     if args.command == "validate":
         return cmd_validate(args.pack, args.dependency_pack)
@@ -422,6 +462,15 @@ def main(argv: list[str] | None = None) -> int:
             content_root=args.content_root,
             asset_root=args.asset_root,
             version=args.version,
+        )
+    if args.command == "import-story-asset-candidate":
+        return cmd_import_story_asset_candidate(
+            source_root=args.source_root,
+            pack=args.pack,
+            out=args.out,
+            binding_key=args.binding_key,
+            story_id=args.story_id,
+            node_ids=args.node_id,
         )
     parser.error("未知命令")
     return 2
