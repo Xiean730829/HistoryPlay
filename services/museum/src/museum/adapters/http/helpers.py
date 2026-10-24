@@ -67,6 +67,7 @@ def state_projection(state: SessionState) -> dict[str, Any]:
         "event_seq": state.event_seq,
         "interaction_epoch": state.interaction_epoch,
         "discoveries": sorted(state.discoveries),
+        "camera_pose": _camera(state.camera_pose),
     }
     if state.world_time is not None:
         result["world_time"] = _world_time(state)
@@ -84,6 +85,15 @@ def state_projection(state: SessionState) -> dict[str, Any]:
         result["node_id"] = state.node_id
     if state.narration_checkpoint is not None:
         result["narration_checkpoint"] = _checkpoint(state.narration_checkpoint)
+    if state.exhibit_return_point is not None:
+        point = state.exhibit_return_point
+        result["exhibit_return_point"] = {
+            "gallery_id": point.gallery_id,
+            "station_id": point.station_id,
+            "view": _camera(point.view),
+            "view_revision": point.view_revision,
+            **({"focused_entity_id": point.focused_entity_id} if point.focused_entity_id else {}),
+        }
     return result
 
 
@@ -173,6 +183,10 @@ def _checkpoint(value: Any) -> dict[str, str | None] | None:
     if value.last_completed_node_id is not None:
         result["last_completed_node_id"] = value.last_completed_node_id
     return result
+
+
+def _camera(value: Any) -> dict[str, float]:
+    return {"yaw": value.yaw, "pitch": value.pitch, "zoom": value.zoom}
 
 
 def _return_point(value: Any) -> dict[str, Any]:

@@ -2,6 +2,8 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 from museum.domain.session.models import (
+    CameraPose,
+    ExhibitReturnPoint,
     NarrationCheckpoint,
     SessionMode,
     SessionState,
@@ -11,7 +13,9 @@ from museum.domain.session.transitions import (
     enter_qa,
     enter_story,
     focus_entity,
+    return_to_exhibit,
     return_to_story,
+    set_view,
 )
 
 
@@ -93,3 +97,59 @@ def test_queries_or_invalid_changes_cannot_advance_story_state() -> None:
     assert original.node_id == "cn.tang.node.stele-observation.01"
     assert original.revision == 3
     assert original.event_seq == 5
+
+
+def test_story_exhibit_return_anchor_is_separate_from_qa_return_stack() -> None:
+    story_state = SessionState(
+        session_id="sess_corridor_01",
+        pack_versions={"cn.tang.core": "1.0.0"},
+        mode=SessionMode.STORY,
+        gallery_id="cn.tang.gallery.main",
+        station_id="cn.tang.station.ox",
+        current_location_id="cn.tang.station.ox",
+        story_id="cn.tang.story.ox",
+        node_id="cn.tang.node.ox.01",
+        return_stack=(),
+        focused_entity_id="cn.tang.artifact.ox",
+        visible_entities=("cn.tang.artifact.ox",),
+        display_order=("cn.tang.artifact.ox",),
+        camera_pose=CameraPose(yaw=32, pitch=-8, zoom=1.7),
+        view_revision=4,
+        exhibit_return_point=ExhibitReturnPoint(
+            gallery_id="cn.tang.gallery.main",
+            station_id="cn.tang.station.ox",
+            focused_entity_id="cn.tang.artifact.ox",
+            view=CameraPose(yaw=32, pitch=-8, zoom=1.7),
+            view_revision=4,
+        ),
+    )
+
+    qa = enter_qa(story_state)
+    resumed = return_to_story(qa.state)
+    returned = return_to_exhibit(resumed.state)
+
+    assert qa.state.exhibit_return_point == story_state.exhibit_return_point
+    assert qa.state.return_stack[-1].story_id == story_state.story_id
+    assert returned.state.mode == SessionMode.EXPLORE
+    assert returned.state.gallery_id == "cn.tang.gallery.main"
+    assert returned.state.station_id == returned.state.current_location_id == "cn.tang.station.ox"
+    assert returned.state.focused_entity_id == "cn.tang.artifact.ox"
+    assert returned.state.camera_pose == CameraPose(yaw=32, pitch=-8, zoom=1.7)
+    assert returned.state.exhibit_return_point is None
+    assert returned.event.kind.value == "returned_to_exhibit"
+
+
+def test_view_change_is_revisioned_and_explore_only() -> None:
+    explored = SessionState(
+        session_id="sess_view_0001",
+        pack_versions={"cn.tang.core": "1.0.0"},
+        mode=SessionMode.EXPLORE,
+        gallery_id="cn.tang.gallery.main",
+        station_id="cn.tang.station.ox",
+    )
+    changed = set_view(explored, CameraPose(yaw=15, pitch=5, zoom=2))
+    assert changed.state.camera_pose == CameraPose(yaw=15, pitch=5, zoom=2)
+    assert changed.state.revision == explored.revision + 1
+    assert changed.state.view_revision == explored.view_revision + 1
+    with pytest.raises(InvalidTransition, match="探索模式"):
+        set_view(make_session(), CameraPose(yaw=15, pitch=5, zoom=2))

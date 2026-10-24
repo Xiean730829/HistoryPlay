@@ -6,6 +6,8 @@ from collections.abc import Mapping
 from typing import Any
 
 from museum.domain.session.models import (
+    CameraPose,
+    ExhibitReturnPoint,
     HistoricalTime,
     NarrationCheckpoint,
     ReturnPoint,
@@ -93,6 +95,8 @@ def _encode_state(state: SessionState) -> str:
         "interaction_epoch": state.interaction_epoch,
         "discoveries": sorted(state.discoveries),
         "narration_checkpoint": _encode_checkpoint(state.narration_checkpoint),
+        "camera_pose": _encode_camera(state.camera_pose),
+        "exhibit_return_point": _encode_exhibit_return_point(state.exhibit_return_point),
     }
     return json.dumps(payload, ensure_ascii=False, allow_nan=False, separators=(",", ":"))
 
@@ -130,6 +134,12 @@ def _decode_state(raw: str) -> SessionState:
         interaction_epoch=payload["interaction_epoch"],
         discoveries=frozenset(payload["discoveries"]),
         narration_checkpoint=_decode_checkpoint(payload["narration_checkpoint"]),
+        camera_pose=CameraPose(**payload["camera_pose"]) if payload.get("camera_pose") else CameraPose(),
+        exhibit_return_point=(
+            _decode_exhibit_return_point(payload["exhibit_return_point"])
+            if payload.get("exhibit_return_point")
+            else None
+        ),
     )
 
 
@@ -144,3 +154,29 @@ def _encode_checkpoint(checkpoint: NarrationCheckpoint | None) -> Mapping[str, s
 
 def _decode_checkpoint(value: Mapping[str, str | None] | None) -> NarrationCheckpoint | None:
     return NarrationCheckpoint(**value) if value else None
+
+
+def _encode_camera(value: CameraPose) -> Mapping[str, float]:
+    return {"yaw": value.yaw, "pitch": value.pitch, "zoom": value.zoom}
+
+
+def _encode_exhibit_return_point(value: ExhibitReturnPoint | None) -> Mapping[str, Any] | None:
+    if value is None:
+        return None
+    return {
+        "gallery_id": value.gallery_id,
+        "station_id": value.station_id,
+        "focused_entity_id": value.focused_entity_id,
+        "view": _encode_camera(value.view),
+        "view_revision": value.view_revision,
+    }
+
+
+def _decode_exhibit_return_point(value: Mapping[str, Any]) -> ExhibitReturnPoint:
+    return ExhibitReturnPoint(
+        gallery_id=value["gallery_id"],
+        station_id=value["station_id"],
+        focused_entity_id=value.get("focused_entity_id"),
+        view=CameraPose(**value["view"]),
+        view_revision=value["view_revision"],
+    )

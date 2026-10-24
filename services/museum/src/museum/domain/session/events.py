@@ -11,6 +11,8 @@ class SessionEventKind(StrEnum):
     STORY_ADVANCED = "story_advanced"
     QA_ENTERED = "qa_entered"
     RETURNED_TO_STORY = "returned_to_story"
+    VIEW_CHANGED = "view_changed"
+    RETURNED_TO_EXHIBIT = "returned_to_exhibit"
 
 
 @dataclass(frozen=True, slots=True)

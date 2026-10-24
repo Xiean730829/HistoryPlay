@@ -12,11 +12,13 @@ from uuid import uuid4
 from museum.application.control_tickets import ControlTickets
 from museum.domain.gallery.navigation import InvalidGalleryRoute, adjacent_station
 from museum.domain.session.events import SessionEvent, SessionEventKind, TransitionResult
-from museum.domain.session.models import HistoricalTime, SessionState
+from museum.domain.session.models import CameraPose, HistoricalTime, SessionState
 from museum.domain.session.transitions import (
     InvalidTransition,
     focus_entity,
+    return_to_exhibit,
     return_to_story,
+    set_view,
 )
 from museum.domain.story.conditions import Condition, ConditionOp, InvalidStoryRule
 from museum.domain.story.effects import Effect, EffectOp
@@ -44,6 +46,7 @@ COMMAND_ACTIONS = frozenset(
         "continue_story",
         "pause_story",
         "return_to_story",
+        "return_to_exhibit",
         "focus_detail",
         "set_view",
         "choose_action",
@@ -296,6 +299,22 @@ class CommandService:
         if command.action == "return_to_story":
             return return_to_story(state)
 
+        if command.action == "return_to_exhibit":
+            return return_to_exhibit(state)
+
+        if command.action == "set_view":
+            camera = command.params.get("camera")
+            if not isinstance(camera, Mapping):
+                raise InvalidCommand("set_view必须提供camera")
+            return set_view(
+                state,
+                CameraPose(
+                    yaw=camera["yaw"],
+                    pitch=camera["pitch"],
+                    zoom=camera["zoom"],
+                ),
+            )
+
         raise InvalidTransition(f"当前版本尚未开放该命令：{command.action}")
 
     def _pinned_packs(self, state: SessionState) -> tuple[PublishedPack, ...]:
@@ -335,11 +354,12 @@ def _parse_command(payload: Mapping[str, Any]) -> _Command:
     if (
         action
         in {
-            "set_view",
             "enter_gallery",
             "move_next",
             "move_previous",
             "locate_artifact",
+            "return_to_exhibit",
+            "set_view",
         }
         and expected_view is None
     ):
@@ -436,6 +456,7 @@ def _stale_reason(state: SessionState, command: _Command) -> str | None:
             "move_next",
             "move_previous",
             "locate_artifact",
+            "return_to_exhibit",
         }
         and command.expected_view_revision != state.view_revision
     ):

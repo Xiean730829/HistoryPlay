@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
+from math import isfinite
 from types import MappingProxyType
 
 
@@ -31,6 +32,38 @@ class HistoricalTime:
 class NarrationCheckpoint:
     last_started_node_id: str | None = None
     last_completed_node_id: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class CameraPose:
+    yaw: float = 0
+    pitch: float = 0
+    zoom: float = 1
+
+    def __post_init__(self) -> None:
+        values = (self.yaw, self.pitch, self.zoom)
+        if (
+            any(type(value) not in (int, float) or not isfinite(value) for value in values)
+            or not -180 <= self.yaw <= 180
+            or not -90 <= self.pitch <= 90
+            or not 0 < self.zoom <= 8
+        ):
+            raise ValueError("文物视角超出允许范围")
+
+
+@dataclass(frozen=True, slots=True)
+class ExhibitReturnPoint:
+    gallery_id: str
+    station_id: str
+    view: CameraPose
+    view_revision: int
+    focused_entity_id: str | None = None
+
+    def __post_init__(self) -> None:
+        if not self.gallery_id or not self.station_id:
+            raise ValueError("展台返回点必须包含展厅和展位")
+        if self.view_revision < 0:
+            raise ValueError("视图修订号不能为负数")
 
 
 @dataclass(frozen=True, slots=True)
@@ -71,6 +104,8 @@ class SessionState:
     interaction_epoch: int = 0
     discoveries: frozenset[str] = frozenset()
     narration_checkpoint: NarrationCheckpoint | None = None
+    camera_pose: CameraPose = field(default_factory=CameraPose)
+    exhibit_return_point: ExhibitReturnPoint | None = None
 
     def __post_init__(self) -> None:
         if not self.session_id:

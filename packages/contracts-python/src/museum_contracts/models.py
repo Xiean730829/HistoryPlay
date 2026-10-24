@@ -74,7 +74,7 @@ class SessionEvent(TypedDict):
     schema_version: Literal["1"]
     event_seq: NonNegativeInt
     session_id: OpaqueId
-    kind: Literal["snapshot", "focus_changed", "story_entered", "story_advanced", "story_paused", "returned_to_story", "qa_entered", "view_changed", "command_committed", "render_updated"]
+    kind: Literal["snapshot", "focus_changed", "story_entered", "story_advanced", "story_paused", "returned_to_story", "returned_to_exhibit", "qa_entered", "view_changed", "command_committed", "render_updated"]
     revision: NonNegativeInt
     view_revision: NotRequired[NonNegativeInt]
     interaction_epoch: NonNegativeInt
@@ -201,6 +201,8 @@ class SessionProjection(TypedDict):
     station_id: NotRequired[NamespacedId]
     current_location_id: NotRequired[NamespacedId]
     focused_entity_id: NotRequired[NamespacedId]
+    camera_pose: NotRequired[SessionProjectionObject]
+    exhibit_return_point: NotRequired[SessionProjectionExhibitReturnPoint]
     visible_entities: NotRequired[list[NamespacedId]]
     display_order: list[NamespacedId]
     story_id: NotRequired[NamespacedId]
