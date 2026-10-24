@@ -1,9 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import { Box3, BoxGeometry, Group, Mesh, MeshStandardMaterial, Texture, Vector3 } from "three";
-import { seatModel, stationPlacement } from "./layout";
+import { nearbyModelIndices, seatModel, stationPlacement } from "./layout";
 import { disposeTree } from "./resources";
 
 describe("physical exhibit placement", () => {
+  it("keeps the three-object slice visible while bounding later galleries to nearest models", () => {
+    expect([...nearbyModelIndices(3, 0)]).toEqual([0, 1, 2]);
+    expect([...nearbyModelIndices(19, 12)]).toEqual([12, 11, 13]);
+  });
   it("centers offset GLB geometry, keeps its aspect and places its bottom on the table", () => {
     const model = new Group();
     const mesh = new Mesh(new BoxGeometry(4, 8, 2)); mesh.position.set(20, -30, 7); model.add(mesh);

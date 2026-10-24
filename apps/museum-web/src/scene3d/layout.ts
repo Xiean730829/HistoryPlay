@@ -5,6 +5,11 @@ export function stationPlacement(index: number): StationPlacement {
   return { x: index % 2 ? 2.15 : -2.15, z: -2 - index * 5.8, top: 1.05 };
 }
 
+export function nearbyModelIndices(count: number, focused: number, limit = 3): Set<number> {
+  return new Set(Array.from({ length: count }, (_, index) => index)
+    .sort((a, b) => Math.abs(a - focused) - Math.abs(b - focused)).slice(0, limit));
+}
+
 /** Fit the true mesh above the plinth; the object keeps its original proportions. */
 export function seatModel(model: Group, width = 1.65, height = 1.9): Group {
   const bounds = new Box3().setFromObject(model);

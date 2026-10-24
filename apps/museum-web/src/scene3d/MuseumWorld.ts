@@ -1,17 +1,18 @@
 import {
   ACESFilmicToneMapping, Box3, Color, FogExp2, Group, Mesh, MeshStandardMaterial,
   PCFSoftShadowMap, PerspectiveCamera, Raycaster, Scene, Vector2, Vector3, WebGLRenderer,
-  type Object3D,
+  PMREMGenerator, type Object3D, type WebGLRenderTarget,
 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import type { ActiveSession, ArtifactProjection } from "../application/museumApi";
 import { galleryAssets } from "../capabilities/galleryAssets";
 import type { AssetLease } from "../capabilities/assetLoader";
 import { buildHall, inscription } from "./architecture";
-import { seatModel, stationPlacement } from "./layout";
+import { nearbyModelIndices, seatModel, stationPlacement } from "./layout";
 import { disposeTree } from "./resources";
 
-interface Exhibit { root: Group; spin: Group; loaded: boolean; controller: AbortController; lease?: AssetLease }
+interface Exhibit { root: Group; spin: Group; loaded: boolean; loading: boolean; controller: AbortController; lease?: AssetLease }
 interface WorldHooks {
   onSelect(id: string): void;
   onObserve(yaw: number, pitch: number, zoom: number): void;
@@ -36,6 +37,7 @@ export class MuseumWorld {
   private acknowledged = "";
   private acknowledgedAt = 0;
   private readonly resize: ResizeObserver;
+  private readonly environment: WebGLRenderTarget;
   private lastTime = 0;
   private inspection = false;
   private drag: { x: number; y: number; yaw: number; pitch: number } | null = null;
@@ -58,6 +60,11 @@ export class MuseumWorld {
     host.appendChild(this.renderer.domElement);
     this.scene.background = new Color("#b3a086");
     this.scene.fog = new FogExp2("#8a7961", 0.018);
+    const environment = new RoomEnvironment();
+    const generator = new PMREMGenerator(this.renderer);
+    this.environment = generator.fromScene(environment, 0.04);
+    this.scene.environment = this.environment.texture;
+    environment.dispose(); generator.dispose();
     this.scene.add(buildHall(artifacts.length));
     this.camera.position.copy(this.targetPosition);
     this.camera.lookAt(this.currentLook);
@@ -76,6 +83,7 @@ export class MuseumWorld {
     const { width, height } = this.host.getBoundingClientRect();
     if (!width || !height) return;
     this.camera.aspect = width / height; this.camera.updateProjectionMatrix();
+    this.camera.fov = width < 650 ? 62 : 47; this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height, false);
   }
 
@@ -84,24 +92,24 @@ export class MuseumWorld {
     const root = new Group(); root.position.set(p.x, p.top + 0.04, p.z);
     root.userData.artifactId = artifact.id;
     const spin = new Group(); root.add(spin); this.scene.add(root);
-    const entry: Exhibit = { root, spin, loaded: false, controller: new AbortController() };
+    const entry: Exhibit = { root, spin, loaded: false, loading: false, controller: new AbortController() };
     this.exhibits.set(artifact.id, entry);
     const label = inscription(artifact.title, 2.1, 0.4);
     label.position.set(p.x, 0.76, p.z + 0.895); this.scene.add(label);
     const date = inscription(artifact.time_range.display_label ?? `${artifact.time_range.start_year}年`, 2.3, 0.6, true);
     date.position.set(p.x * 0.6, 0.017, p.z + 1.65); this.scene.add(date);
-    // Three display GLBs fit in the initial slice. Future halls keep at most three close models.
-    if (index < 3) void this.loadModel(artifact, entry);
   }
 
   private async loadModel(artifact: ArtifactProjection, entry: Exhibit): Promise<void> {
     const assetId = artifact.presentation?.display?.asset_id;
     if (!assetId || artifact.presentation?.display?.kind !== "model3d") return;
+    const controller = entry.controller; entry.loading = true;
     try {
-      const lease = await galleryAssets.acquire(this.latest, assetId, "model", entry.controller.signal);
+      const lease = await galleryAssets.acquire(this.latest, assetId, "model", controller.signal);
+      if (this.disposed || controller.signal.aborted || entry.controller !== controller) { lease.release(); return; }
       entry.lease = lease;
       const gltf = await new GLTFLoader().loadAsync(lease.url);
-      if (this.disposed || entry.controller.signal.aborted) { disposeTree(gltf.scene); return; }
+      if (this.disposed || controller.signal.aborted || entry.controller !== controller) { disposeTree(gltf.scene); lease.release(); return; }
       const model = gltf.scene;
       const preset = artifact.presentation?.default_camera?.orbit;
       if (preset === "inscription-face") model.rotateY(-Math.PI / 2);
@@ -117,9 +125,11 @@ export class MuseumWorld {
       entry.spin.add(seated); entry.loaded = true;
       this.hooks.onLoaded([...this.exhibits.values()].filter((item) => item.loaded).length);
     } catch {
-      if (!this.disposed && !entry.controller.signal.aborted) {
+      if (!this.disposed && !controller.signal.aborted && entry.controller === controller) {
         this.hooks.onRender("degraded", "三维文物加载失败，当前展台为空，未用图片冒充模型");
       }
+    } finally {
+      if (entry.controller === controller) entry.loading = false;
     }
   }
 
@@ -129,6 +139,17 @@ export class MuseumWorld {
     this.inspection = inspection;
     const index = this.artifacts.findIndex((item) => item.id === session.state.focused_entity_id);
     if (index < 0) return;
+    const near = nearbyModelIndices(this.artifacts.length, index);
+    this.artifacts.forEach((artifact, itemIndex) => {
+      const entry = this.exhibits.get(artifact.id)!;
+      if (near.has(itemIndex)) {
+        if (!entry.loaded && !entry.loading) void this.loadModel(artifact, entry);
+      } else if (entry.loaded || entry.loading) {
+        entry.controller.abort(); entry.lease?.release(); entry.lease = undefined;
+        disposeTree(entry.spin); entry.loaded = false; entry.loading = false;
+        entry.controller = new AbortController();
+      }
+    });
     const p = stationPlacement(index);
     if (inspection) {
       this.targetPosition.set(p.x + 0.15, 2.0, p.z + 3.05 / Math.sqrt(session.state.camera_pose?.zoom ?? 1));
@@ -184,6 +205,9 @@ export class MuseumWorld {
 
   private animate = (time: number): void => {
     if (this.disposed) return;
+    if (this.latest.state.mode === "story") {
+      this.frame = requestAnimationFrame(this.animate); this.lastTime = time; return;
+    }
     const dt = Math.min((time - (this.lastTime || time)) / 1000, 0.05); this.lastTime = time;
     const easing = 1 - Math.exp(-dt * 5.5);
     this.camera.position.lerp(this.targetPosition, easing);
@@ -222,7 +246,7 @@ export class MuseumWorld {
     this.renderer.domElement.removeEventListener("wheel", this.wheel);
     if (this.wheelTimer) clearTimeout(this.wheelTimer);
     this.exhibits.forEach((entry) => { entry.controller.abort(); entry.lease?.release(); });
-    disposeTree(this.scene); this.renderer.dispose(); this.renderer.forceContextLoss();
+    disposeTree(this.scene); this.environment.dispose(); this.renderer.dispose(); this.renderer.forceContextLoss();
     this.renderer.domElement.remove();
   }
 }

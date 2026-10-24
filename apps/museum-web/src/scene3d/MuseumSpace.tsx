@@ -32,7 +32,7 @@ export function MuseumSpace({ artifacts, session, onSelect, onObserve, onRender,
     } catch { setError("当前浏览器无法创建三维展廊，请启用WebGL后重试。"); }
   }, [session.session_id, session.connection_id, key]);
   useEffect(() => { world.current?.update(session, inspection); }, [session, inspection]);
-  return <section className="museum-space" aria-label="大唐三维展廊">
+  return <section className="museum-space" aria-label="大唐三维展廊" data-renderer="three-webgl" data-models-loaded={loaded}>
     <div className="museum-webgl" ref={host} />
     <div className="museum-space-brand"><span>时空博物馆</span><h2>大唐 · 文物长廊</h2><p>618 — 907</p></div>
     <div className="museum-space-guide">{error || (loaded < Math.min(3, artifacts.length)
