@@ -43,6 +43,10 @@ class RenderService:
         self._latest: dict[tuple[str, str], RenderReceipt] = {}
         self._lock = RLock()
 
+    def latest(self, session_id: str, connection_id: str) -> RenderReceipt | None:
+        with self._lock:
+            return self._latest.get((session_id, connection_id))
+
     def report(
         self,
         *,

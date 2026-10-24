@@ -13,6 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 MUSEUM_PORT = os.getenv("MUSEUM_PORT", "8780")
 WEB_PORT = os.getenv("MUSEUM_WEB_PORT", "5173")
+VOICE_PORT = os.getenv("MUSEUM_VOICE_PORT", "8782")
 
 
 def wait_for_health(url: str, process: subprocess.Popen[bytes], label: str) -> None:
@@ -49,21 +50,36 @@ def main() -> int:
         return 2
 
     processes: list[subprocess.Popen[bytes]] = []
+    environment = os.environ.copy()
+    origin = f"http://127.0.0.1:{WEB_PORT}"
+    environment.setdefault("MUSEUM_ALLOWED_ORIGINS", origin)
+    environment.setdefault("MUSEUM_WEB_ORIGIN", origin)
+    environment.setdefault("VITE_MUSEUM_GAME_URL", f"http://127.0.0.1:{MUSEUM_PORT}")
+    environment.setdefault("VITE_MUSEUM_BRIDGE_URL", f"http://127.0.0.1:{VOICE_PORT}")
     try:
         backend = subprocess.Popen(
             [uv, "run", "--package", "museum-game", "python", "-m", "museum.main"],
             cwd=ROOT,
-            env=os.environ.copy(),
+            env=environment,
             creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
         )
         processes.append(backend)
         frontend = subprocess.Popen(
-            [node, str(vite), "--host", "127.0.0.1", "--port", WEB_PORT],
+            [node, str(vite), "--host", "127.0.0.1", "--port", WEB_PORT, "--strictPort"],
             cwd=ROOT / "apps" / "museum-web",
-            env=os.environ.copy(),
+            env=environment,
             creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
         )
         processes.append(frontend)
+        if environment.get("MUSEUM_XIAOZHI_DEVICE_FILE"):
+            voice = subprocess.Popen(
+                [uv, "run", "--package", "museum-voice-bridge", "python", "-m", "museum_voice.main"],
+                cwd=ROOT,
+                env=environment,
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
+            )
+            processes.append(voice)
+            wait_for_health(f"http://127.0.0.1:{VOICE_PORT}/health", voice, "语音桥")
         wait_for_health(f"http://127.0.0.1:{MUSEUM_PORT}/health", backend, "游戏服务")
         wait_for_health(f"http://127.0.0.1:{WEB_PORT}/", frontend, "网页")
         wait_for_health(

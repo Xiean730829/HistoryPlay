@@ -4,6 +4,7 @@ import asyncio
 import sys
 from pathlib import Path
 
+import pytest
 from aiohttp import ClientSession, web
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "services/voice-bridge/src"))
@@ -59,9 +60,10 @@ def test_redirect_callback_always_rejects_without_echoing_endpoint():
     asyncio.run(run())
 
 
-def test_unconfigured_bridge_status_is_explicit_and_contains_no_credentials():
+@pytest.mark.parametrize("origin", ["http://127.0.0.1:5174", "http://127.0.0.1:5175", "http://127.0.0.1:5176"])
+def test_unconfigured_bridge_status_is_explicit_and_contains_no_credentials(origin):
     async def run():
-        app = create_app(None, port=8782, origin="http://127.0.0.1:5174")
+        app = create_app(None, port=8782, origin=origin)
         runner = web.AppRunner(app)
         await runner.setup()
         site = web.TCPSite(runner, "127.0.0.1", 0)
@@ -74,7 +76,7 @@ def test_unconfigured_bridge_status_is_explicit_and_contains_no_credentials():
                     f"http://127.0.0.1:{port}/voice/status",
                     headers={
                         "Host": "127.0.0.1:8782",
-                        "Origin": "http://127.0.0.1:5174",
+                        "Origin": origin,
                     },
                 ) as response,
             ):
@@ -85,8 +87,13 @@ def test_unconfigured_bridge_status_is_explicit_and_contains_no_credentials():
                     "device_configured": False,
                 }
                 assert (
-                    response.headers["Access-Control-Allow-Origin"] == "http://127.0.0.1:5174"
+                    response.headers["Access-Control-Allow-Origin"] == origin
                 )
+            async with ClientSession() as client, client.get(
+                f"http://127.0.0.1:{port}/voice/status",
+                headers={"Host": "127.0.0.1:8782", "Origin": "http://127.0.0.1:5999"},
+            ) as denied:
+                assert denied.status == 403
         finally:
             await runner.cleanup()
 

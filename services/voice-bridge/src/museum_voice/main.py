@@ -245,8 +245,11 @@ def create_app(
     origin: str = "http://127.0.0.1:5173",
     binding_file: Path | None = None,
 ) -> web.Application:
-    if origin not in {"http://127.0.0.1:5173", "http://127.0.0.1:5174"}:
-        raise ValueError("语音桥只允许本机5173或5174游戏页面")
+    if origin not in {
+        "http://127.0.0.1:5173", "http://127.0.0.1:5174", "http://127.0.0.1:5175",
+        "http://127.0.0.1:5176",
+    }:
+        raise ValueError("语音桥只允许本机5173至5176的指定游戏页面")
     app = web.Application(middlewares=[local_only])
     app[DEVICE] = device
     app[ORIGIN] = origin
