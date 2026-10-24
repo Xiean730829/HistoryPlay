@@ -39,6 +39,7 @@ COMMAND_ACTIONS = frozenset(
         "enter_gallery",
         "move_next",
         "move_previous",
+        "locate_artifact",
         "enter_story",
         "continue_story",
         "pause_story",
@@ -217,6 +218,17 @@ class CommandService:
         )
 
     def _apply(self, state: SessionState, command: _Command) -> TransitionResult:
+        if command.action == "locate_artifact":
+            if state.mode.value != "explore":
+                raise InvalidTransition("只有长廊探索模式可以定位文物")
+            packs = self._pinned_packs(state)
+            artifact_id = _required_target(command)
+            _find_document(packs, artifact_id, "artifacts/")
+            gallery, station = _find_artifact_station(packs, artifact_id)
+            if state.gallery_id == gallery.get("id") and state.station_id == station.get("id"):
+                raise InvalidTransition("目标文物已经位于当前展位")
+            return _enter_station(state, gallery, station)
+
         if command.action in {"enter_gallery", "move_next", "move_previous"}:
             if state.mode.value != "explore":
                 raise InvalidTransition("只有长廊探索模式可以移动展位")
@@ -321,7 +333,14 @@ def _parse_command(payload: Mapping[str, Any]) -> _Command:
     if expected_view is not None:
         expected_view = _non_negative_int(expected_view, "expected_view_revision")
     if (
-        action in {"set_view", "enter_gallery", "move_next", "move_previous"}
+        action
+        in {
+            "set_view",
+            "enter_gallery",
+            "move_next",
+            "move_previous",
+            "locate_artifact",
+        }
         and expected_view is None
     ):
         raise InvalidCommand(f"{action}必须携带expected_view_revision")
@@ -329,7 +348,15 @@ def _parse_command(payload: Mapping[str, Any]) -> _Command:
     if target is not None and (not isinstance(target, str) or not NAMESPACED_ID.fullmatch(target)):
         raise InvalidCommand("target_id不是有效的命名空间标识")
     if (
-        action in {"open_artifact", "enter_gallery", "enter_story", "focus_detail", "choose_action"}
+        action
+        in {
+            "open_artifact",
+            "enter_gallery",
+            "locate_artifact",
+            "enter_story",
+            "focus_detail",
+            "choose_action",
+        }
         and target is None
     ):
         raise InvalidCommand(f"{action}必须提供target_id")
@@ -401,8 +428,16 @@ def _stale_reason(state: SessionState, command: _Command) -> str | None:
         return "会话修订号已变化，请先读取最新状态"
     if command.interaction_epoch != state.interaction_epoch:
         return "交互轮次已变化，拒绝执行过期命令"
-    if command.action in {"set_view", "enter_gallery", "move_next", "move_previous"} and (
-        command.expected_view_revision != state.view_revision
+    if (
+        command.action
+        in {
+            "set_view",
+            "enter_gallery",
+            "move_next",
+            "move_previous",
+            "locate_artifact",
+        }
+        and command.expected_view_revision != state.view_revision
     ):
         return "视图修订号已变化，请先读取最新状态"
     return None
@@ -476,6 +511,28 @@ def _find_gallery(packs: tuple[PublishedPack, ...], gallery_id: str) -> Mapping[
             ):
                 return document
     raise PinnedContentUnavailable(f"会话固定内容中找不到展厅：{gallery_id}")
+
+
+def _find_artifact_station(
+    packs: tuple[PublishedPack, ...], artifact_id: str
+) -> tuple[Mapping[str, Any], Mapping[str, Any]]:
+    matches = []
+    for pack in packs:
+        for path, gallery in pack.documents.items():
+            if (
+                not path.startswith("galleries/")
+                or not isinstance(gallery, Mapping)
+                or gallery.get("status") != "open"
+            ):
+                continue
+            for station in _gallery_stations(gallery):
+                if station.get("artifact_id") == artifact_id:
+                    matches.append((gallery, station))
+    if not matches:
+        raise PinnedContentUnavailable("目标文物没有已开放的主展位")
+    if len(matches) != 1:
+        raise InvalidGalleryRoute("目标文物有多个已开放主展位")
+    return matches[0]
 
 
 def _gallery_stations(gallery: Mapping[str, Any]) -> list[Mapping[str, Any]]:

@@ -127,7 +127,14 @@ def make_service(tmp_path):
         session_id=state.session_id,
         actor_id=ACTOR_ID,
         actions=frozenset(
-            {"continue_story", "open_artifact", "enter_gallery", "move_next", "move_previous"}
+            {
+                "continue_story",
+                "open_artifact",
+                "enter_gallery",
+                "move_next",
+                "move_previous",
+                "locate_artifact",
+            }
         ),
     )
     return database, state, tickets, token, CommandService(
@@ -444,3 +451,80 @@ def test_navigation_requires_current_view_revision_and_exploration_mode(tmp_path
     )
     assert blocked.status == "rejected"
     assert "探索模式" in (blocked.reason or "")
+
+
+def test_locate_artifact_moves_directly_to_its_pinned_primary_station(tmp_path) -> None:
+    database, state, token, service = _exploration_service(tmp_path)
+    entered = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_gallery",
+            target_id="cn.tang.gallery.main",
+            revision=state.revision,
+            interaction_epoch=state.interaction_epoch,
+            view_revision=state.view_revision,
+            request_id="navigation-enter-locate",
+        ),
+    )
+    located = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="locate_artifact",
+            target_id="cn.tang.artifact.ox",
+            revision=entered.revision,
+            interaction_epoch=entered.interaction_epoch,
+            view_revision=entered.view_revision,
+            request_id="navigation-locate-ox",
+        ),
+    )
+    assert located.status == "committed"
+    with database.transaction() as unit:
+        saved = unit.sessions.get(state.session_id)
+    assert saved is not None
+    assert saved.gallery_id == "cn.tang.gallery.main"
+    assert saved.station_id == "cn.tang.station.ox"
+    assert saved.current_location_id == "cn.tang.station.ox"
+    assert saved.focused_entity_id == "cn.tang.artifact.ox"
+    assert "cn.tang.artifact.ox" in saved.visible_entities
+
+
+def test_locate_artifact_rejects_comparison_only_artifacts_without_moving(tmp_path) -> None:
+    database, state, token, service = _exploration_service(tmp_path)
+    entered = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_gallery",
+            target_id="cn.tang.gallery.main",
+            revision=state.revision,
+            interaction_epoch=state.interaction_epoch,
+            view_revision=state.view_revision,
+            request_id="navigation-enter-comparison",
+        ),
+    )
+    located = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="locate_artifact",
+            target_id="cn.tang.artifact.bowl",
+            revision=entered.revision,
+            interaction_epoch=entered.interaction_epoch,
+            view_revision=entered.view_revision,
+            request_id="navigation-locate-bowl",
+        ),
+    )
+    assert located.status == "rejected"
+    assert "已开放的主展位" in (located.reason or "")
+    with database.transaction() as unit:
+        saved = unit.sessions.get(state.session_id)
+    assert saved is not None
+    assert saved.station_id == "cn.tang.station.stele"
+    assert saved.focused_entity_id == "cn.tang.artifact.stele"
+    assert saved.revision == entered.revision
