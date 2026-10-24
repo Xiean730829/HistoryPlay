@@ -89,6 +89,10 @@
   transform: translateX(-50%) scale(var(--station-scale));
   transform-origin: center bottom;
   filter: brightness(var(--station-brightness));
+  transition: none;
+}
+
+.corridor[data-motion-ready="true"] .corridor-station {
   transition: transform 450ms cubic-bezier(.2, .7, .2, 1), filter 450ms ease, left 450ms ease;
 }
 
@@ -108,6 +112,7 @@
   width: 72%;
   height: clamp(72px, 13vh, 132px);
   place-items: center;
+  overflow: hidden;
   border: 1px dashed rgb(231 197 141 / 20%);
   background: linear-gradient(145deg, rgb(255 255 255 / 4%), rgb(0 0 0 / 24%));
   color: var(--hall-muted);
@@ -115,7 +120,7 @@
   letter-spacing: .06em;
 }
 
-.station-object::after { content: "真实预览待发布"; }
+.corridor-station:not(.has-preview) .station-object::after { content: "真实预览待发布"; }
 .station-object-core {
   position: absolute;
   width: 20%;
@@ -123,6 +128,47 @@
   border: 1px solid rgb(231 197 141 / 25%);
   border-radius: 50%;
   opacity: .45;
+}
+
+.station-preview {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 18px rgb(0 0 0 / 45%));
+}
+
+.artifact-3d, .artifact-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.artifact-3d { background: transparent; }
+.artifact-3d-poster {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+.artifact-3d-viewer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  --poster-color: transparent;
+  --progress-bar-color: var(--hall-light);
+}
+.artifact-photo { object-fit: contain; }
+
+.has-preview .station-object {
+  border-color: transparent;
+  background: transparent;
 }
 
 .station-plinth {
@@ -147,6 +193,13 @@
 }
 .artifact-caption strong { font-family: var(--serif); font-size: 14px; font-weight: 500; }
 .artifact-caption span { color: var(--hall-muted); font-size: 12px; }
+.artifact-caption p {
+  margin: 0;
+  max-width: 18em;
+  color: rgb(232 220 198 / 82%);
+  font-size: 11px;
+  line-height: 1.45;
+}
 
 .floor-timeline {
   position: absolute;
@@ -176,6 +229,40 @@
 .floor-timeline > .is-active { color: #fff1d6; }
 .floor-timeline > .is-active::before { background: var(--hall-light); box-shadow: 0 0 12px rgb(231 197 141 / 70%); }
 .floor-timeline > .timeline-future { margin-left: auto; opacity: .68; }
+.corridor-navigation {
+  position: absolute;
+  right: 50%;
+  bottom: 9%;
+  z-index: 120;
+  display: flex;
+  width: min(440px, 88%);
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 8px;
+  border: 1px solid rgb(231 197 141 / 20%);
+  border-radius: 999px;
+  background: rgb(12 15 16 / 72%);
+  transform: translateX(50%);
+  backdrop-filter: blur(8px);
+}
+.corridor-navigation-button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 13px;
+  border: 1px solid rgb(231 197 141 / 36%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 4%);
+  color: var(--hall-ink);
+  font: inherit;
+  cursor: pointer;
+}
+.corridor-navigation-button:focus-visible { outline: 2px solid var(--hall-light); outline-offset: 2px; }
+.corridor-navigation-button:disabled { opacity: .45; cursor: not-allowed; }
+.corridor-navigation-position { color: var(--hall-muted); font-size: 11px; white-space: nowrap; }
 .corridor-state {
   position: absolute;
   top: 5%;
@@ -204,11 +291,22 @@
 
 @media (max-width: 640px) {
   .corridor { min-height: min(620px, 73svh); }
-  .corridor-station { bottom: 20%; width: min(62vw, 210px); }
-  .station-object { height: clamp(66px, 12vh, 100px); }
-  .floor-timeline { right: 5%; left: 5%; gap: 12px; font-size: 9px; }
+  .corridor-station {
+    bottom: calc(18% + var(--station-depth) * 14%);
+    width: min(48vw, 170px);
+  }
+  .station-object { height: clamp(50px, 9vh, 70px); }
+  .station-plinth { height: clamp(16px, 3vh, 24px); }
+  .artifact-caption { gap: 3px; margin-top: 6px; }
+  .artifact-caption strong { font-size: 11px; }
+  .artifact-caption span, .artifact-caption p { font-size: 9px; }
+  .artifact-caption p { max-width: 23ch; line-height: 1.35; }
+  .floor-timeline { right: 5%; bottom: 3%; left: 5%; gap: 9px; font-size: 9px; }
   .floor-timeline > span { white-space: normal; }
   .corridor-state { top: 15%; width: 88%; text-align: center; }
+  .corridor-navigation { bottom: 9%; gap: 5px; padding: 4px; }
+  .corridor-navigation-button { min-height: 32px; gap: 4px; padding: 0 9px; font-size: 11px; }
+  .corridor-navigation-position { font-size: 10px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

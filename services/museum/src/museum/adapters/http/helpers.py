@@ -150,7 +150,7 @@ def gallery_projection(gallery: Any) -> dict[str, Any]:
 def _artifact(value: Any) -> dict[str, Any] | None:
     if value is None:
         return None
-    return {
+    result: dict[str, Any] = {
         "id": value.id,
         "title": value.title,
         "museum": value.museum,
@@ -161,6 +161,10 @@ def _artifact(value: Any) -> dict[str, Any] | None:
         "fact_card_ids": list(value.fact_card_ids),
         "story_entry_ids": list(value.story_entry_ids),
     }
+    presentation = getattr(value, "presentation", None)
+    if presentation is not None:
+        result["presentation"] = presentation
+    return result
 
 
 def _world_time(state: SessionState) -> dict[str, Any] | None:

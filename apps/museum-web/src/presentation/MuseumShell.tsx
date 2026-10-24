@@ -4,10 +4,14 @@ import {
   restoreSession,
   searchArtifacts,
   openArtifact,
+  moveGalleryStation,
+  enterGallery,
   unpairSession,
   requestEventTicket,
   refreshSession,
+  loadGalleryArtifacts,
   type ActiveSession,
+  type ArtifactProjection,
   type SessionCredentials,
   type SearchHit,
 } from "../application/museumApi";
@@ -19,7 +23,9 @@ import { MuseumCorridor } from "../gallery/MuseumCorridor";
 
 const SESSION_KEY = "history-play.session.v1";
 const DEFAULT_PACK_ID = import.meta.env.VITE_MUSEUM_PACK_ID?.trim() || "cn.tang.core";
-const DEFAULT_VERSION = import.meta.env.VITE_MUSEUM_PACK_VERSION?.trim() || "1.0.0";
+const DEFAULT_VERSION = import.meta.env.VITE_MUSEUM_PACK_VERSION?.trim() || "0.2.1";
+const DEFAULT_GALLERY_ID =
+  import.meta.env.VITE_MUSEUM_GALLERY_ID?.trim() || "cn.tang.gallery.main";
 const SHOW_DIAGNOSTICS = new URLSearchParams(window.location.search).get("debug") === "1";
 type Health = { status: "ok"; service: string };
 
@@ -27,6 +33,7 @@ export function MuseumShell() {
   const [health, setHealth] = React.useState<Health | null>(null);
   const [healthError, setHealthError] = React.useState(false);
   const [session, setSession] = React.useState<ActiveSession | null>(null);
+  const [galleryArtifacts, setGalleryArtifacts] = React.useState<ArtifactProjection[]>([]);
   const [query, setQuery] = React.useState("");
   const [results, setResults] = React.useState<SearchHit[]>([]);
   const [busy, setBusy] = React.useState(false);
@@ -57,6 +64,16 @@ export function MuseumShell() {
       if (projectionStore.current === store) projectionStore.current = null;
     };
   }, [session?.session_id, session?.connection_id]);
+
+  React.useEffect(() => {
+    let current = true;
+    setGalleryArtifacts([]);
+    if (!session?.state.gallery_id) return () => { current = false; };
+    void loadGalleryArtifacts(session, session.state.gallery_id)
+      .then((artifacts) => { if (current) setGalleryArtifacts(artifacts); })
+      .catch((error: unknown) => { if (current) showError(error, setNotice, setNoticeTone); });
+    return () => { current = false; };
+  }, [session?.session_id, session?.connection_id, session?.state.gallery_id]);
 
   React.useEffect(() => {
     let current = true;
@@ -144,6 +161,28 @@ export function MuseumShell() {
     }
   }
 
+  async function moveStation(direction: "next" | "previous") {
+    if (!session) return;
+    setBusy(true);
+    try {
+      const result = await moveGalleryStation(session, direction);
+      const store = projectionStore.current;
+      if (store) await store.acceptQuery(result.session);
+      else setSession(result.session);
+      if (result.receipt.status === "committed") {
+        setNotice(direction === "next" ? "已前进到服务端确认的展位。" : "已后退到服务端确认的展位。");
+        setNoticeTone("success");
+      } else {
+        setNotice(result.receipt.reason ?? "展位未改变，当前焦点保持不变。");
+        setNoticeTone("error");
+      }
+    } catch (error) {
+      showError(error, setNotice, setNoticeTone);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function leaveMuseum() {
     let unpairFailed = false;
     if (session) {
@@ -180,10 +219,13 @@ export function MuseumShell() {
       <StatusNotice message={notice} tone={noticeTone} />
 
       <MuseumCorridor
-        artifacts={session?.context.visible_artifacts ?? []}
-        displayOrder={session?.state.display_order ?? []}
+        artifacts={galleryArtifacts.length ? galleryArtifacts : session?.context.visible_artifacts ?? []}
+        displayOrder={galleryArtifacts.length ? galleryArtifacts.map((artifact) => artifact.id) : session?.state.display_order ?? []}
         focusedId={session?.context.focused_artifact?.id ?? session?.state.focused_entity_id ?? null}
+        session={session}
         loading={!session && !healthError}
+        navigationDisabled={busy}
+        onMove={(direction) => void moveStation(direction)}
       />
 
       {!session && health && (
@@ -267,11 +309,19 @@ async function restoreSavedSession(): Promise<ActiveSession | null> {
 
 async function openDefaultSession(): Promise<ActiveSession> {
   const restored = await restoreSavedSession();
-  if (restored) return restored;
+  if (restored) return ensureTangGallery(restored);
 
   const credentials = await createSession(DEFAULT_PACK_ID, DEFAULT_VERSION);
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(credentials));
-  return restoreSession(credentials);
+  return ensureTangGallery(await restoreSession(credentials));
+}
+
+async function ensureTangGallery(session: ActiveSession): Promise<ActiveSession> {
+  if (session.state.gallery_id === DEFAULT_GALLERY_ID) return session;
+  const result = await enterGallery(session, DEFAULT_GALLERY_ID);
+  if (result.receipt.status === "committed") return result.session;
+  if (result.session.state.gallery_id === DEFAULT_GALLERY_ID) return result.session;
+  throw new Error(result.receipt.reason ?? "未能进入唐朝展厅");
 }
 
 function modeLabel(mode: string): string {

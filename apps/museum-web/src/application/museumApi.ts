@@ -1,4 +1,10 @@
-import type { Artifact, CommandAction, CommandReceipt, SessionProjection } from "@history-play/contracts";
+import type {
+  Artifact,
+  ArtifactPresentation,
+  CommandAction,
+  CommandReceipt,
+  SessionProjection,
+} from "@history-play/contracts";
 import { CommandDispatcher } from "../state/commandDispatcher";
 
 const commandDispatcher = new CommandDispatcher();
@@ -31,7 +37,9 @@ export type ArtifactProjection = Pick<
   | "asset_ids"
   | "fact_card_ids"
   | "story_entry_ids"
->;
+> & {
+  presentation?: ArtifactPresentation | null;
+};
 
 export interface SearchHit {
   id: string;
@@ -54,6 +62,17 @@ export interface ActiveSession extends SessionCredentials {
   connection_id: string;
   control_ticket: string;
   context: SessionContext;
+}
+
+export async function loadGalleryArtifacts(
+  session: ActiveSession,
+  galleryId: string,
+): Promise<ArtifactProjection[]> {
+  const response = await request<{ stations: Array<{ artifact: ArtifactProjection }> }>(
+    `/api/sessions/${session.session_id}/galleries/${encodeURIComponent(galleryId)}`,
+    { headers: boundHeaders(session) },
+  );
+  return response.stations.map((station) => station.artifact);
 }
 
 interface SessionResponse {
@@ -159,6 +178,88 @@ export async function openArtifact(
     (status, body) => status === 409 && isCommandReceipt(body),
   ));
   return { session: await refreshSession(session), receipt: response };
+}
+
+export async function enterGallery(
+  session: ActiveSession,
+  galleryId: string,
+): Promise<{ session: ActiveSession; receipt: CommandReceipt }> {
+  const action = "enter_gallery" satisfies CommandAction;
+  const dispatchKey = [
+    session.session_id,
+    action,
+    galleryId,
+    session.state.revision,
+    session.state.view_revision,
+    session.state.interaction_epoch,
+  ].join(":");
+  const response = await commandDispatcher.dispatch(dispatchKey, (requestId) => request<CommandReceipt>(
+    `/api/sessions/${session.session_id}/commands`,
+    {
+      method: "POST",
+      headers: boundHeaders(session),
+      body: JSON.stringify({
+        schema_version: "1",
+        request_id: requestId,
+        expected_revision: session.state.revision,
+        expected_view_revision: session.state.view_revision,
+        interaction_epoch: session.state.interaction_epoch,
+        control_ticket: session.control_ticket,
+        action,
+        target_id: galleryId,
+      }),
+    },
+    (status, body) => status === 409 && isCommandReceipt(body),
+  ));
+  return { session: await refreshSession(session), receipt: response };
+}
+
+export async function moveGalleryStation(
+  session: ActiveSession,
+  direction: "next" | "previous",
+): Promise<{ session: ActiveSession; receipt: CommandReceipt }> {
+  const action = (direction === "next" ? "move_next" : "move_previous") satisfies CommandAction;
+  const dispatchKey = [
+    session.session_id,
+    action,
+    session.state.revision,
+    session.state.view_revision,
+    session.state.interaction_epoch,
+  ].join(":");
+  const response = await commandDispatcher.dispatch(dispatchKey, (requestId) => request<CommandReceipt>(
+    `/api/sessions/${session.session_id}/commands`,
+    {
+      method: "POST",
+      headers: boundHeaders(session),
+      body: JSON.stringify({
+        schema_version: "1",
+        request_id: requestId,
+        expected_revision: session.state.revision,
+        expected_view_revision: session.state.view_revision,
+        interaction_epoch: session.state.interaction_epoch,
+        control_ticket: session.control_ticket,
+        action,
+      }),
+    },
+    (status, body) => status === 409 && isCommandReceipt(body),
+  ));
+  return { session: await refreshSession(session), receipt: response };
+}
+
+/** Authenticated asset bytes; caller owns cancellation and object-URL lifetime. */
+export async function loadSessionAssetBlob(
+  session: SessionCredentials,
+  assetId: string,
+  signal: AbortSignal,
+): Promise<Blob> {
+  const response = await fetch(
+    `/api/sessions/${encodeURIComponent(session.session_id)}/assets/${encodeURIComponent(assetId)}`,
+    { headers: authHeaders(session), signal },
+  );
+  if (!response.ok) {
+    throw new Error(response.status === 404 ? "展示资产不可用" : `展示资产返回 ${response.status}`);
+  }
+  return response.blob();
 }
 
 export async function refreshSession(session: ActiveSession): Promise<ActiveSession> {
