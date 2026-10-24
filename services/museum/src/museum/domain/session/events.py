@@ -5,6 +5,7 @@ from enum import StrEnum
 
 
 class SessionEventKind(StrEnum):
+    ARTIFACT_OPENED = "artifact_opened"
     FOCUS_CHANGED = "focus_changed"
     STORY_ENTERED = "story_entered"
     STORY_ADVANCED = "story_advanced"
