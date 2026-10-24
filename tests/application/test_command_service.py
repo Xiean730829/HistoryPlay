@@ -548,6 +548,69 @@ def test_locate_artifact_moves_directly_to_its_pinned_primary_station(tmp_path) 
     assert "cn.tang.artifact.ox" in saved.visible_entities
 
 
+def test_locate_from_story_returns_to_exhibit_and_moves_atomically(tmp_path) -> None:
+    database, state, token, service = _exploration_service(tmp_path)
+    entered = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_gallery",
+            target_id="cn.tang.gallery.main",
+            revision=state.revision,
+            interaction_epoch=state.interaction_epoch,
+            view_revision=state.view_revision,
+            request_id="story-locate-enter-gallery",
+        ),
+    )
+    started = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_story",
+            target_id=STORY_ID,
+            revision=entered.revision,
+            interaction_epoch=entered.interaction_epoch,
+            view_revision=entered.view_revision,
+            request_id="story-locate-enter-story",
+        ),
+    )
+    with database.transaction() as unit:
+        started_state = unit.sessions.get(state.session_id)
+    assert started_state is not None and started_state.exhibit_return_point is not None
+
+    located = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="locate_artifact",
+            target_id="cn.tang.artifact.ox",
+            revision=started.revision,
+            interaction_epoch=started.interaction_epoch,
+            view_revision=started.view_revision,
+            request_id="story-locate-ox",
+        ),
+    )
+
+    assert located.status == "committed"
+    assert located.revision == started.revision + 1
+    with database.transaction() as unit:
+        saved = unit.sessions.get(state.session_id)
+        events = unit.events.replay(state.session_id, after_seq=started_state.event_seq)
+    assert saved is not None
+    assert saved.mode == SessionMode.EXPLORE
+    assert saved.story_id is None and saved.node_id is None
+    assert saved.exhibit_return_point is None
+    assert saved.station_id == "cn.tang.station.ox"
+    assert saved.focused_entity_id == "cn.tang.artifact.ox"
+    assert saved.revision == started.revision + 1
+    assert saved.event_seq == started_state.event_seq + 1
+    assert len(events) == 1
+    assert events[0].entity_id == "cn.tang.artifact.ox"
+
+
 def test_locate_artifact_rejects_comparison_only_artifacts_without_moving(tmp_path) -> None:
     database, state, token, service = _exploration_service(tmp_path)
     entered = service.execute(
@@ -584,6 +647,41 @@ def test_locate_artifact_rejects_comparison_only_artifacts_without_moving(tmp_pa
     assert saved.station_id == "cn.tang.station.stele"
     assert saved.focused_entity_id == "cn.tang.artifact.stele"
     assert saved.revision == entered.revision
+
+    story = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_story",
+            target_id=STORY_ID,
+            revision=entered.revision,
+            interaction_epoch=entered.interaction_epoch,
+            view_revision=entered.view_revision,
+            request_id="navigation-comparison-enter-story",
+        ),
+    )
+    story_locate = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="locate_artifact",
+            target_id="cn.tang.artifact.bowl",
+            revision=story.revision,
+            interaction_epoch=story.interaction_epoch,
+            view_revision=story.view_revision,
+            request_id="navigation-comparison-locate-from-story",
+        ),
+    )
+    assert story_locate.status == "rejected"
+    with database.transaction() as unit:
+        story_saved = unit.sessions.get(state.session_id)
+    assert story_saved is not None
+    assert story_saved.mode == SessionMode.STORY
+    assert story_saved.story_id == STORY_ID
+    assert story_saved.exhibit_return_point is not None
+    assert story_saved.revision == story.revision
 
 
 def test_story_entry_captures_root_anchor_and_return_restores_station_and_camera(tmp_path) -> None:
