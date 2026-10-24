@@ -214,6 +214,38 @@ export async function enterGallery(
   return { session: await refreshSession(session), receipt: response };
 }
 
+export async function moveGalleryStation(
+  session: ActiveSession,
+  direction: "next" | "previous",
+): Promise<{ session: ActiveSession; receipt: CommandReceipt }> {
+  const action = (direction === "next" ? "move_next" : "move_previous") satisfies CommandAction;
+  const dispatchKey = [
+    session.session_id,
+    action,
+    session.state.revision,
+    session.state.view_revision,
+    session.state.interaction_epoch,
+  ].join(":");
+  const response = await commandDispatcher.dispatch(dispatchKey, (requestId) => request<CommandReceipt>(
+    `/api/sessions/${session.session_id}/commands`,
+    {
+      method: "POST",
+      headers: boundHeaders(session),
+      body: JSON.stringify({
+        schema_version: "1",
+        request_id: requestId,
+        expected_revision: session.state.revision,
+        expected_view_revision: session.state.view_revision,
+        interaction_epoch: session.state.interaction_epoch,
+        control_ticket: session.control_ticket,
+        action,
+      }),
+    },
+    (status, body) => status === 409 && isCommandReceipt(body),
+  ));
+  return { session: await refreshSession(session), receipt: response };
+}
+
 /** Authenticated asset bytes as a short-lived object URL; caller must revoke. */
 export async function loadSessionAssetObjectUrl(
   session: SessionCredentials,

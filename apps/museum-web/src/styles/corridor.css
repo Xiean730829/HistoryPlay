@@ -89,6 +89,10 @@
   transform: translateX(-50%) scale(var(--station-scale));
   transform-origin: center bottom;
   filter: brightness(var(--station-brightness));
+  transition: none;
+}
+
+.corridor[data-motion-ready="true"] .corridor-station {
   transition: transform 450ms cubic-bezier(.2, .7, .2, 1), filter 450ms ease, left 450ms ease;
 }
 
@@ -198,6 +202,40 @@
 .floor-timeline > .is-active { color: #fff1d6; }
 .floor-timeline > .is-active::before { background: var(--hall-light); box-shadow: 0 0 12px rgb(231 197 141 / 70%); }
 .floor-timeline > .timeline-future { margin-left: auto; opacity: .68; }
+.corridor-navigation {
+  position: absolute;
+  right: 50%;
+  bottom: 9%;
+  z-index: 120;
+  display: flex;
+  width: min(440px, 88%);
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 8px;
+  border: 1px solid rgb(231 197 141 / 20%);
+  border-radius: 999px;
+  background: rgb(12 15 16 / 72%);
+  transform: translateX(50%);
+  backdrop-filter: blur(8px);
+}
+.corridor-navigation-button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 13px;
+  border: 1px solid rgb(231 197 141 / 36%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 4%);
+  color: var(--hall-ink);
+  font: inherit;
+  cursor: pointer;
+}
+.corridor-navigation-button:focus-visible { outline: 2px solid var(--hall-light); outline-offset: 2px; }
+.corridor-navigation-button:disabled { opacity: .45; cursor: not-allowed; }
+.corridor-navigation-position { color: var(--hall-muted); font-size: 11px; white-space: nowrap; }
 .corridor-state {
   position: absolute;
   top: 5%;
@@ -236,9 +274,12 @@
   .artifact-caption strong { font-size: 11px; }
   .artifact-caption span, .artifact-caption p { font-size: 9px; }
   .artifact-caption p { max-width: 23ch; line-height: 1.35; }
-  .floor-timeline { right: 5%; left: 5%; gap: 9px; font-size: 9px; }
+  .floor-timeline { right: 5%; bottom: 3%; left: 5%; gap: 9px; font-size: 9px; }
   .floor-timeline > span { white-space: normal; }
   .corridor-state { top: 15%; width: 88%; text-align: center; }
+  .corridor-navigation { bottom: 9%; gap: 5px; padding: 4px; }
+  .corridor-navigation-button { min-height: 32px; gap: 4px; padding: 0 9px; font-size: 11px; }
+  .corridor-navigation-position { font-size: 10px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
