@@ -1,0 +1,15 @@
+{
+  "schema_version": "1",
+  "request_id": "req_view_bad",
+  "expected_revision": 3,
+  "expected_view_revision": 1,
+  "interaction_epoch": 2,
+  "action": "set_view",
+  "params": {
+    "camera": {
+      "yaw": 400,
+      "pitch": -8,
+      "zoom": 1.4
+    }
+  }
+}
