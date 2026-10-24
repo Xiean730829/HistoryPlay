@@ -30,7 +30,7 @@ export function MuseumCorridor({
   const ordered = displayOrder.map((id) => byId.get(id)).filter((item): item is ArtifactProjection => item !== undefined);
   const stations = ordered.length ? ordered : [...artifacts];
   const projection = projectCorridor(stations, focusedId && stations.some((item) => item.id === focusedId) ? focusedId : null, width);
-  const years = stations.map((item) => item.time_range.display_label ?? `${item.time_range.start_year}—${item.time_range.end_year}年`);
+  const years = stations.map((item) => compactTimeLabel(item));
   const activeIndex = focusedId === null ? null : stations.findIndex((item) => item.id === focusedId);
 
   return (
@@ -64,4 +64,11 @@ export function MuseumCorridor({
       </div>
     </section>
   );
+}
+
+function compactTimeLabel(artifact: ArtifactProjection): string {
+  const { start_year: start, end_year: end, precision, display_label: label } = artifact.time_range;
+  if (precision === "year" && start === end) return `${start}年`;
+  if (precision === "century") return label?.match(/^(\d+世纪)/)?.[1] ?? `${Math.floor((start - 1) / 100) + 1}世纪`;
+  return `${start}—${end}年`;
 }

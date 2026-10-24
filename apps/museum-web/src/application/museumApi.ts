@@ -64,6 +64,17 @@ export interface ActiveSession extends SessionCredentials {
   context: SessionContext;
 }
 
+export async function loadGalleryArtifacts(
+  session: ActiveSession,
+  galleryId: string,
+): Promise<ArtifactProjection[]> {
+  const response = await request<{ stations: Array<{ artifact: ArtifactProjection }> }>(
+    `/api/sessions/${session.session_id}/galleries/${encodeURIComponent(galleryId)}`,
+    { headers: boundHeaders(session) },
+  );
+  return response.stations.map((station) => station.artifact);
+}
+
 interface SessionResponse {
   session_token: string;
   state: SessionProjection;
