@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "request_id": "request-nav-stale",
+  "expected_revision": 7,
+  "expected_view_revision": 3,
+  "interaction_epoch": 1,
+  "action": "move_next"
+}
