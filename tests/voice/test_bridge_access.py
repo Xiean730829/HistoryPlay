@@ -20,7 +20,7 @@ def test_loopback_host_and_origin_protect_bridge_before_any_upstream_connection(
             "wss://api.xiaozhi.me/v1/",
             "test-token",
         )
-        app = create_app(config)
+        app = create_app(config, port=8781)
         runner = web.AppRunner(app)
         await runner.setup()
         site = web.TCPSite(runner, "127.0.0.1", 0)

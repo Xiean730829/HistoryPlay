@@ -15,9 +15,14 @@ from aiohttp import (
     web,
 )
 from av.error import FFmpegError
+from museum_mcp.action_tools import TrustedInput
+from museum_mcp.application_client import GatewayError
+from museum_mcp.intent_adapter import interpret
 
 from museum_voice.codec import AudioCodec, pack_audio, unpack_audio
 from museum_voice.config import DeviceConfig
+from museum_voice.control_orchestrator import InputOrchestrator
+from museum_voice.game_binding import GAME_BINDINGS, bind_game
 from museum_voice.xiaozhi_client import connection_headers, hello_message
 
 DEVICE = web.AppKey("fixed_device", DeviceConfig)
@@ -34,10 +39,17 @@ async def reject_redirect(*args) -> None:
 async def local_only(request: web.Request, handler):
     if request.host != request.app[HOST]:
         raise web.HTTPForbidden(text="请使用本机语音桥地址")
-    if request.path == "/voice/ws" and request.headers.get("Origin") != request.app[ORIGIN]:
+    if request.path.startswith("/voice/") and request.headers.get("Origin") != request.app[ORIGIN]:
         raise web.HTTPForbidden(text="语音桥仅接受配置的本机游戏页面")
-    response = await handler(request)
+    if request.method == "OPTIONS":
+        response = web.Response()
+    else:
+        response = await handler(request)
     response.headers["Cache-Control"] = "no-store"
+    if request.path.startswith("/voice/"):
+        response.headers["Access-Control-Allow-Origin"] = request.app[ORIGIN]
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
     return response
 
 
@@ -48,8 +60,23 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
     request.app[ACTIVE].add(browser)
     tasks: list[asyncio.Task] = []
     upstream = None
+    orchestrator = None
     try:
         await browser.prepare(request)
+        first = await asyncio.wait_for(browser.receive_json(), 5)
+        if not isinstance(first, dict) or first.get("op") != "bind":
+            raise ValueError("音频连接必须先绑定当前展台")
+        bound = request.app[GAME_BINDINGS].get(first.get("binding_id"))
+        if bound is None:
+            raise ValueError("当前展台语音绑定已失效")
+        granted = await bound.client.voice("begin", bridge_token=bound.bridge_token)
+        orchestrator = InputOrchestrator(
+            bound.client, TrustedInput(bound.bridge_token, granted["input_token"])
+        )
+        input_started = False
+        input_stopped = False
+        pcm_frames = 0
+        mute_reply = False
         device = request.app[DEVICE]
         codec = AudioCodec()
         trace = TraceConfig()
@@ -77,8 +104,12 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
             await browser.send_json({"type": "ready", "sample_rate": 24000})
 
             async def send_microphone() -> None:
+                nonlocal input_started, input_stopped, pcm_frames
                 async for message in browser:
                     if message.type == WSMsgType.BINARY:
+                        if not input_started or input_stopped:
+                            raise ValueError("音频不属于当前输入范围")
+                        pcm_frames += 1
                         for packet in codec.encode(message.data):
                             await upstream.send_bytes(pack_audio(packet, device.version))
                     elif message.type == WSMsgType.TEXT:
@@ -87,6 +118,9 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
                             raise ValueError("语音操作必须是JSON对象")
                         op = command.get("op")
                         if op == "start":
+                            if input_started:
+                                raise ValueError("每个上游连接只接受一段输入")
+                            input_started = True
                             mode = command.get("mode", "manual")
                             if mode not in {"auto", "manual", "realtime"}:
                                 raise ValueError("不支持的聆听模式")
@@ -99,6 +133,7 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
                                 }
                             )
                         elif op == "stop":
+                            input_stopped = True
                             await upstream.send_json(
                                 {
                                     "type": "listen",
@@ -116,14 +151,41 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
                             raise ValueError("不支持的语音操作")
 
             async def receive_reply() -> None:
+                nonlocal mute_reply
                 async for message in upstream:
                     if message.type == WSMsgType.BINARY:
+                        if mute_reply:
+                            continue
                         for pcm in codec.decode(unpack_audio(message.data, device.version)):
                             await browser.send_bytes(pcm)
                     elif message.type == WSMsgType.TEXT:
                         event = json.loads(message.data)
                         if not isinstance(event, dict):
                             raise ValueError("云端语音事件必须是JSON对象")
+                        if (
+                            event.get("type") == "stt"
+                            and input_started
+                            and input_stopped
+                            and pcm_frames >= 3
+                            and not orchestrator.handled
+                        ):
+                            text = event.get("text", "")
+                            if interpret(text) is not None:
+                                mute_reply = True
+                                await upstream.send_json(
+                                    {"type": "abort", "session_id": session_id}
+                                )
+                            try:
+                                control = await orchestrator.handle(text)
+                                if control is not None:
+                                    await browser.send_json({"type": "control", "result": control})
+                            except GatewayError as error:
+                                await browser.send_json(
+                                    {
+                                        "type": "control",
+                                        "result": {"kind": "error", "message": str(error)},
+                                    }
+                                )
                         if event.get("type") == "tts" and event.get("state") == "start":
                             codec.reset_decoder()
                         if event.get("type") in {"stt", "tts", "llm", "alert", "goodbye"}:
@@ -136,7 +198,7 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
             done, _ = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
             for task in done:
                 task.result()
-    except (ClientError, OSError, ValueError, TimeoutError, FFmpegError):
+    except (ClientError, OSError, ValueError, TimeoutError, FFmpegError, GatewayError):
         # Network exception repr, URL and headers can contain device credentials.
         if browser.prepared and not browser.closed:
             await browser.send_json(
@@ -146,6 +208,11 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
         for task in tasks:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
+        if orchestrator is not None:
+            try:
+                await orchestrator.close()
+            except GatewayError:
+                pass
         if upstream is not None:
             await upstream.close()
         request.app[ACTIVE].discard(browser)
@@ -159,7 +226,7 @@ async def health(request: web.Request) -> web.Response:
 
 
 def create_app(
-    device: DeviceConfig, *, port: int = 8781, origin: str = "http://127.0.0.1:5173"
+    device: DeviceConfig, *, port: int = 8782, origin: str = "http://127.0.0.1:5173"
 ) -> web.Application:
     if origin not in {"http://127.0.0.1:5173", "http://127.0.0.1:5174"}:
         raise ValueError("语音桥只允许本机5173或5174游戏页面")
@@ -168,8 +235,11 @@ def create_app(
     app[ORIGIN] = origin
     app[HOST] = f"127.0.0.1:{port}"
     app[ACTIVE] = set()
+    app[GAME_BINDINGS] = {}
     app.router.add_get("/health", health)
     app.router.add_get("/voice/ws", bridge)
+    app.router.add_post("/voice/bind", bind_game)
+    app.router.add_options("/voice/bind", bind_game)
     return app
 
 
@@ -181,7 +251,7 @@ def main() -> None:
         device = DeviceConfig.load(Path(path))
     except ValueError as error:
         raise SystemExit(str(error)) from None
-    port = int(os.environ.get("MUSEUM_VOICE_PORT", "8781"))
+    port = int(os.environ.get("MUSEUM_VOICE_PORT", "8782"))
     origin = os.environ.get("MUSEUM_WEB_ORIGIN", "http://127.0.0.1:5173")
     web.run_app(
         create_app(device, port=port, origin=origin),

@@ -3,7 +3,10 @@ name = "museum-voice-bridge"
 version = "0.1.0"
 description = "Loopback-only fixed-device Xiaozhi audio bridge"
 requires-python = ">=3.12"
-dependencies = ["aiohttp==3.14.5", "av==17.1.0"]
+dependencies = ["aiohttp==3.14.5", "av==17.1.0", "museum-mcp-gateway==0.1.0"]
+
+[tool.uv.sources]
+museum-mcp-gateway = { workspace = true }
 
 [project.scripts]
 museum-voice = "museum_voice.main:main"
