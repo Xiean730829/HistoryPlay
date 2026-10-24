@@ -10,6 +10,7 @@ from museum.application.event_hub import EventHub
 from museum.application.event_tickets import EventTickets
 from museum.application.query_service import QueryService
 from museum.application.render_service import RenderService
+from museum.ports.asset_store import AssetStore
 from museum.ports.content_catalog import ContentCatalog
 
 
@@ -24,4 +25,5 @@ class HttpServices:
     event_hub: EventHub
     event_tickets: EventTickets
     renders: RenderService
+    assets: AssetStore
     allowed_origins: frozenset[str]
