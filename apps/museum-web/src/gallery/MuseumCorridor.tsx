@@ -12,6 +12,7 @@ interface MuseumCorridorProps {
   session?: ActiveSession | null;
   loading?: boolean;
   navigationDisabled?: boolean;
+  onRender?: (status: "rendered" | "degraded", reason?: string) => void;
   onMove?: (direction: "next" | "previous") => void;
 }
 
@@ -22,6 +23,7 @@ export function MuseumCorridor({
   session = null,
   loading = false,
   navigationDisabled = false,
+  onRender,
   onMove,
 }: MuseumCorridorProps) {
   const motion = React.useRef(new CorridorMotion());
@@ -61,7 +63,13 @@ export function MuseumCorridor({
       {projection.filter((item) => item.isVisible).map((item) => {
         const artifact = byId.get(item.id);
         return artifact
-          ? <ArtifactStation artifact={artifact} projection={item} session={session} key={item.id} />
+          ? <ArtifactStation
+              artifact={artifact}
+              projection={item}
+              session={session}
+              onRender={onRender}
+              key={item.id}
+            />
           : null;
       })}
 

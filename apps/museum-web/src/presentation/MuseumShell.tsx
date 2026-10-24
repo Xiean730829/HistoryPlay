@@ -1,4 +1,5 @@
 import React from "react";
+import type { CommandReceipt } from "@history-play/contracts";
 import {
   createSession,
   restoreSession,
@@ -13,6 +14,7 @@ import {
   enterStory,
   continueStory,
   returnToExhibit,
+  reportRenderReceipt,
   type ActiveSession,
   type ArtifactProjection,
   type SessionCredentials,
@@ -24,6 +26,7 @@ import { ExhibitList } from "./ExhibitList";
 import { StatusNotice } from "./StatusNotice";
 import { MuseumCorridor } from "../gallery/MuseumCorridor";
 import { ArtifactStoryStage } from "../story/ArtifactStoryStage";
+import { RenderReceiptReporter } from "../capabilities/RenderReceiptReporter";
 
 const SESSION_KEY = "history-play.session.v1";
 const DEFAULT_PACK_ID = import.meta.env.VITE_MUSEUM_PACK_ID?.trim() || "cn.tang.core";
@@ -37,6 +40,7 @@ export function MuseumShell() {
   const [health, setHealth] = React.useState<Health | null>(null);
   const [healthError, setHealthError] = React.useState(false);
   const [session, setSession] = React.useState<ActiveSession | null>(null);
+  const [renderCommand, setRenderCommand] = React.useState<CommandReceipt | null>(null);
   const [galleryArtifacts, setGalleryArtifacts] = React.useState<ArtifactProjection[]>([]);
   const [query, setQuery] = React.useState("");
   const [results, setResults] = React.useState<SearchHit[]>([]);
@@ -45,6 +49,7 @@ export function MuseumShell() {
   const [noticeTone, setNoticeTone] = React.useState<"info" | "error" | "success">("info");
   const restoreTask = React.useRef<Promise<ActiveSession> | null>(null);
   const projectionStore = React.useRef<SessionProjectionStore | null>(null);
+  const renderReporter = React.useRef(new RenderReceiptReporter(reportRenderReceipt));
 
   React.useEffect(() => {
     if (!session) {
@@ -167,12 +172,14 @@ export function MuseumShell() {
 
   async function moveStation(direction: "next" | "previous") {
     if (!session) return;
+    setRenderCommand(null);
     setBusy(true);
     try {
       const result = await moveGalleryStation(session, direction);
       const store = projectionStore.current;
       if (store) await store.acceptQuery(result.session);
       else setSession(result.session);
+      setRenderCommand(result.receipt.status === "committed" ? result.receipt : null);
       if (result.receipt.status === "committed") {
         setNotice(direction === "next" ? "已前进到服务端确认的展位。" : "已后退到服务端确认的展位。");
         setNoticeTone("success");
@@ -264,6 +271,10 @@ export function MuseumShell() {
           displayOrder={galleryArtifacts.length ? galleryArtifacts.map((artifact) => artifact.id) : session?.state.display_order ?? []}
           focusedId={session?.context.focused_artifact?.id ?? session?.state.focused_entity_id ?? null}
           session={session}
+          onRender={(status, reason) => {
+            if (session) void renderReporter.current.report(session, renderCommand, status, reason)
+              .catch(() => undefined);
+          }}
           loading={!session && !healthError}
           navigationDisabled={busy}
           onMove={(direction) => void moveStation(direction)}

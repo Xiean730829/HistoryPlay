@@ -6,17 +6,47 @@ interface Artifact3DProps {
   poster: string | null;
   alt: string;
   orbit: string;
+  onRendered?: () => void;
+  onDegraded?: () => void;
 }
 
-export function Artifact3D({ src, poster, alt, orbit }: Artifact3DProps) {
+export function Artifact3D({ src, poster, alt, orbit, onRendered, onDegraded }: Artifact3DProps) {
   const viewer = React.useRef<HTMLElement>(null);
+  const fallbackReported = React.useRef(false);
+  const callbacks = React.useRef({ onRendered, onDegraded });
+  callbacks.current = { onRendered, onDegraded };
   const [loaded, setLoaded] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
+  const [posterLoaded, setPosterLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    fallbackReported.current = false;
+    setLoaded(false);
+    setFailed(false);
+    setPosterLoaded(false);
+  }, [src]);
+
+  React.useEffect(() => {
+    if (!failed || !posterLoaded || fallbackReported.current) return;
+    fallbackReported.current = true;
+    callbacks.current.onDegraded?.();
+  }, [failed, posterLoaded]);
 
   React.useLayoutEffect(() => {
     const element = viewer.current;
     if (!element) return;
-    const onLoad = () => { setLoaded(true); setFailed(false); };
+    const onLoad = () => {
+      setLoaded(true);
+      setFailed(false);
+      requestAnimationFrame(() => {
+        const bounds = element.getBoundingClientRect();
+        const onscreen = bounds.width > 0 && bounds.height > 0 &&
+          bounds.right > 0 && bounds.bottom > 0 &&
+          bounds.left < window.innerWidth && bounds.top < window.innerHeight &&
+          getComputedStyle(element).visibility !== "hidden";
+        if (element.isConnected && onscreen) callbacks.current.onRendered?.();
+      });
+    };
     const onError = () => { setLoaded(false); setFailed(true); };
     element.addEventListener("load", onLoad);
     element.addEventListener("error", onError);
@@ -28,7 +58,12 @@ export function Artifact3D({ src, poster, alt, orbit }: Artifact3DProps) {
 
   return (
     <div className="artifact-3d" data-testid="artifact-3d" data-model-state={loaded ? "ready" : failed ? "error" : "loading"}>
-      {poster && (!loaded || failed) && <img alt="" className="artifact-3d-poster" src={poster} />}
+      {poster && (!loaded || failed) && <img
+        alt=""
+        className="artifact-3d-poster"
+        onLoad={() => setPosterLoaded(true)}
+        src={poster}
+      />}
       <model-viewer
         alt={alt}
         camera-controls

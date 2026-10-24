@@ -332,6 +332,31 @@ export async function moveGalleryStation(
   return { session: await refreshSession(session), receipt: response };
 }
 
+export interface RenderReceiptPayload {
+  request_id: string;
+  payload_digest: string;
+  revision: number;
+  view_revision: number;
+  interaction_epoch: number;
+  status: "rendered" | "degraded";
+  reason?: string;
+}
+
+/** Report only what the active browser renderer has actually put on screen. */
+export async function reportRenderReceipt(
+  session: ActiveSession,
+  payload: RenderReceiptPayload,
+): Promise<void> {
+  await request(
+    `/api/sessions/${encodeURIComponent(session.session_id)}/render-receipts`,
+    {
+      method: "POST",
+      headers: boundHeaders(session),
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
 /** Authenticated asset bytes; caller owns cancellation and object-URL lifetime. */
 export async function loadSessionAssetBlob(
   session: SessionCredentials,
