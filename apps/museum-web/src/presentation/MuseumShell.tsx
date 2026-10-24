@@ -36,6 +36,7 @@ const DEFAULT_GALLERY_ID =
   import.meta.env.VITE_MUSEUM_GALLERY_ID?.trim() || "cn.tang.gallery.main";
 const SHOW_DIAGNOSTICS = new URLSearchParams(window.location.search).get("debug") === "1";
 type Health = { status: "ok"; service: string };
+type OpenedMuseum = { active: ActiveSession; receipt?: CommandReceipt };
 
 export function MuseumShell() {
   const [health, setHealth] = React.useState<Health | null>(null);
@@ -48,7 +49,7 @@ export function MuseumShell() {
   const [busy, setBusy] = React.useState(false);
   const [notice, setNotice] = React.useState("正在连接本地游戏服务…");
   const [noticeTone, setNoticeTone] = React.useState<"info" | "error" | "success">("info");
-  const restoreTask = React.useRef<Promise<ActiveSession> | null>(null);
+  const restoreTask = React.useRef<Promise<OpenedMuseum> | null>(null);
   const projectionStore = React.useRef<SessionProjectionStore | null>(null);
   const renderReporter = React.useRef(new RenderReceiptReporter(reportRenderReceipt));
 
@@ -97,9 +98,10 @@ export function MuseumShell() {
         setHealth(value);
         restoreTask.current ??= openDefaultSession();
         restoreTask.current
-          .then((active) => {
+          .then(({ active, receipt }) => {
             if (!current) return;
             setSession(active);
+            setRenderCommand(receipt ?? null);
             setNotice("已进入唐朝长廊。文物顺序与年代由当前发布版本和服务端状态决定。");
             setNoticeTone("success");
           })
@@ -119,9 +121,11 @@ export function MuseumShell() {
     setBusy(true);
     try {
       restoreTask.current = null;
-      const active = await openDefaultSession();
-      restoreTask.current = Promise.resolve(active);
+      const opened = await openDefaultSession();
+      const { active, receipt } = opened;
+      restoreTask.current = Promise.resolve(opened);
       setSession(active);
+      setRenderCommand(receipt ?? null);
       setResults([]);
       setQuery("");
       setNotice("已进入唐朝长廊。文物顺序与年代由当前发布版本和服务端状态决定。");
@@ -391,7 +395,7 @@ async function restoreSavedSession(): Promise<ActiveSession | null> {
   return restoreSession(credentials);
 }
 
-async function openDefaultSession(): Promise<ActiveSession> {
+async function openDefaultSession(): Promise<OpenedMuseum> {
   const restored = await restoreSavedSession();
   if (restored) return ensureTangGallery(restored);
 
@@ -400,11 +404,11 @@ async function openDefaultSession(): Promise<ActiveSession> {
   return ensureTangGallery(await restoreSession(credentials));
 }
 
-async function ensureTangGallery(session: ActiveSession): Promise<ActiveSession> {
-  if (session.state.gallery_id === DEFAULT_GALLERY_ID) return session;
+async function ensureTangGallery(session: ActiveSession): Promise<OpenedMuseum> {
+  if (session.state.gallery_id === DEFAULT_GALLERY_ID) return { active: session };
   const result = await enterGallery(session, DEFAULT_GALLERY_ID);
-  if (result.receipt.status === "committed") return result.session;
-  if (result.session.state.gallery_id === DEFAULT_GALLERY_ID) return result.session;
+  if (result.receipt.status === "committed") return { active: result.session, receipt: result.receipt };
+  if (result.session.state.gallery_id === DEFAULT_GALLERY_ID) return { active: result.session };
   throw new Error(result.receipt.reason ?? "未能进入唐朝展厅");
 }
 

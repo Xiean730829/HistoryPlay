@@ -90,6 +90,7 @@ export function FocusedArtifact({ artifact, session, poster, onRender }: Focused
         alt={`${artifact.title}三维模型`}
         key={modelUrl}
         orbit={cameraOrbit(session.state.camera_pose, artifact.presentation?.default_camera?.orbit)}
+        renderKey={session.state.view_revision}
         poster={poster}
         onDegraded={() => onRender?.("degraded", "展示模型不可用，实际显示真实预览图")}
         onRendered={() => onRender?.("rendered")}
