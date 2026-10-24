@@ -13,6 +13,7 @@ import { MODEL_SURFACE_OFFSET, maintainSurfaceContact, nearbyModelIndices, seatM
 import { stairCameraPose, stationFacingYaw } from "./stairCamera";
 import { disposeTree } from "./resources";
 import { pickArtifact } from "./picking";
+import { galleryVisualTheme } from "./visualTheme";
 
 interface Exhibit { root: Group; spin: Group; loaded: boolean; loading: boolean; controller: AbortController; lease?: AssetLease }
 interface WorldHooks {
@@ -53,16 +54,16 @@ export class MuseumWorld {
     session: ActiveSession, private readonly hooks: WorldHooks) {
     this.latest = session;
     this.renderer = new WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.6));
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, galleryVisualTheme.renderer.pixelRatioLimit));
     this.renderer.toneMapping = ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.15;
+    this.renderer.toneMappingExposure = galleryVisualTheme.renderer.toneMappingExposure;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = PCFShadowMap;
     this.renderer.domElement.setAttribute("aria-label", "可点击文物的三维宫殿展廊");
     this.renderer.domElement.style.touchAction = "none";
     host.appendChild(this.renderer.domElement);
-    this.scene.background = new Color("#b3a086");
-    this.scene.fog = new FogExp2("#8a7961", 0.018);
+    this.scene.background = new Color(galleryVisualTheme.renderer.backgroundColor);
+    this.scene.fog = new FogExp2(galleryVisualTheme.renderer.fogColor, galleryVisualTheme.renderer.fogDensity);
     const environment = new RoomEnvironment();
     const generator = new PMREMGenerator(this.renderer);
     this.environment = generator.fromScene(environment, 0.04);
@@ -99,8 +100,8 @@ export class MuseumWorld {
     const entry: Exhibit = { root, spin, loaded: false, loading: false, controller: new AbortController() };
     this.exhibits.set(artifact.id, entry);
     // A case-sized target catches the coin hole and the supporting plinth as one exhibit.
-    const pickVolume = new Mesh(new BoxGeometry(2.25, 3.15, 1.95), new MeshBasicMaterial({ visible: false }));
-    pickVolume.position.set(p.x, p.landingY + 1.575, p.z); pickVolume.userData.artifactId = artifact.id;
+    const pickVolume = new Mesh(new BoxGeometry(2.5, 3.3, 2.28), new MeshBasicMaterial({ visible: false }));
+    pickVolume.position.set(p.x, p.landingY + 1.65, p.z); pickVolume.userData.artifactId = artifact.id;
     this.scene.add(pickVolume);
     const label = inscription(artifact.title, 2.1, 0.4);
     label.position.set(p.x, p.plinthTop - 0.28, p.z + 0.895); this.scene.add(label);
