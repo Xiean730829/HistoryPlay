@@ -6,7 +6,8 @@ import uuid
 from pathlib import Path
 from typing import Any
 
-from content_pipeline.validation.schema_validator import Issue
+from content_pipeline.validation.dependencies import dependency_hash
+from content_pipeline.validation.schema_validator import Issue, load_yaml
 
 INDEX_NAME = "pack-index.json"
 
@@ -34,7 +35,11 @@ def pack_destination(root: Path, documents: dict[str, object]) -> tuple[Issue | 
     return None, root / pack_id / version
 
 
-def build_index(documents: dict[str, object], file_hashes: dict[str, str]) -> dict[str, object]:
+def build_index(
+    documents: dict[str, object],
+    file_hashes: dict[str, str],
+    dependencies: list[dict[str, str]] | None = None,
+) -> dict[str, object]:
     manifest = documents["manifest.json"]
     assert isinstance(manifest, dict)
     return {
@@ -43,17 +48,48 @@ def build_index(documents: dict[str, object], file_hashes: dict[str, str]) -> di
         "schema_version": manifest.get("schema_version", "1"),
         "publication_status": manifest.get("publication_status"),
         "files": file_hashes,
+        "dependencies": dependencies or [],
     }
 
 
 def write_immutable_pack(
-    root: Path, documents: dict[str, object]
+    root: Path, documents: dict[str, object], dependency_packs: list[Path] | None = None
 ) -> tuple[list[Issue], Path | None]:
     issue, dest = pack_destination(root, documents)
     if issue is not None or dest is None:
         return [issue] if issue else [Issue(root, "无法确定发布目录")], None
+    manifest = documents.get("manifest.json")
+    if not isinstance(manifest, dict):
+        return [Issue(root, "缺少编译后的内容包清单")], None
     if dest.exists():
         return [Issue(dest, "已存在的包版本不可覆盖")], None
+
+    declared = manifest.get("dependencies", [])
+    candidates: dict[tuple[str, str], list[Path]] = {}
+    for pack in dependency_packs or []:
+        dep_manifest = load_yaml(pack / "manifest.yaml")
+        if isinstance(dep_manifest, dict):
+            dep_id, dep_version = dep_manifest.get("id"), dep_manifest.get("version")
+            if isinstance(dep_id, str) and isinstance(dep_version, str):
+                candidates.setdefault((dep_id, dep_version), []).append(pack)
+    dependency_entries: list[dict[str, str]] = []
+    issues: list[Issue] = []
+    for item in declared if isinstance(declared, list) else []:
+        if not isinstance(item, dict):
+            continue
+        dep_id, dep_version = item.get("pack_id"), item.get("version")
+        if not isinstance(dep_id, str) or not isinstance(dep_version, str):
+            continue
+        matches = candidates.get((dep_id, dep_version), [])
+        if len(matches) != 1:
+            issues.append(Issue(dest, f"无法固定依赖包的唯一版本：{dep_id}@{dep_version}"))
+            continue
+        dependency_entries.append(
+            {"pack_id": dep_id, "version": dep_version, "sha256": dependency_hash(matches[0])}
+        )
+    if issues:
+        return issues, None
+    dependency_entries.sort(key=lambda item: (item["pack_id"], item["version"]))
 
     hashes: dict[str, str] = {}
     payloads: dict[str, bytes] = {}
@@ -61,7 +97,7 @@ def write_immutable_pack(
         encoded = canonical_bytes(data)
         hashes[relative] = sha256_hex(encoded)
         payloads[relative] = encoded
-    index = build_index(documents, hashes)
+    index = build_index(documents, hashes, dependency_entries)
     payloads[INDEX_NAME] = canonical_bytes(index)
 
     tmp = dest.with_name(f".{dest.name}.{uuid.uuid4().hex}.tmp")

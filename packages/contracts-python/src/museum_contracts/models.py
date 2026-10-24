@@ -70,6 +70,7 @@ class ContentPack(TypedDict):
     required_capabilities: list[CapabilityId]
     publication_status: Literal["draft", "reviewed", "published", "retired"]
     title: NotRequired[NonEmptyText]
+    dependencies: NotRequired[list[ContentPackDependencies]]
 
 class SessionEvent(TypedDict):
     schema_version: Literal["1"]
@@ -301,6 +302,10 @@ class CommandObject(TypedDict):
 class ContentPackRegion(TypedDict):
     id: str
     label: NonEmptyText
+
+class ContentPackDependencies(TypedDict):
+    pack_id: NamespacedId
+    version: str
 
 class HistoricalEventPlace(TypedDict):
     label: NonEmptyText
