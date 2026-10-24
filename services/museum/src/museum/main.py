@@ -8,14 +8,18 @@ from aiohttp import web
 from museum.adapters.content.published_catalog import PublishedCatalog
 from museum.adapters.http.auth import SessionAuthenticator
 from museum.adapters.http.command_routes import register_command_routes
+from museum.adapters.http.event_routes import register_event_routes
 from museum.adapters.http.helpers import SERVICES_KEY
+from museum.adapters.http.render_routes import register_render_routes
 from museum.adapters.http.services import HttpServices
 from museum.adapters.http.session_routes import register_session_routes
 from museum.adapters.sqlite.database import SQLiteDatabase
 from museum.application.binding_service import BindingService
 from museum.application.command_service import CommandService
 from museum.application.control_tickets import ControlTickets
+from museum.application.event_hub import EventHub
 from museum.application.query_service import QueryService
+from museum.application.render_service import RenderService
 from museum.ports.content_catalog import ContentCatalog
 
 
@@ -43,6 +47,8 @@ def create_app(
         commands=CommandService(database.transaction, catalog, tickets),
         authenticator=SessionAuthenticator(),
         bindings=BindingService(tickets),
+        event_hub=EventHub(),
+        renders=RenderService(),
         allowed_origins=(
             allowed_origins
             if allowed_origins is not None
@@ -61,6 +67,8 @@ def create_app(
     app.router.add_get("/health", health)
     register_session_routes(app)
     register_command_routes(app)
+    register_event_routes(app)
+    register_render_routes(app)
     return app
 
 
