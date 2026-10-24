@@ -1,4 +1,7 @@
 import type { Artifact, CommandAction, CommandReceipt, SessionProjection } from "@history-play/contracts";
+import { CommandDispatcher } from "../state/commandDispatcher";
+
+const commandDispatcher = new CommandDispatcher();
 
 export interface SessionContext {
   session_id: string;
@@ -135,23 +138,30 @@ export async function openArtifact(
   session: ActiveSession,
   artifactId: string,
 ): Promise<{ session: ActiveSession; receipt: CommandReceipt }> {
-  const response = await request<CommandReceipt>(`/api/sessions/${session.session_id}/commands`, {
-    method: "POST",
-    headers: boundHeaders(session),
-    body: JSON.stringify({
-      schema_version: "1",
-      request_id: crypto.randomUUID(),
-      expected_revision: session.state.revision,
-      interaction_epoch: session.state.interaction_epoch,
-      control_ticket: session.control_ticket,
-      action: "open_artifact" satisfies CommandAction,
-      target_id: artifactId,
-    }),
-  }, (status, body) => status === 409 && isCommandReceipt(body));
+  const action = "open_artifact" satisfies CommandAction;
+  const dispatchKey = [session.session_id, action, artifactId, session.state.revision,
+    session.state.interaction_epoch].join(":");
+  const response = await commandDispatcher.dispatch(dispatchKey, (requestId) => request<CommandReceipt>(
+    `/api/sessions/${session.session_id}/commands`,
+    {
+      method: "POST",
+      headers: boundHeaders(session),
+      body: JSON.stringify({
+        schema_version: "1",
+        request_id: requestId,
+        expected_revision: session.state.revision,
+        interaction_epoch: session.state.interaction_epoch,
+        control_ticket: session.control_ticket,
+        action,
+        target_id: artifactId,
+      }),
+    },
+    (status, body) => status === 409 && isCommandReceipt(body),
+  ));
   return { session: await refreshSession(session), receipt: response };
 }
 
-async function refreshSession(session: ActiveSession): Promise<ActiveSession> {
+export async function refreshSession(session: ActiveSession): Promise<ActiveSession> {
   const headers = authHeaders(session);
   const bound = boundHeaders(session);
   const [state, context] = await Promise.all([

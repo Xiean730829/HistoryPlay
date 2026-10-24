@@ -5,10 +5,14 @@ import {
   searchArtifacts,
   openArtifact,
   unpairSession,
+  requestEventTicket,
+  refreshSession,
   type ActiveSession,
   type SessionCredentials,
   type SearchHit,
 } from "../application/museumApi";
+import { EventChannel } from "../api/eventChannel";
+import { SessionProjectionStore } from "../state/sessionProjection";
 import { ExhibitList } from "./ExhibitList";
 import { StatusNotice } from "./StatusNotice";
 import { MuseumCorridor } from "../gallery/MuseumCorridor";
@@ -29,6 +33,30 @@ export function MuseumShell() {
   const [notice, setNotice] = React.useState("正在连接本地游戏服务…");
   const [noticeTone, setNoticeTone] = React.useState<"info" | "error" | "success">("info");
   const restoreTask = React.useRef<Promise<ActiveSession> | null>(null);
+  const projectionStore = React.useRef<SessionProjectionStore | null>(null);
+
+  React.useEffect(() => {
+    if (!session) {
+      projectionStore.current = null;
+      return;
+    }
+    const store = new SessionProjectionStore(session, () => refreshSession(session));
+    projectionStore.current = store;
+    const unsubscribe = store.subscribe(setSession);
+    const channel = new EventChannel({
+      session,
+      getCursor: () => store.snapshot.state.event_seq,
+      requestTicket: requestEventTicket,
+      onEvent: (event) => { void store.receiveEvent(event).catch((error: unknown) => showError(error, setNotice, setNoticeTone)); },
+      onSnapshot: (eventSeq) => { void store.receiveSnapshot(eventSeq).catch((error: unknown) => showError(error, setNotice, setNoticeTone)); },
+    });
+    channel.start();
+    return () => {
+      channel.stop();
+      unsubscribe();
+      if (projectionStore.current === store) projectionStore.current = null;
+    };
+  }, [session?.session_id, session?.connection_id]);
 
   React.useEffect(() => {
     let current = true;
@@ -99,7 +127,9 @@ export function MuseumShell() {
     setBusy(true);
     try {
       const result = await openArtifact(session, artifactId);
-      setSession(result.session);
+      const store = projectionStore.current;
+      if (store) await store.acceptQuery(result.session);
+      else setSession(result.session);
       if (result.receipt.status === "committed") {
         setNotice("展品已按服务端状态开放，并已更新展厅顺序。");
         setNoticeTone("success");

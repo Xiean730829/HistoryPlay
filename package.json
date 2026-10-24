@@ -13,6 +13,7 @@
   "scripts": {
     "dev:web": "npm run dev --workspace @history-play/museum-web",
     "build": "npm run build --workspace @history-play/museum-web",
+    "test:web": "npm run test:web --workspace @history-play/museum-web",
     "check": "npm run check --workspace @history-play/museum-web && npm run check --workspace @history-play/contracts"
   }
 }
