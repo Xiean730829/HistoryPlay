@@ -1,0 +1,25 @@
+{
+  "id": "cn.tang.node.stele-observation.01",
+  "story_id": "cn.tang.story.stele-observation",
+  "fact_grade": "F",
+  "presentation": {
+    "capability": "artifact3d",
+    "asset_ids": ["cn.tang.asset.stele.original"]
+  },
+  "narration": "这块碑有明确纪年。你可以先看正面，也可以先问它能证明什么。",
+  "allowed_actions": ["observe", "ask", "continue_story"],
+  "effects": [
+    {
+      "op": "add_discovery",
+      "path": "discoveries.stele_dated",
+      "value": "678"
+    }
+  ],
+  "exits": [
+    {
+      "action": "continue_story",
+      "target_node_id": "cn.tang.node.stele-observation.02"
+    }
+  ],
+  "return_checkpoint": true
+}

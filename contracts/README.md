@@ -12,6 +12,8 @@
 | `schemas/v1/asset.schema.json` | 逻辑资产 ID、哈希、许可、LOD 与降级 | 02-a |
 | `schemas/v1/source.schema.json` | 来源定位，不是无主张的链接列表 | 02-a |
 | `schemas/v1/fact-card.schema.json` | 主张、事实等级、适用时间与来源 ID | 02-a |
+| `schemas/v1/story.schema.json` | 故事入口、节点列表与展品返回 | 02-b |
+| `schemas/v1/story-node.schema.json` | 片段、画面、讲解、有限动作、条件与出口 | 02-b |
 
 公开样例在 `examples/v1/`。样例不含密钥、本机盘符或未授权路径。
 
