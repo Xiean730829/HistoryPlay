@@ -167,6 +167,14 @@ export function locateArtifact(session: ActiveSession, artifactId: string) {
   return dispatchSessionCommand(session, "locate_artifact", artifactId);
 }
 
+/** Opening the current exhibit's observation camera does not require another mutation. */
+export async function prepareArtifactInspection(session: ActiveSession, artifactId: string): Promise<{
+  session: ActiveSession; receipt: CommandReceipt | null;
+}> {
+  if (session.state.focused_entity_id === artifactId) return { session, receipt: null };
+  return locateArtifact(session, artifactId);
+}
+
 export function setArtifactView(session: ActiveSession, camera: { yaw: number; pitch: number; zoom: number }) {
   return dispatchSessionCommand(session, "set_view", undefined, { camera });
 }

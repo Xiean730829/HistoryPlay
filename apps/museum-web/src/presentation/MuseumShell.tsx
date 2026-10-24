@@ -15,7 +15,7 @@ import {
   continueStory,
   returnToExhibit,
   reportRenderReceipt,
-  locateArtifact,
+  prepareArtifactInspection,
   setArtifactView,
   type ActiveSession,
   type ArtifactProjection,
@@ -65,14 +65,15 @@ export function MuseumShell() {
 
   async function selectExhibit(id: string) {
     if (!session || busy || session.state.mode !== "explore") return;
+    const current = projectionStore.current?.snapshot ?? session;
     setBusy(true);
     try {
-      const result = await locateArtifact(session, id);
+      const result = await prepareArtifactInspection(current, id);
       if (projectionStore.current) await projectionStore.current.acceptQuery(result.session);
       else setSession(result.session);
-      setRenderCommand(result.receipt.status === "committed" ? result.receipt : null);
-      if (result.receipt.status === "committed") setInspection(true);
-      else throw new Error(result.receipt.reason ?? "暂时无法走近这件文物");
+      if (result.receipt?.status === "committed") setRenderCommand(result.receipt);
+      if (result.session.state.focused_entity_id === id) setInspection(true);
+      else throw new Error(result.receipt?.reason ?? "暂时无法走近这件文物");
     } catch (error) { showError(error, setNotice, setNoticeTone); }
     finally { setBusy(false); }
   }
