@@ -31,4 +31,4 @@ uv run python tools/dev/run_local.py
 uv run --package museum-content-pipeline content-pipeline validate --pack <作者包目录>
 ```
 
-当前只检查 YAML 形状，不检查引用完整性，也不编译或发布。仓库里还没有 `content-src/packs/` 作者包。
+当前检查 YAML 形状和包内引用完整性，不编译或发布。仓库里还没有 `content-src/packs/` 作者包。
