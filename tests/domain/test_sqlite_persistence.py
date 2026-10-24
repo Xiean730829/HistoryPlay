@@ -20,6 +20,7 @@ from museum.domain.session.models import (
     SessionMode,
     SessionState,
 )
+from museum.domain.session.transitions import return_to_exhibit
 
 
 def make_state() -> SessionState:
@@ -99,6 +100,27 @@ def test_session_snapshot_persists_root_exhibit_anchor_and_reads_legacy_json() -
     restored = _decode_state(json.dumps(legacy))
     assert restored.camera_pose == CameraPose()
     assert restored.exhibit_return_point is None
+
+
+def test_legacy_story_snapshot_without_anchor_can_return_to_saved_exhibit() -> None:
+    state = replace(
+        make_state(),
+        mode=SessionMode.STORY,
+        return_stack=(),
+        gallery_id="cn.tang.gallery.main",
+        station_id="cn.tang.station.ox",
+        current_location_id="cn.tang.station.ox",
+        camera_pose=CameraPose(yaw=18, pitch=-6, zoom=1.4),
+    )
+    payload = json.loads(_encode_state(state))
+    payload.pop("exhibit_return_point")
+
+    restored = _decode_state(json.dumps(payload))
+    returned = return_to_exhibit(restored)
+
+    assert returned.state.mode == SessionMode.EXPLORE
+    assert returned.state.station_id == "cn.tang.station.ox"
+    assert returned.state.camera_pose == CameraPose(yaw=18, pitch=-6, zoom=1.4)
 
 
 def test_session_save_uses_optimistic_revision_and_exact_increment(tmp_path) -> None:
