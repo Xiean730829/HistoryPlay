@@ -14,6 +14,7 @@ import { disposeTree } from "./resources";
 interface Exhibit { root: Group; spin: Group; loaded: boolean; controller: AbortController; lease?: AssetLease }
 interface WorldHooks {
   onSelect(id: string): void;
+  onObserve(yaw: number, pitch: number, zoom: number): void;
   onLoaded(count: number): void;
   onRender(status: "rendered" | "degraded", reason?: string): void;
 }
@@ -33,8 +34,15 @@ export class MuseumWorld {
   private disposed = false;
   private latest: ActiveSession;
   private acknowledged = "";
+  private acknowledgedAt = 0;
   private readonly resize: ResizeObserver;
   private lastTime = 0;
+  private inspection = false;
+  private drag: { x: number; y: number; yaw: number; pitch: number } | null = null;
+  private preview: { yaw: number; pitch: number } | null = null;
+  private suppressClick = false;
+  private wheelTimer: ReturnType<typeof setTimeout> | null = null;
+  private wheelFactor = 1;
 
   constructor(private readonly host: HTMLElement, private readonly artifacts: readonly ArtifactProjection[],
     session: ActiveSession, private readonly hooks: WorldHooks) {
@@ -56,6 +64,11 @@ export class MuseumWorld {
     artifacts.forEach((artifact, index) => this.createExhibit(artifact, index));
     this.resize = new ResizeObserver(() => this.fit()); this.resize.observe(host); this.fit();
     this.renderer.domElement.addEventListener("click", this.click);
+    this.renderer.domElement.addEventListener("pointerdown", this.pointerDown);
+    this.renderer.domElement.addEventListener("pointermove", this.pointerMove);
+    this.renderer.domElement.addEventListener("pointerup", this.pointerUp);
+    this.renderer.domElement.addEventListener("pointercancel", this.pointerCancel);
+    this.renderer.domElement.addEventListener("wheel", this.wheel, { passive: false });
     this.frame = requestAnimationFrame(this.animate);
   }
 
@@ -111,7 +124,9 @@ export class MuseumWorld {
   }
 
   update(session: ActiveSession, inspection: boolean): void {
+    if (this.latest.state.revision !== session.state.revision || this.latest.state.view_revision !== session.state.view_revision) this.preview = null;
     this.latest = session;
+    this.inspection = inspection;
     const index = this.artifacts.findIndex((item) => item.id === session.state.focused_entity_id);
     if (index < 0) return;
     const p = stationPlacement(index);
@@ -125,6 +140,7 @@ export class MuseumWorld {
   }
 
   private click = (event: MouseEvent): void => {
+    if (this.suppressClick) { this.suppressClick = false; return; }
     const bounds = this.renderer.domElement.getBoundingClientRect();
     this.pointer.set((event.clientX - bounds.left) / bounds.width * 2 - 1, -(event.clientY - bounds.top) / bounds.height * 2 + 1);
     this.raycaster.setFromCamera(this.pointer, this.camera);
@@ -132,6 +148,38 @@ export class MuseumWorld {
     let object: Object3D | null = hits[0]?.object ?? null;
     while (object && !object.userData.artifactId) object = object.parent;
     if (object?.userData.artifactId) this.hooks.onSelect(object.userData.artifactId as string);
+  };
+
+  private pointerDown = (event: PointerEvent): void => {
+    if (!this.inspection || event.button !== 0) return;
+    this.drag = { x: event.clientX, y: event.clientY, yaw: 0, pitch: 0 };
+    this.renderer.domElement.setPointerCapture(event.pointerId);
+  };
+  private pointerMove = (event: PointerEvent): void => {
+    if (!this.drag) return;
+    const yaw = (event.clientX - this.drag.x) * -0.42;
+    const pitch = (event.clientY - this.drag.y) * 0.22;
+    this.drag.yaw = yaw; this.drag.pitch = pitch;
+    const pose = this.latest.state.camera_pose;
+    this.preview = { yaw: (pose?.yaw ?? 0) + yaw, pitch: Math.max(-45, Math.min(45, (pose?.pitch ?? 0) + pitch)) };
+  };
+  private pointerUp = (): void => {
+    if (!this.drag) return;
+    const { yaw, pitch } = this.drag; this.drag = null;
+    if (Math.abs(yaw) + Math.abs(pitch) > 2) {
+      this.suppressClick = true; this.hooks.onObserve(yaw, pitch, 1);
+    }
+    this.preview = null;
+  };
+  private pointerCancel = (): void => { this.drag = null; this.preview = null; };
+  private wheel = (event: WheelEvent): void => {
+    if (!this.inspection) return;
+    event.preventDefault();
+    this.wheelFactor *= event.deltaY < 0 ? 1.12 : 1 / 1.12;
+    if (this.wheelTimer) clearTimeout(this.wheelTimer);
+    this.wheelTimer = setTimeout(() => {
+      this.hooks.onObserve(0, 0, this.wheelFactor); this.wheelFactor = 1; this.wheelTimer = null;
+    }, 160);
   };
 
   private animate = (time: number): void => {
@@ -143,22 +191,22 @@ export class MuseumWorld {
     const state = this.latest.state;
     const entry = state.focused_entity_id ? this.exhibits.get(state.focused_entity_id) : null;
     if (entry) {
-      const yaw = -(state.camera_pose?.yaw ?? 0) * Math.PI / 180;
-      const pitch = (state.camera_pose?.pitch ?? 0) * Math.PI / 180;
+      const yaw = -(this.preview?.yaw ?? state.camera_pose?.yaw ?? 0) * Math.PI / 180;
+      const pitch = (this.preview?.pitch ?? state.camera_pose?.pitch ?? 0) * Math.PI / 180;
       entry.spin.rotation.y += Math.atan2(Math.sin(yaw - entry.spin.rotation.y), Math.cos(yaw - entry.spin.rotation.y)) * easing;
       entry.spin.rotation.x += (pitch - entry.spin.rotation.x) * easing;
     }
     this.renderer.render(this.scene, this.camera);
     const receiptKey = `${state.revision}:${state.view_revision}:${state.interaction_epoch}`;
     const yawError = entry ? Math.atan2(Math.sin(entry.spin.rotation.y + (state.camera_pose?.yaw ?? 0) * Math.PI / 180), Math.cos(entry.spin.rotation.y + (state.camera_pose?.yaw ?? 0) * Math.PI / 180)) : 1;
-    if (entry?.loaded && Math.abs(yawError) < 0.01
+    if (!this.preview && !this.drag && state.mode === "explore" && entry?.loaded && Math.abs(yawError) < 0.01
       && Math.abs(entry.spin.rotation.x - (state.camera_pose?.pitch ?? 0) * Math.PI / 180) < 0.01
-      && this.acknowledged !== receiptKey && this.camera.position.distanceTo(this.targetPosition) < 0.015
+      && (this.acknowledged !== receiptKey || time - this.acknowledgedAt > 1000) && this.camera.position.distanceTo(this.targetPosition) < 0.015
       && this.currentLook.distanceTo(this.targetLook) < 0.015 && this.host.getBoundingClientRect().height > 0) {
       const bounds = new Box3().setFromObject(entry.spin);
       const center = bounds.getCenter(new Vector3()).project(this.camera);
       if (Math.abs(center.x) < 1 && Math.abs(center.y) < 1 && center.z > -1 && center.z < 1) {
-        this.acknowledged = receiptKey; this.hooks.onRender("rendered");
+        this.acknowledged = receiptKey; this.acknowledgedAt = time; this.hooks.onRender("rendered");
       }
     }
     this.frame = requestAnimationFrame(this.animate);
@@ -167,6 +215,12 @@ export class MuseumWorld {
   dispose(): void {
     this.disposed = true; cancelAnimationFrame(this.frame); this.resize.disconnect();
     this.renderer.domElement.removeEventListener("click", this.click);
+    this.renderer.domElement.removeEventListener("pointerdown", this.pointerDown);
+    this.renderer.domElement.removeEventListener("pointermove", this.pointerMove);
+    this.renderer.domElement.removeEventListener("pointerup", this.pointerUp);
+    this.renderer.domElement.removeEventListener("pointercancel", this.pointerCancel);
+    this.renderer.domElement.removeEventListener("wheel", this.wheel);
+    if (this.wheelTimer) clearTimeout(this.wheelTimer);
     this.exhibits.forEach((entry) => { entry.controller.abort(); entry.lease?.release(); });
     disposeTree(this.scene); this.renderer.dispose(); this.renderer.forceContextLoss();
     this.renderer.domElement.remove();

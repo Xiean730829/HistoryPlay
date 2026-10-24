@@ -3,16 +3,17 @@ import type { ActiveSession, ArtifactProjection } from "../application/museumApi
 import { MuseumWorld } from "./MuseumWorld";
 import "./museum-space.css";
 
-export function MuseumSpace({ artifacts, session, onSelect, onRender, inspection = false }: {
+export function MuseumSpace({ artifacts, session, onSelect, onObserve, onRender, inspection = false }: {
   artifacts: readonly ArtifactProjection[];
   session: ActiveSession;
   inspection?: boolean;
   onSelect(id: string): void;
+  onObserve(yaw: number, pitch: number, zoom: number): void;
   onRender(status: "rendered" | "degraded", reason?: string): void;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const world = useRef<MuseumWorld | null>(null);
-  const callbacks = useRef({ onSelect, onRender }); callbacks.current = { onSelect, onRender };
+  const callbacks = useRef({ onSelect, onObserve, onRender }); callbacks.current = { onSelect, onObserve, onRender };
   const [loaded, setLoaded] = useState(0);
   const [error, setError] = useState("");
   const key = artifacts.map((item) => `${item.id}:${item.presentation?.display?.asset_id}`).join("|");
@@ -22,6 +23,7 @@ export function MuseumSpace({ artifacts, session, onSelect, onRender, inspection
     try {
       const current = new MuseumWorld(host.current, artifacts, session, {
         onSelect: (id) => callbacks.current.onSelect(id),
+        onObserve: (yaw, pitch, zoom) => callbacks.current.onObserve(yaw, pitch, zoom),
         onRender: (status, reason) => callbacks.current.onRender(status, reason),
         onLoaded: setLoaded,
       });
