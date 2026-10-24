@@ -11,7 +11,7 @@ describe("语音控制与画面刷新竞态", () => {
   it("刷新等待期间出现新问题，旧动作完成不能迟到开始朗读", async () => {
     const play = vi.spyOn(NarrationPlayer.prototype, "play").mockResolvedValue(true);
     let release!: () => void;
-    const controller = new GameVoiceController({} as ActiveSession, {
+    const controller = new GameVoiceController({ session_id: "test-session" } as ActiveSession, {
       onStatus: vi.fn(), onTranscript: vi.fn(),
       onRefresh: () => new Promise<void>((resolve) => { release = resolve; }),
     });
