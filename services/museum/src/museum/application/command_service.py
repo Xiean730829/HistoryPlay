@@ -237,9 +237,14 @@ class CommandService:
                 raise InvalidTransition("只有长廊探索模式可以移动展位")
             packs = self._pinned_packs(state)
             if command.action == "enter_gallery":
-                gallery = _find_gallery(packs, _required_target(command))
+                gallery_id = _required_target(command)
+                gallery = _find_gallery(packs, gallery_id)
                 if gallery.get("status") != "open":
                     raise InvalidTransition("该展厅尚未开放")
+                if state.gallery_id == gallery_id:
+                    if state.station_id == gallery.get("default_station_id"):
+                        raise InvalidTransition("当前已经位于展厅入口")
+                    raise InvalidTransition("已在该展厅，当前位置保持不变")
                 stations = _gallery_stations(gallery)
                 default_id = gallery.get("default_station_id")
                 default_station = next(
@@ -248,8 +253,6 @@ class CommandService:
                 if default_station is None:
                     raise InvalidTransition("开放展厅的默认展位无效")
                 adjacent_station(stations, default_id, "next")
-                if state.gallery_id == _required_target(command) and state.station_id == default_id:
-                    raise InvalidTransition("当前已经位于展厅入口")
                 return _enter_station(state, gallery, default_station)
 
             if state.gallery_id is None or state.station_id is None:

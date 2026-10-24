@@ -337,6 +337,59 @@ def test_gallery_navigation_enters_and_moves_one_station_with_idempotent_retries
     assert len(events) == 2
 
 
+def test_reentering_current_gallery_keeps_the_current_station(tmp_path) -> None:
+    database, state, token, service = _exploration_service(tmp_path)
+    entered = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_gallery",
+            request_id="navigation-repeat-enter-0001",
+            target_id="cn.tang.gallery.main",
+            revision=state.revision,
+            interaction_epoch=state.interaction_epoch,
+            view_revision=state.view_revision,
+        ),
+    )
+    moved = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="move_next",
+            request_id="navigation-repeat-move-0001",
+            revision=entered.revision,
+            interaction_epoch=entered.interaction_epoch,
+            view_revision=entered.view_revision,
+        ),
+    )
+
+    repeated = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_gallery",
+            request_id="navigation-repeat-enter-0002",
+            target_id="cn.tang.gallery.main",
+            revision=moved.revision,
+            interaction_epoch=moved.interaction_epoch,
+            view_revision=moved.view_revision,
+        ),
+    )
+
+    assert repeated.status == "rejected"
+    assert repeated.reason == "已在该展厅，当前位置保持不变"
+    with database.transaction() as unit:
+        saved = unit.sessions.get(state.session_id)
+    assert saved is not None
+    assert saved.gallery_id == "cn.tang.gallery.main"
+    assert saved.station_id == "cn.tang.station.coin"
+    assert saved.focused_entity_id == "cn.tang.artifact.coin"
+    assert saved.revision == moved.revision
+
+
 def test_gallery_navigation_rejects_boundaries_without_changing_state(tmp_path) -> None:
     database, state, token, service = _exploration_service(tmp_path)
     entered = service.execute(
