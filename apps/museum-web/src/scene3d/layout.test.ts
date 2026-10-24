@@ -1,9 +1,19 @@
 import { describe, expect, it, vi } from "vitest";
 import { Box3, BoxGeometry, Group, Mesh, MeshStandardMaterial, Texture, Vector3 } from "three";
-import { nearbyModelIndices, seatModel, stationPlacement } from "./layout";
+import { nearbyModelIndices, seatModel, stairStepPlacement, stationPlacement } from "./layout";
 import { disposeTree } from "./resources";
 
 describe("physical exhibit placement", () => {
+  it("shares the actual stair, landing and load-bearing heights without treating a deck as floor", () => {
+    for (let index = 0; index < 3; index++) {
+      const p = stationPlacement(index);
+      expect(p.walkY).toBeCloseTo(stairStepPlacement(p.stepIndex).walkY);
+      expect(p.landingY).toBe(p.walkY);
+      expect(p.plinthTop - p.landingY).toBeCloseTo(1.08);
+      expect(p.top).toBe(p.plinthTop);
+    }
+    expect(stationPlacement(2).walkY).toBeGreaterThan(stationPlacement(1).walkY);
+  });
   it("keeps the three-object slice visible while bounding later galleries to nearest models", () => {
     expect([...nearbyModelIndices(3, 0)]).toEqual([0, 1, 2]);
     expect([...nearbyModelIndices(19, 12)]).toEqual([12, 11, 13]);
