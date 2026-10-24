@@ -71,16 +71,6 @@ function addStairs(hall: Group, count: number, material: MeshStandardMaterial): 
   stairs.instanceMatrix.needsUpdate = true;
   stairs.castShadow = true; stairs.receiveShadow = true;
   hall.add(stairs);
-  // Dark side strings make the stepped profile visible without adding a second staircase.
-  const endZ = stairStepPlacement(lastStep).z - STAIR_TREAD / 2;
-  const endY = stairStepPlacement(lastStep).walkY;
-  const run = STAIR_START_Z - endZ;
-  const rise = endY + STAIR_RISER;
-  for (const side of [-1, 1]) {
-    const beam = box(hall, 0.28, Math.hypot(run, rise), 0.32, side * (STAIR_WIDTH / 2 - 0.1), rise / 2 - STAIR_RISER / 2,
-      (STAIR_START_Z + endZ) / 2, material);
-    beam.rotation.x = Math.atan2(run, rise);
-  }
 }
 
 function addLanding(hall: Group, x: number, landingY: number, z: number, side: number,
@@ -107,22 +97,21 @@ function addBrokenPiers(hall: Group, count: number, materials: ReturnType<typeof
     const p = stationPlacement(index);
     const floor = p.landingY;
     for (const side of [-1, 1]) {
-      const x = side * (5.05 + rand(index * 4 + side + 8) * 0.5);
       const height = 3.2 + rand(index * 9 + side + 2) * 2.7;
       const pillar = new Mesh(new CylinderGeometry(0.33, 0.48, height, 8, 1), materials.stone);
-      pillar.position.set(x, floor + height / 2, p.z + (rand(index * 3 + side + 14) - 0.5) * 0.85);
+      pillar.position.set(side * 5.5, floor + height / 2, p.z + (rand(index * 3 + side + 14) - 0.5) * 0.85);
       pillar.rotation.z = (rand(index * 5 + side + 20) - 0.5) * 0.13;
       pillar.castShadow = true; pillar.receiveShadow = true; hall.add(pillar);
       const crownHeight = floor + height;
       if (rand(index * 11 + side + 7) > 0.28) {
-        const lintel = box(hall, 3.15 + rand(index + side + 24) * 1.3, 0.42, 0.46,
-          side * 3.98, crownHeight - 0.12, p.z + 0.2, materials.stone);
+        const lintel = box(hall, 2.35 + rand(index + side + 24) * 0.8, 0.42, 0.46,
+          side * 5.2, crownHeight + 0.9, p.z + 0.2, materials.stone);
         lintel.rotation.z = (rand(index + side + 18) - 0.5) * 0.09;
       }
       // Broken arch fragments and loose blocks form a ruined skyline, not a repeated corridor.
       if (rand(index * 17 + side + 5) > 0.4) {
         const fragment = box(hall, 1.5 + rand(index * 7 + side + 2), 0.38, 0.62,
-          side * (4.35 + rand(index + 19) * 0.9), floor + 2.0 + rand(index * 2 + side) * 2.2,
+          side * (5.05 + rand(index + 19) * 0.8), floor + 4.1 + rand(index * 2 + side) * 1.9,
           p.z - 1.1, materials.stone);
         fragment.rotation.z = side * (0.08 + rand(index * 13 + 6) * 0.2);
         fragment.rotation.y = rand(index * 19 + side) * 0.25;
@@ -146,7 +135,6 @@ function addBrokenPiers(hall: Group, count: number, materials: ReturnType<typeof
   }
   const header = box(hall, 7.7, 0.95, 1.15, 0, gateY + 4.25, gateZ, materials.stone);
   header.rotation.z = -0.025;
-  box(hall, 5.9, 4.0, 0.25, 0, gateY + 1.85, gateZ - 0.63, materials.darkTimber);
 }
 
 function addDust(hall: Group, minZ: number, maxZ: number, topY: number): void {
@@ -189,8 +177,7 @@ export function buildHall(count: number): Group {
   placements.forEach((p, index) => addLanding(hall, p.x, p.landingY, p.z, index % 2 ? 1 : -1, materials));
   addBrokenPiers(hall, count, materials);
 
-  // Warm light filters through a broken opening above the first landing.
-  box(hall, 3.0, 0.14, length * 0.92, -5.2, 7.9, (frontZ + backZ) / 2, materials.darkTimber);
+  // Broken ribs leave gaps above the ascent so warm light can fall into the hall.
   for (const side of [-1, 1]) {
     for (const z of [firstZ + 5, last.z - 3]) {
       const fracturedBeam = box(hall, 3.7, 0.3, 0.38, side * 3.65,

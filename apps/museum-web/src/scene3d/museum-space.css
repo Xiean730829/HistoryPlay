@@ -1,6 +1,6 @@
 .museum-space { position: relative; width: 100%; height: min(82vh, 880px); min-height: 560px; overflow: hidden; background: #302a22; isolation: isolate; color-scheme: dark; }
 .museum-webgl { position: absolute; inset: 0; }
-.museum-webgl canvas { display: block; width: 100%; height: 100%; cursor: pointer; }
+.museum-webgl canvas { display: block; width: 100%; height: 100%; cursor: pointer; filter: brightness(.76) contrast(1.08) saturate(1.04); }
 .museum-space::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(180deg, rgb(20 15 11 / 44%), transparent 25%, transparent 70%, rgb(20 15 11 / 34%)), radial-gradient(ellipse at center, transparent 48%, rgb(17 13 10 / 20%) 100%); }
 .museum-space-brand { position: absolute; z-index: 2; left: 36px; top: 30px; padding: 16px 19px 13px; border-left: 1px solid #d4b77d99; color: #f2e5cb; text-shadow: 0 2px 14px #21140d; pointer-events: none; background: linear-gradient(90deg, rgb(31 24 17 / 48%), transparent); }
 .museum-space-brand span { font-size: 11px; letter-spacing: .36em; }
