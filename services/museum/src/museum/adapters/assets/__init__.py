@@ -1,0 +1,1 @@
+"""Local display-asset adapters."""
