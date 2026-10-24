@@ -1,0 +1,12 @@
+id: cn.tang.fact.t03.stele-inscription
+claim: 造像碑馆藏记录标注678年；馆方说明称碑铭将唐高宗与皇后武氏列为功德对象。此物证能支持其当时的身份与礼敬信息，不能据此把她称帝的时间提前到678年。
+grade: F
+applicable_time:
+  start_year: 678
+  end_year: 678
+  precision: year
+  display_label: 678年造像碑
+source_ids:
+  - cn.tang.source.a04-catalog
+  - cn.tang.source.history-h04
+evidence_note: 馆方记录和模型说明是本条结论的依据；不把后来的690年身份变化倒写进678年的碑铭场景。

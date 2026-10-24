@@ -1,0 +1,12 @@
+id: cn.tang.fact.t03.state-transition
+claim: 690年武则天称帝，以唐为周并改元；705年《资治通鉴》记载复国号曰唐。两项政治变化与678年造像碑的制作及铭文分别标记，不合并成同一现场。
+grade: F
+applicable_time:
+  start_year: 690
+  end_year: 705
+  precision: range
+  display_label: 690年国号改周；705年复唐
+source_ids:
+  - cn.tang.source.history-h13
+  - cn.tang.source.history-h14
+evidence_note: 年份按《资治通鉴》各卷所列公元纪年；本卡只承载国号和政治身份变化，不替碑铭补写未载内容。
