@@ -20,6 +20,17 @@ category: 小型动物造型器物
 asset_ids:
   - cn.tang.asset.gilt-bronze-bull.glb
   - cn.tang.asset.gilt-bronze-bull.preview
+  - cn.tang.asset.gilt-bronze-bull.display
+presentation:
+  preview_asset_id: cn.tang.asset.gilt-bronze-bull.preview
+  display:
+    kind: model3d
+    asset_id: cn.tang.asset.gilt-bronze-bull.display
+  default_camera:
+    orbit: three-quarter
+    target_note: 四分之三卧姿，头朝左。
+  teaser: 八世纪鎏金铜卧牛；馆方解释或作书镇，不指认主人。
+  background_node_id: cn.tang.node.gilt-bronze-bull.01
 fact_card_ids:
   - cn.tang.fact.gilt-bronze-bull.date
   - cn.tang.fact.gilt-bronze-bull.use

@@ -6,6 +6,12 @@ import sys
 from pathlib import Path
 
 from content_pipeline.assets.model_preview import render_preview
+from content_pipeline.assets.model_profile import (
+    DEFAULT_TRANSFORM_VERSION,
+    ModelProfileError,
+    export_display_glb,
+    record_source_profile,
+)
 from content_pipeline.assets.preview_manifest import (
     PreviewInputError,
     record_preview,
@@ -14,6 +20,7 @@ from content_pipeline.assets.preview_manifest import (
 from content_pipeline.assets.stage_assets import AssetStageError, stage_assets
 from content_pipeline.build.compiler import compile_pack, write_documents
 from content_pipeline.build.pack_writer import write_immutable_pack
+from content_pipeline.build.rehearsal_pack import RehearsalPackError, build_rehearsal_pack
 from content_pipeline.validation.reference_validator import validate_references
 from content_pipeline.validation.schema_validator import validate_pack
 
@@ -139,6 +146,59 @@ def cmd_render_preview(
     return 0
 
 
+def cmd_record_source_profile(
+    *,
+    model: Path,
+    record: Path,
+) -> int:
+    try:
+        record_source_profile(
+            model_path=model,
+            record_path=record,
+        )
+    except ModelProfileError as exc:
+        print(f"源模型测量记录失败：{exc}", file=sys.stderr)
+        return 1
+    print(f"已记录源模型测量：{model.name} → {record}")
+    return 0
+
+
+def cmd_export_display_glb(
+    *,
+    source: Path,
+    display: Path,
+    record: Path,
+    transform_cli: Path,
+    expected_version: str,
+    method: Path,
+    orientation: Path,
+    note: str,
+    source_sha256: str | None = None,
+) -> int:
+    try:
+        method_dict = json.loads(method.read_text(encoding="utf-8"))
+        orientation_dict = json.loads(orientation.read_text(encoding="utf-8"))
+        result = export_display_glb(
+            source_path=source,
+            display_path=display,
+            record_path=record,
+            transform_cli=transform_cli,
+            expected_version=expected_version,
+            method=method_dict,
+            orientation=orientation_dict,
+            note=note,
+            source_sha256=source_sha256,
+        )
+    except (OSError, json.JSONDecodeError, ModelProfileError) as exc:
+        print(f"展示版导出失败：{exc}", file=sys.stderr)
+        return 1
+    print(
+        f"已导出展示版模型：{source.name} → {display} "
+        f"({result['display_byte_size']}字节，{result['display_triangle_count']}三角)"
+    )
+    return 0
+
+
 def cmd_batch_record_preview(*, batch: Path, manifest: Path) -> int:
     try:
         document = json.loads(batch.read_text(encoding="utf-8"))
@@ -159,6 +219,37 @@ def cmd_batch_record_preview(*, batch: Path, manifest: Path) -> int:
         print(f"批量预览登记失败：{exc}", file=sys.stderr)
         return 1
     print(f"批量预览登记完成：{changed}项更新 → {manifest}")
+    return 0
+
+
+def cmd_rehearsal_pack(
+    *,
+    pack: Path,
+    sources: Path,
+    content_root: Path,
+    asset_root: Path,
+    version: str,
+) -> int:
+    try:
+        result = build_rehearsal_pack(
+            pack_dir=pack,
+            sources_path=sources,
+            content_root=content_root,
+            asset_root=asset_root,
+            version=version,
+        )
+    except (RehearsalPackError, AssetStageError) as exc:
+        print(f"联调包生成失败：{exc}", file=sys.stderr)
+        return 1
+    print(
+        f"已写入本机联调包：{result['pack_id']}@{result['runtime_version']} "
+        f"内容={result['pack_dir']} 资源={result['asset_dir']}"
+    )
+    print(
+        "作者稿未覆盖："
+        f"{result['author_manifest']} 仍为 {result['author_version']} "
+        f"{result['author_publication_status']}"
+    )
     return 0
 
 
@@ -214,6 +305,28 @@ def main(argv: list[str] | None = None) -> int:
     render.add_argument(
         "--framing", required=True, type=Path, help="相机、环境、尺寸与透明背景JSON"
     )
+    record_source = sub.add_parser("record-source-profile", help="记录真实GLB的完整测量快照")
+    record_source.add_argument("--model", required=True, type=Path, help="真实GLB源文件")
+    record_source.add_argument("--record", required=True, type=Path, help="输出JSON测量快照路径")
+    export_display = sub.add_parser("export-display-glb", help="用gltf-transform减面并导出展示版GLB")
+    export_display.add_argument("--source", required=True, type=Path, help="真实GLB源文件")
+    export_display.add_argument("--display", required=True, type=Path, help="输出展示版GLB路径")
+    export_display.add_argument("--record", required=True, type=Path, help="输出JSON测量快照路径")
+    export_display.add_argument(
+        "--transform-cli",
+        required=True,
+        type=Path,
+        help="gltf-transform可执行文件路径；本机版本须与--expected-version一致",
+    )
+    export_display.add_argument(
+        "--expected-version",
+        default=DEFAULT_TRANSFORM_VERSION,
+        help="要求完全匹配的gltf-transform版本",
+    )
+    export_display.add_argument("--method", required=True, type=Path, help="减面方法JSON路径")
+    export_display.add_argument("--orientation", required=True, type=Path, help="默认朝向JSON路径")
+    export_display.add_argument("--note", required=True, help="来源记录说明")
+    export_display.add_argument("--source-sha256", help="可选：登记的源GLB哈希，防止覆盖")
     batch = sub.add_parser("batch-record-preview", help="按输入清单校验并批量登记人工导出的PNG")
     batch.add_argument(
         "--batch", required=True, type=Path, help="预览项目清单；相对素材路径以此文件目录为准"
@@ -232,6 +345,17 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="内容包中每个资产都必须有本机源文件，缺文件则失败",
     )
+    rehearsal = sub.add_parser(
+        "rehearsal-pack",
+        help="生成仅本机联调用的不可变published副本，不覆盖作者draft",
+    )
+    rehearsal.add_argument("--pack", required=True, type=Path, help="作者包目录")
+    rehearsal.add_argument(
+        "--sources", required=True, type=Path, help="忽略目录中的本机来源映射JSON"
+    )
+    rehearsal.add_argument("--content-root", required=True, type=Path, help="版本化内容根目录")
+    rehearsal.add_argument("--asset-root", required=True, type=Path, help="版本化资源根目录")
+    rehearsal.add_argument("--version", required=True, help="联调published版本，必须是新的semver")
     args = parser.parse_args(argv)
     if args.command == "validate":
         return cmd_validate(args.pack)
@@ -250,6 +374,23 @@ def main(argv: list[str] | None = None) -> int:
             renderer_version=args.renderer_version,
             attribution=args.attribution,
             framing_file=args.framing,
+        )
+    if args.command == "record-source-profile":
+        return cmd_record_source_profile(
+            model=args.model,
+            record=args.record,
+        )
+    if args.command == "export-display-glb":
+        return cmd_export_display_glb(
+            source=args.source,
+            display=args.display,
+            record=args.record,
+            transform_cli=args.transform_cli,
+            expected_version=args.expected_version,
+            method=args.method,
+            orientation=args.orientation,
+            note=args.note,
+            source_sha256=args.source_sha256,
         )
     if args.command == "render-preview":
         return cmd_render_preview(
@@ -271,6 +412,14 @@ def main(argv: list[str] | None = None) -> int:
             sources=args.sources,
             out=args.out,
             require_all=args.require_all,
+        )
+    if args.command == "rehearsal-pack":
+        return cmd_rehearsal_pack(
+            pack=args.pack,
+            sources=args.sources,
+            content_root=args.content_root,
+            asset_root=args.asset_root,
+            version=args.version,
         )
     parser.error("未知命令")
     return 2

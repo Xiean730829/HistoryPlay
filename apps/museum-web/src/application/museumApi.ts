@@ -63,6 +63,11 @@ interface PairResponse {
   control_ticket: string;
 }
 
+export interface EventTicketResponse {
+  ticket: string;
+  ticket_ttl_seconds: number;
+}
+
 interface SearchResponse {
   items: SearchHit[];
   next_cursor: string | null;
@@ -110,6 +115,13 @@ export async function searchArtifacts(
     { headers: boundHeaders(session) },
   );
   return response.items;
+}
+
+export async function requestEventTicket(session: ActiveSession): Promise<EventTicketResponse> {
+  return request<EventTicketResponse>(`/api/sessions/${session.session_id}/events/ticket`, {
+    method: "POST",
+    headers: boundHeaders(session),
+  });
 }
 
 export async function unpairSession(session: ActiveSession): Promise<void> {
