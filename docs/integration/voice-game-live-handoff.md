@@ -5,6 +5,7 @@
 1. 游戏 `main.create_app`已有database/commands/bindings/tickets时，导入VoiceLifecycle与register_voice_lifecycle_routes，执行 `register_voice_lifecycle_routes(app, VoiceLifecycle(database, services.commands, services.bindings, tickets))`。不重复创建游戏状态或配对。
 2. MuseumShell在当前ActiveSession可用时挂载 `GameVoicePanel`，传入 `session`、`onRefresh(receipt)`、gameUrl与bridgeUrl。onRefresh应刷新当前会话并将receipt交给已有render-receipt协调器；禁止重新调用restoreSession/pair。动作返回committed仍只是提交，不能替代真实呈现回执。
 3. 语音包新增对museum-mcp-gateway==0.1.0的workspace依赖，A更新根uv.lock；CI新增tests/voice_lifecycle。现有MCP/voice测试继续执行。
+4. RenderService增加公开的 `latest(session_id, connection_id)` 方法，在现有锁中返回对应_latest回执。独占voice/view路由只在回执版本等于当前状态且status=rendered时返回应用角度；否则相机语义操作拒绝，不能按尚未呈现的目标角度计算。B未改RenderService共享文件。
 
 ```tsx
 <GameVoicePanel session={session} onRefresh={async (receipt) => {
@@ -37,3 +38,9 @@
 新桥设备配置尚未等同于原8765页已连接；不能同时抢连同一设备。用户复用已有导入配置JSON最省操作；原工程没有导出/共享WS接口。云端probe17968保持原样，正式只读工具切换须先停旧probe再启动，不能双管道抢同端点。
 
 工程测试不等于H5/H6：需在游戏页真实说“看铜钱→看牛→看背面→讲故事→中途插话→继续”，观察真正模型/视角/故事及旧输入拒绝。未完成前不把CW09c/10b/11a/b/12a/b整卡标通过。
+
+## 22:30联调回归
+
+已通过真实本机HTTP与SQLite的端到端：创建独立测试会话与原配对→绑定本机桥→上传三帧真实Opus编码的PCM→模拟独占云连接返回最终STT→ActionTools→游戏HTTP一次性scope→展台从coin移动到bull。重复STT不再执行。另测旧输入读最新context后仍403，一次动作后不可重放。这里云端为测试适配器，不冒充真实账号声学验证。
+
+修正了固定稿字幕会被迟到STT覆盖、否定旧目标误定位、普通“为什么”追问误转角度，以及动作等待画面刷新时新问题先到导致旧正文迟到开口。真实新桥设备仍待本机配置与用户操作，probe17968未切换。
