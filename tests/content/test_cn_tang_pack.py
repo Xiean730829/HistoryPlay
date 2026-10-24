@@ -82,7 +82,54 @@ def test_three_preview_assets_are_inventoried_without_binding_source_display() -
         assert item["byte_size"] == size
         artifact = load_yaml(f"artifacts/{source_id.split('.')[-2]}.yaml")
         assert item["id"] in artifact["asset_ids"]
-        assert "presentation" not in artifact
+        display = artifact["presentation"]["display"]
+        assert display["kind"] == "model3d"
+        assert display["asset_id"].endswith(".display")
+        assert display["asset_id"] != source_id
+
+
+def test_three_display_models_are_derived_and_not_source_lod() -> None:
+    displays = [
+        load_yaml("assets/votive-stele.display.yaml"),
+        load_yaml("assets/kaiyuan-coin.display.yaml"),
+        load_yaml("assets/gilt-bronze-bull.display.yaml"),
+    ]
+    expected = {
+        "cn.tang.asset.votive-stele.display": (
+            "cn.tang.asset.votive-stele.glb",
+            "6bfdd2818663423c28a78523cdfc6e0929d403d93b091a3ba92fe2cb4dfd6bd5",
+            3536876,
+            "front-upright",
+        ),
+        "cn.tang.asset.kaiyuan-coin.display": (
+            "cn.tang.asset.kaiyuan-coin.glb",
+            "9c7be0d0d7c03060a91df98daf96ea476485e0434c89d421642a1c778fb04f7c",
+            4839224,
+            "inscription-face",
+        ),
+        "cn.tang.asset.gilt-bronze-bull.display": (
+            "cn.tang.asset.gilt-bronze-bull.glb",
+            "950a5f1079b89148fd29c5e9b4b0a9451e5b3e1ad377ec5664d56951abc62adf",
+            4213088,
+            "three-quarter",
+        ),
+    }
+    assert {item["id"] for item in displays} == set(expected)
+    for item in displays:
+        source_id, digest, size, orbit = expected[item["id"]]
+        assert item["kind"] == "model3d"
+        assert item["format"] == "glb"
+        assert item["lod"] == "display"
+        assert item["derived_from"] == source_id
+        assert item["sha256"] == digest
+        assert item["byte_size"] == size
+        assert item["framing"]["camera_orbit"] == orbit
+        source = load_yaml(f"assets/{source_id.split('.')[-2]}.yaml")
+        assert source["lod"] == "source"
+        artifact = load_yaml(f"artifacts/{source_id.split('.')[-2]}.yaml")
+        assert item["id"] in artifact["asset_ids"]
+        assert artifact["presentation"]["display"]["asset_id"] == item["id"]
+        assert artifact["presentation"]["display"]["kind"] == "model3d"
 
 
 def test_bull_keeps_century_dating_and_does_not_name_an_owner() -> None:
