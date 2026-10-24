@@ -20,6 +20,7 @@ from museum.application.binding_service import BindingService
 from museum.application.command_service import CommandService
 from museum.application.control_tickets import ControlTickets
 from museum.application.event_hub import EventHub
+from museum.application.event_tickets import EventTickets
 from museum.application.query_service import QueryService
 from museum.application.render_service import RenderService
 from museum.ports.asset_store import AssetStore
@@ -59,6 +60,7 @@ def create_app(
         authenticator=SessionAuthenticator(),
         bindings=BindingService(tickets),
         event_hub=EventHub(),
+        event_tickets=EventTickets(),
         renders=RenderService(),
         assets=assets,
         allowed_origins=(

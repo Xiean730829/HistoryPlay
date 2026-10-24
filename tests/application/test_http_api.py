@@ -280,9 +280,16 @@ def test_event_stream_replays_events_and_ignores_stale_render_receipt(tmp_path) 
         paired = await client.post(f"/api/sessions/{session_id}/pair", headers=headers)
         binding = await paired.json()
         bound = {**headers, "X-Museum-Connection": binding["connection_id"]}
+        event_ticket_response = await client.post(
+            f"/api/sessions/{session_id}/events/ticket", headers=bound
+        )
+        event_ticket = (await event_ticket_response.json())["ticket"]
+        event_protocols = ["museum-events.v1", f"museum-ticket.{event_ticket}"]
 
         socket = await client.ws_connect(
-            f"/api/sessions/{session_id}/events?after_seq=0", headers=bound
+            f"/api/sessions/{session_id}/events?after_seq=0",
+            protocols=event_protocols,
+            headers=origin,
         )
         command = {
             "schema_version": "1",
@@ -317,13 +324,27 @@ def test_event_stream_replays_events_and_ignores_stale_render_receipt(tmp_path) 
         assert rendered.status == 200
         assert (await rendered.json())["status"] == "rendered"
 
+        replay_ticket = await client.post(
+            f"/api/sessions/{session_id}/events/ticket", headers=bound
+        )
+        replay_token = (await replay_ticket.json())["ticket"]
         replay = await client.ws_connect(
-            f"/api/sessions/{session_id}/events?after_seq=0", headers=bound
+            f"/api/sessions/{session_id}/events?after_seq=0",
+            protocols=["museum-events.v1", f"museum-ticket.{replay_token}"],
+            headers=origin,
         )
         replayed = await replay.receive_json(timeout=1)
         assert replayed["event"]["event_seq"] == 1
 
-        snapshot = await client.ws_connect(f"/api/sessions/{session_id}/events", headers=bound)
+        snapshot_ticket = await client.post(
+            f"/api/sessions/{session_id}/events/ticket", headers=bound
+        )
+        snapshot_token = (await snapshot_ticket.json())["ticket"]
+        snapshot = await client.ws_connect(
+            f"/api/sessions/{session_id}/events",
+            protocols=["museum-events.v1", f"museum-ticket.{snapshot_token}"],
+            headers=origin,
+        )
         snapshot_message = await snapshot.receive_json(timeout=1)
         assert snapshot_message["type"] == "snapshot"
         assert snapshot_message["event_seq"] == 1

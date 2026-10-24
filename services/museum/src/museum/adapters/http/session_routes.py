@@ -26,6 +26,7 @@ def register_session_routes(app: web.Application) -> None:
     app.router.add_get("/api/sessions/{session_id}/galleries/{gallery_id}", get_gallery)
     app.router.add_get("/api/sessions/{session_id}/search", search_content)
     app.router.add_get("/api/sessions/{session_id}/facts/{fact_id}", read_fact)
+    app.router.add_post("/api/sessions/{session_id}/events/ticket", issue_event_ticket)
 
 
 async def create_session(request: web.Request) -> web.Response:
@@ -84,6 +85,26 @@ async def unpair_session(request: web.Request) -> web.Response:
     connection_id = require_binding(request, configured, session_id)
     configured.bindings.revoke(session_id, connection_id)
     return web.json_response({"status": "unpaired"})
+
+
+async def issue_event_ticket(request: web.Request) -> web.Response:
+    session_id = request.match_info["session_id"]
+    configured = require_session(request, session_id, mutation=True)
+    connection_id = require_binding(request, configured, session_id)
+    load_state(configured, session_id)
+    origin = request.headers.get("Origin")
+    if origin is None:
+        raise web.HTTPForbidden(text="事件通道请求缺少来源")
+    ticket = configured.event_tickets.issue(
+        session_id=session_id,
+        connection_id=connection_id,
+        origin=origin,
+    )
+    return web.json_response(
+        {"ticket": ticket, "ticket_ttl_seconds": configured.event_tickets.TTL_SECONDS},
+        status=201,
+        headers={"Cache-Control": "no-store"},
+    )
 
 
 async def get_context(request: web.Request) -> web.Response:
