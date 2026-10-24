@@ -106,6 +106,33 @@ def context_projection(context: Any) -> dict[str, Any]:
     }
 
 
+def gallery_projection(gallery: Any) -> dict[str, Any]:
+    return {
+        "id": gallery.id,
+        "title": gallery.title,
+        "region": gallery.region,
+        "status": gallery.status,
+        "default_station_id": gallery.default_station_id,
+        "stations": [
+            {
+                "id": station.id,
+                "order": station.order,
+                "time_range": station.time_range,
+                "placement_basis": station.placement_basis,
+                "side": station.side,
+                "artifact": _artifact(station.artifact),
+                "comparison_artifacts": [
+                    _artifact(item) for item in station.comparison_artifacts
+                ],
+                "is_visible": station.is_visible,
+                "is_focused": station.is_focused,
+            }
+            for station in gallery.stations
+        ],
+        "visible_artifacts": [_artifact(item) for item in gallery.visible_artifacts],
+    }
+
+
 def _artifact(value: Any) -> dict[str, Any] | None:
     if value is None:
         return None

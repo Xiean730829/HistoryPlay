@@ -7,6 +7,7 @@ from aiohttp import web
 from museum.adapters.http.auth import require_allowed_origin
 from museum.adapters.http.helpers import (
     context_projection,
+    gallery_projection,
     load_state,
     require_binding,
     require_session,
@@ -22,6 +23,7 @@ def register_session_routes(app: web.Application) -> None:
     app.router.add_post("/api/sessions/{session_id}/pair", pair_session)
     app.router.add_delete("/api/sessions/{session_id}/pair", unpair_session)
     app.router.add_get("/api/sessions/{session_id}/context", get_context)
+    app.router.add_get("/api/sessions/{session_id}/galleries/{gallery_id}", get_gallery)
     app.router.add_get("/api/sessions/{session_id}/search", search_content)
     app.router.add_get("/api/sessions/{session_id}/facts/{fact_id}", read_fact)
 
@@ -94,6 +96,18 @@ async def get_context(request: web.Request) -> web.Response:
     except LookupError as error:
         raise web.HTTPConflict(text=str(error)) from error
     return web.json_response(context_projection(context))
+
+
+async def get_gallery(request: web.Request) -> web.Response:
+    session_id = request.match_info["session_id"]
+    configured = require_session(request, session_id)
+    require_binding(request, configured, session_id)
+    state = load_state(configured, session_id)
+    try:
+        gallery = configured.query.gallery(state, request.match_info["gallery_id"])
+    except LookupError as error:
+        raise web.HTTPNotFound(text=str(error)) from error
+    return web.json_response(gallery_projection(gallery))
 
 
 async def search_content(request: web.Request) -> web.Response:

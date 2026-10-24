@@ -48,6 +48,39 @@ class MemoryCatalog:
                     "fact_card_ids": [],
                     "story_entry_ids": [],
                 },
+                "galleries/main.json": {
+                    "id": "cn.tang.gallery.main",
+                    "title": "唐朝长廊",
+                    "region": {"id": "cn", "label": "中国"},
+                    "status": "open",
+                    "default_station_id": "cn.tang.station.stele",
+                    "stations": [
+                        {
+                            "id": "cn.tang.station.stele",
+                            "order": 0,
+                            "time_range": {
+                                "start_year": 678,
+                                "end_year": 678,
+                                "precision": "year",
+                            },
+                            "placement_basis": "明确纪年入口。",
+                            "artifact_id": ARTIFACT_ID,
+                            "side": "center",
+                        },
+                        {
+                            "id": "cn.tang.station.bowl",
+                            "order": 1,
+                            "time_range": {
+                                "start_year": 700,
+                                "end_year": 799,
+                                "precision": "century",
+                            },
+                            "placement_basis": "第二展位。",
+                            "artifact_id": ARTIFACT_TWO_ID,
+                            "side": "right",
+                        },
+                    ],
+                },
                 "facts/date.json": {
                     "id": FACT_ID,
                     "claim": "题记纪年为678年。",
@@ -116,6 +149,19 @@ def test_http_session_pairing_context_and_command_flow(tmp_path) -> None:
         context = await context_response.json()
         assert context["focused_artifact"] is None
         assert context["visible_artifacts"] == []
+
+        gallery_response = await client.get(
+            f"/api/sessions/{session_id}/galleries/cn.tang.gallery.main",
+            headers=bound_headers,
+        )
+        assert gallery_response.status == 200
+        gallery = await gallery_response.json()
+        assert [item["order"] for item in gallery["stations"]] == [0, 1]
+        assert [item["artifact"]["id"] for item in gallery["stations"]] == [
+            ARTIFACT_ID,
+            ARTIFACT_TWO_ID,
+        ]
+        assert gallery["visible_artifacts"] == []
 
         search_response = await client.get(
             f"/api/sessions/{session_id}/search?q=佛碑&kind=artifact",
