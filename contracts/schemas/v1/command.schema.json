@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historyplay.dev/contracts/schemas/v1/command.schema.json",
+  "title": "Command",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "expected_revision",
+    "interaction_epoch",
+    "action"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1"
+    },
+    "request_id": {
+      "$ref": "common.schema.json#/$defs/opaqueId",
+      "description": "Idempotency key. Same ID and payload retries the original receipt; same ID different payload conflicts."
+    },
+    "expected_revision": {
+      "$ref": "common.schema.json#/$defs/nonNegativeInt"
+    },
+    "expected_view_revision": {
+      "$ref": "common.schema.json#/$defs/nonNegativeInt"
+    },
+    "interaction_epoch": {
+      "$ref": "common.schema.json#/$defs/nonNegativeInt"
+    },
+    "control_ticket": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "description": "Opaque short-lived ticket issued by the application. Models must not mint this."
+    },
+    "action": {
+      "$ref": "common.schema.json#/$defs/commandAction"
+    },
+    "target_id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "params": {
+      "$ref": "#/$defs/actionParams"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "enum": ["open_artifact", "enter_story", "focus_detail", "choose_action"]
+          }
+        },
+        "required": ["action"]
+      },
+      "then": {
+        "required": ["target_id"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "const": "set_view"
+          }
+        },
+        "required": ["action"]
+      },
+      "then": {
+        "required": ["expected_view_revision", "params"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "const": "choose_action"
+          }
+        },
+        "required": ["action"]
+      },
+      "then": {
+        "required": ["params"]
+      }
+    }
+  ],
+  "$defs": {
+    "actionParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "intent": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[a-z][a-z0-9_]{0,79}$"
+        },
+        "input_text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400,
+          "description": "Untrusted player utterance. Must map to a declared intent before rules run."
+        },
+        "camera": {
+          "$ref": "#/$defs/cameraPose"
+        }
+      }
+    },
+    "cameraPose": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["yaw", "pitch", "zoom"],
+      "properties": {
+        "yaw": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        },
+        "pitch": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "zoom": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 8
+        }
+      }
+    }
+  }
+}
