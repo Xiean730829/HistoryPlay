@@ -60,7 +60,7 @@ def test_redirect_callback_always_rejects_without_echoing_endpoint():
     asyncio.run(run())
 
 
-@pytest.mark.parametrize("origin", ["http://127.0.0.1:5174", "http://127.0.0.1:5175"])
+@pytest.mark.parametrize("origin", ["http://127.0.0.1:5174", "http://127.0.0.1:5175", "http://127.0.0.1:5176"])
 def test_unconfigured_bridge_status_is_explicit_and_contains_no_credentials(origin):
     async def run():
         app = create_app(None, port=8782, origin=origin)
