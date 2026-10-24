@@ -25,7 +25,7 @@ import { SessionProjectionStore } from "../state/sessionProjection";
 import { ExhibitList } from "./ExhibitList";
 import { StatusNotice } from "./StatusNotice";
 import { MuseumCorridor } from "../gallery/MuseumCorridor";
-import { SessionVoicePanel } from "../voice-ui/SessionVoicePanel";
+import { GameVoicePanel } from "../voice-ui/GameVoicePanel";
 import { ArtifactStoryStage } from "../story/ArtifactStoryStage";
 import { RenderReceiptReporter } from "../capabilities/RenderReceiptReporter";
 
@@ -297,10 +297,18 @@ export function MuseumShell() {
       ) : null}
 
       {session && (
-        <SessionVoicePanel
+        <GameVoicePanel
           key={`${session.session_id}:${session.connection_id}`}
-          packId={session.pack_id}
-          version={session.version}
+          session={session}
+          gameUrl={import.meta.env.VITE_MUSEUM_GAME_URL?.trim() || "http://127.0.0.1:8781"}
+          bridgeUrl={import.meta.env.VITE_MUSEUM_BRIDGE_URL?.trim() || "http://127.0.0.1:8782"}
+          onRefresh={async (receipt) => {
+            const active = await refreshSession(session);
+            const store = projectionStore.current;
+            if (store) await store.acceptQuery(active);
+            else setSession(active);
+            setRenderCommand(receipt?.status === "committed" ? receipt : null);
+          }}
         />
       )}
 

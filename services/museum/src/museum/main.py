@@ -12,6 +12,7 @@ from museum.adapters.http.auth import SessionAuthenticator
 from museum.adapters.http.command_routes import register_command_routes
 from museum.adapters.http.event_routes import register_event_routes
 from museum.adapters.http.helpers import SERVICES_KEY
+from museum.adapters.http.lifecycle_routes import register_voice_lifecycle_routes
 from museum.adapters.http.render_routes import register_render_routes
 from museum.adapters.http.services import HttpServices
 from museum.adapters.http.session_routes import register_session_routes
@@ -23,6 +24,7 @@ from museum.application.event_hub import EventHub
 from museum.application.event_tickets import EventTickets
 from museum.application.query_service import QueryService
 from museum.application.render_service import RenderService
+from museum.application.voice_lifecycle import VoiceLifecycle
 from museum.ports.asset_store import AssetStore
 from museum.ports.content_catalog import ContentCatalog
 
@@ -84,6 +86,9 @@ def create_app(
     register_event_routes(app)
     register_render_routes(app)
     register_asset_routes(app)
+    register_voice_lifecycle_routes(
+        app, VoiceLifecycle(database, services.commands, services.bindings, tickets)
+    )
     return app
 
 

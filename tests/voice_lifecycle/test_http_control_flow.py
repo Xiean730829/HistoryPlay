@@ -7,10 +7,7 @@ import pytest
 from aiohttp import ClientSession
 from aiohttp.test_utils import TestClient, TestServer
 from museum.adapters.http.helpers import SERVICES_KEY
-from museum.adapters.http.lifecycle_routes import register_voice_lifecycle_routes
 from museum.adapters.sqlite.database import SQLiteDatabase
-from museum.application.render_service import RenderService
-from museum.application.voice_lifecycle import VoiceLifecycle
 from museum.main import create_app
 from museum.ports.content_catalog import PublishedPack
 from museum_mcp.action_tools import ActionTools, TrustedInput, VoiceApplicationClient
@@ -79,15 +76,6 @@ async def game_fixture(tmp_path, *, renders=None):
     if renders is not None:
         services = replace(services, renders=renders)
         app[SERVICES_KEY] = services
-    register_voice_lifecycle_routes(
-        app,
-        VoiceLifecycle(
-            services.database,
-            services.commands,
-            services.bindings,
-            services.commands._tickets,
-        ),
-    )
     server = TestServer(app)
     await server.start_server()
     base_url = str(server.make_url("/")).rstrip("/")
@@ -257,14 +245,8 @@ def test_browser_pcm_to_current_transport_stt_to_real_game_http(tmp_path, monkey
 
 
 def test_camera_requires_current_rendered_receipt_not_degraded_or_pending_target(tmp_path):
-    class QueryableRenders(RenderService):
-        # The public read contract A must install; reporting stays the real implementation.
-        def latest(self, session_id, connection_id):
-            with self._lock:
-                return self._latest.get((session_id, connection_id))
-
     async def run():
-        server, binding, entered = await game_fixture(tmp_path, renders=QueryableRenders())
+        server, binding, entered = await game_fixture(tmp_path)
         client = VoiceApplicationClient(binding, origin=ORIGIN)
         headers = {
             "Authorization": f"Bearer {binding.session_token}",

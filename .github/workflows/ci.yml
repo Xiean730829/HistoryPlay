@@ -36,6 +36,7 @@ jobs:
       - run: uv run pytest tests/domain tests/application -q
       - run: uv run pytest tests/mcp -q
       - run: uv run pytest tests/voice -q
+      - run: uv run pytest tests/voice_lifecycle -q
       - name: Check PR and commit titles
         if: github.event_name == 'pull_request'
         env:
