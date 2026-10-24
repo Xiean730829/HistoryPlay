@@ -1,0 +1,21 @@
+{
+  "id": "cn.tang.artifact.stele",
+  "title": "一佛二菩萨造像碑",
+  "museum": {
+    "name": "Minneapolis Institute of Art",
+    "accession": "art/140016",
+    "collection_url": "https://collections.artsmia.org/art/140016/buddhist-votive-stele-with-buddha-and-two-bodhisattvas-china"
+  },
+  "time_range": {
+    "start_year": 678,
+    "end_year": 678,
+    "precision": "year",
+    "display_label": "678年"
+  },
+  "material": "石",
+  "category": "纪年造像碑",
+  "asset_ids": ["cn.tang.asset.stele.original"],
+  "fact_card_ids": ["cn.tang.fact.stele.dated-678"],
+  "story_entry_ids": ["cn.tang.story.stele-observation"],
+  "identity_unknown": false
+}

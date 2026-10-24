@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historyplay.dev/contracts/schemas/v1/content-pack.schema.json",
+  "title": "ContentPack",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "version",
+    "schema_version",
+    "language",
+    "region",
+    "time_range",
+    "required_capabilities",
+    "publication_status"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "language": {
+      "type": "string",
+      "pattern": "^[a-z]{2}(-[A-Z]{2})?$"
+    },
+    "region": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 64,
+          "pattern": "^[a-z]{2}(\\.[a-z0-9-]+)?$"
+        },
+        "label": {
+          "$ref": "common.schema.json#/$defs/nonEmptyText"
+        }
+      }
+    },
+    "time_range": {
+      "$ref": "common.schema.json#/$defs/timeRange"
+    },
+    "required_capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/capabilityId"
+      }
+    },
+    "publication_status": {
+      "enum": ["draft", "reviewed", "published", "retired"]
+    },
+    "title": {
+      "$ref": "common.schema.json#/$defs/nonEmptyText"
+    }
+  }
+}
