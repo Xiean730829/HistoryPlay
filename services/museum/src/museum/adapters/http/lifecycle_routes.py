@@ -1,6 +1,6 @@
 from aiohttp import web
 
-from museum.adapters.http.helpers import require_binding, require_session
+from museum.adapters.http.helpers import load_state, require_binding, require_session
 from museum.application.voice_lifecycle import VoiceLifecycle
 
 LIFECYCLE = web.AppKey("voice_lifecycle", VoiceLifecycle)
@@ -25,6 +25,27 @@ async def voice_operation(request: web.Request) -> web.Response:
             return web.json_response(
                 {"bridge_token": lifecycle.bind(session_id, actor)},
                 headers={"Cache-Control": "no-store"},
+            )
+        if operation == "view":
+            latest_reader = getattr(configured.renders, "latest", None)
+            latest = latest_reader(session_id, actor) if callable(latest_reader) else None
+            state = load_state(configured, session_id)
+            if latest is None or (
+                latest.revision,
+                latest.view_revision,
+                latest.interaction_epoch,
+            ) != (state.revision, state.view_revision, state.interaction_epoch):
+                return web.json_response({"status": "pending"})
+            return web.json_response(
+                {
+                    "status": latest.status,
+                    "view_revision": state.view_revision,
+                    "camera": {
+                        "yaw": state.camera_pose.yaw,
+                        "pitch": state.camera_pose.pitch,
+                        "zoom": state.camera_pose.zoom,
+                    },
+                }
             )
         bridge_token = request.headers.get("X-Museum-Voice-Bridge", "")
         if operation == "begin":

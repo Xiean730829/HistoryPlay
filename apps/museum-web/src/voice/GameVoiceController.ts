@@ -20,6 +20,7 @@ export class GameVoiceController {
   private readonly focus = new AudioFocus();
   private readonly narration = new NarrationPlayer(new BrowserSpeechAdapter(), this.focus);
   private disposed = false;
+  private inputSequence = 0;
 
   constructor(private readonly session: ActiveSession, private readonly hooks: GameVoiceHooks,
     private readonly gameUrl = "http://127.0.0.1:8781",
@@ -32,6 +33,7 @@ export class GameVoiceController {
     this.hooks.onStatus("正在连接当前展台语音");
     const response = await fetch(`${this.bridgeUrl}/voice/bind`, {
       method: "POST", headers: { "Content-Type": "application/json" },
+      signal: AbortSignal.timeout(8000),
       body: JSON.stringify({ base_url: this.gameUrl, session_id: this.session.session_id,
         session_token: this.session.session_token, connection_id: this.session.connection_id }),
     });
@@ -52,6 +54,7 @@ export class GameVoiceController {
   }
 
   beginTurn(): void {
+    this.inputSequence += 1;
     this.focus.claim("qa", () => this.voice?.interrupt());
     void this.voice?.beginTurn().catch((error: unknown) => {
       if (!this.disposed) this.hooks.onStatus(error instanceof Error ? error.message : "语音连接失败");
@@ -62,6 +65,7 @@ export class GameVoiceController {
 
   private async control(result: VoiceControlResult): Promise<void> {
     if (this.disposed) return;
+    const sequence = this.inputSequence;
     if (result.kind === "error" || result.kind === "clarification") {
       this.hooks.onStatus(result.message ?? "请再说具体一些"); return;
     }
@@ -76,7 +80,7 @@ export class GameVoiceController {
       this.hooks.onStatus(result.message ?? "动作已提交，正在更新画面");
       await this.hooks.onRefresh(result.receipt);
     }
-    if (result.narration && !this.disposed) {
+    if (result.narration && !this.disposed && sequence === this.inputSequence) {
       this.hooks.onTranscript(result.narration.text);
       this.hooks.onStatus("正在朗读已准备的正文");
       await this.narration.play(result.narration);
@@ -84,6 +88,7 @@ export class GameVoiceController {
   }
 
   dispose(): void {
+    this.inputSequence += 1;
     this.disposed = true;
     this.narration.leave();
     this.focus.stop();

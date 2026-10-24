@@ -30,7 +30,7 @@ class VoiceApplicationClient(ApplicationClient):
         scope: TrustedInput | None = None,
         bridge_token: str | None = None,
     ) -> dict:
-        if operation not in {"bind", "begin", "cancel", "act"}:
+        if operation not in {"bind", "begin", "cancel", "act", "view"}:
             raise GatewayError("不支持的语音生命周期操作")
         headers = {}
         if scope:
@@ -80,7 +80,6 @@ class ActionTools:
     async def act(self, action: str, target_id: str | None = None) -> dict:
         if self.scope is None:
             raise GatewayError("该云端调用没有可信输入来源，保持只读；请通过已绑定网页语音输入")
-        state = await self.client.state()
         context = await self.client.get("context")
         focused = context.get("focused_artifact") or {}
         body: dict = {}
@@ -89,7 +88,10 @@ class ActionTools:
         elif action == "locate" and target_id:
             body = {"action": "locate_artifact", "target_id": target_id}
         elif action in {"back", "front", "zoom_in", "zoom_out"}:
-            camera = dict(state.get("camera_pose") or {"yaw": 0, "pitch": 0, "zoom": 1})
+            applied = await self.client.voice("view", scope=self.scope)
+            if applied.get("status") != "rendered":
+                raise GatewayError("当前模型尚未完整呈现，请等展品显示后再调整角度")
+            camera = dict(applied["camera"])
             if action == "back":
                 camera["yaw"] = (camera["yaw"] + 360) % 360 - 180
             elif action == "front":

@@ -170,6 +170,7 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
                             and not orchestrator.handled
                         ):
                             text = event.get("text", "")
+                            await browser.send_json({"type": "stt", "text": text})
                             if interpret(text) is not None:
                                 mute_reply = True
                                 await upstream.send_json(
@@ -186,6 +187,9 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
                                         "result": {"kind": "error", "message": str(error)},
                                     }
                                 )
+                            continue
+                        if event.get("type") == "stt" and orchestrator.handled:
+                            continue
                         if event.get("type") == "tts" and event.get("state") == "start":
                             codec.reset_decoder()
                         if event.get("type") in {"stt", "tts", "llm", "alert", "goodbye"}:
