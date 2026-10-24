@@ -1,9 +1,16 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
+from content_pipeline.assets.model_preview import render_preview
+from content_pipeline.assets.preview_manifest import (
+    PreviewInputError,
+    record_preview,
+    record_preview_batch,
+)
 from content_pipeline.build.compiler import compile_pack, write_documents
 from content_pipeline.build.pack_writer import write_immutable_pack
 from content_pipeline.validation.reference_validator import validate_references
@@ -60,6 +67,100 @@ def cmd_stage(pack: Path, out: Path) -> int:
     return 0
 
 
+def cmd_record_preview(
+    *,
+    asset_id: str,
+    preview_asset_id: str,
+    model: Path,
+    preview: Path,
+    manifest: Path,
+    renderer: str,
+    renderer_version: str,
+    attribution: str,
+    framing_file: Path,
+) -> int:
+    try:
+        framing = json.loads(framing_file.read_text(encoding="utf-8"))
+        changed = record_preview(
+            manifest_path=manifest,
+            asset_id=asset_id,
+            preview_asset_id=preview_asset_id,
+            model_path=model,
+            preview_path=preview,
+            renderer=renderer,
+            renderer_version=renderer_version,
+            attribution=attribution,
+            framing=framing,
+        )
+    except (OSError, json.JSONDecodeError, PreviewInputError) as exc:
+        print(f"预览登记失败：{exc}", file=sys.stderr)
+        return 1
+    if changed:
+        print(f"已登记真实模型预览：{asset_id} → {manifest}")
+    else:
+        print(f"预览输入未变化，复用已有清单记录：{asset_id}")
+    return 0
+
+
+def cmd_render_preview(
+    *,
+    renderer_path: Path,
+    expected_version: str,
+    asset_id: str,
+    preview_asset_id: str,
+    model: Path,
+    preview: Path,
+    manifest: Path,
+    attribution: str,
+    framing_file: Path,
+) -> int:
+    try:
+        framing = json.loads(framing_file.read_text(encoding="utf-8"))
+        changed = render_preview(
+            renderer_path=renderer_path,
+            expected_version=expected_version,
+            model_path=model,
+            preview_path=preview,
+            manifest_path=manifest,
+            asset_id=asset_id,
+            preview_asset_id=preview_asset_id,
+            attribution=attribution,
+            framing=framing,
+        )
+    except (OSError, json.JSONDecodeError, PreviewInputError) as exc:
+        print(f"预览渲染失败：{exc}", file=sys.stderr)
+        return 1
+    print(
+        f"已渲染并登记模型预览：{asset_id} → {manifest}"
+        if changed
+        else f"预览未变化，复用已有清单记录：{asset_id}"
+    )
+    return 0
+
+
+def cmd_batch_record_preview(*, batch: Path, manifest: Path) -> int:
+    try:
+        document = json.loads(batch.read_text(encoding="utf-8"))
+        if not isinstance(document, dict) or document.get("schema_version") != 1:
+            raise PreviewInputError("批量输入必须是schema_version为1的JSON对象")
+        entries = document.get("previews")
+        if not isinstance(entries, list) or not all(isinstance(item, dict) for item in entries):
+            raise PreviewInputError("批量输入的previews必须是对象数组")
+        items = []
+        for entry in entries:
+            item = dict(entry)
+            for key in ("model_path", "preview_path"):
+                path = Path(item[key])
+                item[key] = (batch.parent / path).resolve() if not path.is_absolute() else path
+            items.append(item)
+        changed = record_preview_batch(manifest_path=manifest, items=items)
+    except (OSError, json.JSONDecodeError, TypeError, KeyError, PreviewInputError) as exc:
+        print(f"批量预览登记失败：{exc}", file=sys.stderr)
+        return 1
+    print(f"批量预览登记完成：{changed}项更新 → {manifest}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="内容制作命令")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -71,6 +172,38 @@ def main(argv: list[str] | None = None) -> int:
     stage = sub.add_parser("stage", help="写入不可变版本目录，不覆盖已有版本")
     stage.add_argument("--pack", required=True, type=Path, help="作者包目录")
     stage.add_argument("--out", required=True, type=Path, help="版本化内容根目录")
+    preview = sub.add_parser(
+        "record-preview",
+        help="登记用真实GLB人工或离线渲染的PNG预览；不会调用生图服务",
+    )
+    preview.add_argument("--asset-id", required=True, help="契约中的稳定模型资源ID")
+    preview.add_argument("--preview-asset-id", required=True, help="预览PNG对应的稳定资源ID")
+    preview.add_argument("--model", required=True, type=Path, help="真实GLB源文件")
+    preview.add_argument("--preview", required=True, type=Path, help="人工或离线导出的PNG")
+    preview.add_argument("--manifest", required=True, type=Path, help="版本外部的预览导出清单")
+    preview.add_argument("--renderer", required=True, help="例如 Blender 或其他离线渲染器")
+    preview.add_argument("--renderer-version", required=True, help="固定且可复现的渲染器版本")
+    preview.add_argument("--attribution", required=True, help="模型与衍生预览的署名/许可说明")
+    preview.add_argument(
+        "--framing", required=True, type=Path, help="相机、目标、尺寸与透明背景JSON"
+    )
+    render = sub.add_parser("render-preview", help="用固定版本Blender离线渲染GLB预览")
+    render.add_argument("--renderer-path", required=True, type=Path, help="Blender可执行文件路径")
+    render.add_argument("--expected-version", required=True, help="要求完全匹配的Blender版本")
+    render.add_argument("--asset-id", required=True, help="契约中的稳定模型资源ID")
+    render.add_argument("--preview-asset-id", required=True, help="预览PNG对应的稳定资源ID")
+    render.add_argument("--model", required=True, type=Path, help="真实GLB源文件")
+    render.add_argument("--preview", required=True, type=Path, help="预览PNG输出路径")
+    render.add_argument("--manifest", required=True, type=Path, help="版本外部的预览导出清单")
+    render.add_argument("--attribution", required=True, help="模型与衍生预览的署名/许可说明")
+    render.add_argument(
+        "--framing", required=True, type=Path, help="相机、环境、尺寸与透明背景JSON"
+    )
+    batch = sub.add_parser("batch-record-preview", help="按输入清单校验并批量登记人工导出的PNG")
+    batch.add_argument(
+        "--batch", required=True, type=Path, help="预览项目清单；相对素材路径以此文件目录为准"
+    )
+    batch.add_argument("--manifest", required=True, type=Path, help="版本外部的预览导出清单")
     args = parser.parse_args(argv)
     if args.command == "validate":
         return cmd_validate(args.pack)
@@ -78,6 +211,32 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_build(args.pack, args.out)
     if args.command == "stage":
         return cmd_stage(args.pack, args.out)
+    if args.command == "record-preview":
+        return cmd_record_preview(
+            asset_id=args.asset_id,
+            preview_asset_id=args.preview_asset_id,
+            model=args.model,
+            preview=args.preview,
+            manifest=args.manifest,
+            renderer=args.renderer,
+            renderer_version=args.renderer_version,
+            attribution=args.attribution,
+            framing_file=args.framing,
+        )
+    if args.command == "render-preview":
+        return cmd_render_preview(
+            renderer_path=args.renderer_path,
+            expected_version=args.expected_version,
+            asset_id=args.asset_id,
+            preview_asset_id=args.preview_asset_id,
+            model=args.model,
+            preview=args.preview,
+            manifest=args.manifest,
+            attribution=args.attribution,
+            framing_file=args.framing,
+        )
+    if args.command == "batch-record-preview":
+        return cmd_batch_record_preview(batch=args.batch, manifest=args.manifest)
     parser.error("未知命令")
     return 2
 
