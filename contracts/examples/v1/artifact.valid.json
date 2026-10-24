@@ -1,6 +1,7 @@
 {
   "id": "cn.tang.artifact.stele",
   "title": "一佛二菩萨造像碑",
+  "aliases": ["造像碑", "一佛二菩萨碑"],
   "museum": {
     "name": "Minneapolis Institute of Art",
     "accession": "art/140016",

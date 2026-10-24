@@ -21,6 +21,8 @@ export interface TimeRange {
 export interface Artifact {
   id: NamespacedId;
   title: NonEmptyText;
+  /** Explicit search aliases, including common Chinese names; never inferred from unpublished sources. */
+  aliases?: Array<string>;
   museum: ArtifactMuseum;
   time_range: TimeRange;
   material: NonEmptyText;

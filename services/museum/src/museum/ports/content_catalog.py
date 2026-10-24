@@ -5,6 +5,10 @@ from dataclasses import dataclass
 from typing import Protocol
 
 
+class PublishedContentUnavailable(LookupError):
+    """A requested immutable published pack version is unavailable."""
+
+
 @dataclass(frozen=True)
 class PackReference:
     pack_id: str
