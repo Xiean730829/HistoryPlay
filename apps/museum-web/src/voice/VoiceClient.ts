@@ -12,6 +12,10 @@ export class VoiceClient {
   private ready = false;
   private listening = false;
   private pending: ArrayBuffer[] = [];
+  private preRoll: ArrayBuffer[] = [];
+  private turnRequested = false;
+  private turnEnded = false;
+  private closing: Promise<void> = Promise.resolve();
 
   constructor(
     private readonly playback: PlaybackQueue,
@@ -26,7 +30,15 @@ export class VoiceClient {
   }
 
   connect(): Promise<void> {
+    const preRoll = this.pending.slice();
+    const recent = this.preRoll.slice();
+    const turnRequested = this.turnRequested;
+    const turnEnded = this.turnEnded;
     this.disconnect();
+    this.pending = preRoll;
+    this.preRoll = recent;
+    this.turnRequested = turnRequested;
+    this.turnEnded = turnEnded;
     const connection = this.connection;
     const epoch = this.playback.epoch;
     this.callbacks.onState("connecting");
@@ -67,6 +79,8 @@ export class VoiceClient {
         this.ready = false;
         this.listening = false;
         this.pending = [];
+        this.turnRequested = false;
+        this.turnEnded = false;
         this.playback.stop();
         this.callbacks.onState("disconnected");
       };
@@ -84,10 +98,46 @@ export class VoiceClient {
 
   sendFrame(frame: ArrayBuffer): void {
     if (frame.byteLength !== 640) return;
+    this.preRoll.push(frame.slice(0));
+    if (this.preRoll.length > 12) this.preRoll.shift();
     if (this.ready && this.listening) this.socket?.send(frame);
-    else {
+    else if (this.turnRequested && !this.turnEnded) {
       this.pending.push(frame.slice(0));
-      if (this.pending.length > 12) this.pending.shift();
+      if (this.pending.length > 1500) {
+        this.disconnect();
+        this.callbacks.onState("error", "连接等待期间单段语音超过30秒，请重新说一次");
+      }
+    } else if (!this.turnRequested) {
+      this.pending = this.preRoll.slice();
+    }
+  }
+
+  /** One trusted local utterance per transport; buffers up to 30s while reconnecting. */
+  async beginTurn(): Promise<void> {
+    const preRoll = this.preRoll.slice();
+    this.interrupt();
+    this.pending = preRoll;
+    this.turnRequested = true;
+    this.turnEnded = false;
+    // The bridge has a single-device lease. Wait for its close acknowledgement
+    // before opening the replacement, otherwise the old lease can cause HTTP409.
+    await this.closing;
+    const opening = this.connect();
+    const connection = this.connection;
+    await opening;
+    if (connection !== this.connection) return;
+    this.startListening();
+    if (this.turnEnded) {
+      this.stopListening();
+      this.turnRequested = false;
+    }
+  }
+
+  endTurn(): void {
+    this.turnEnded = true;
+    if (this.ready && this.listening) {
+      this.stopListening();
+      this.turnRequested = false;
     }
   }
 
@@ -98,9 +148,13 @@ export class VoiceClient {
 
   /** Stop locally before abort. Reconnect explicitly; old transport cannot revive. */
   interrupt(): void {
+    const preRoll = this.pending.slice();
+    const recent = this.preRoll.slice();
     this.playback.stop();
     if (this.ready) this.socket?.send(JSON.stringify({ op: "abort" }));
     this.disconnect();
+    this.pending = preRoll;
+    this.preRoll = recent;
   }
 
   disconnect(): void {
@@ -108,9 +162,23 @@ export class VoiceClient {
     this.ready = false;
     this.listening = false;
     this.pending = [];
+    this.preRoll = [];
+    this.turnRequested = false;
+    this.turnEnded = false;
     this.playback.stop();
     const socket = this.socket;
     this.socket = null;
-    socket?.close();
+    if (socket) {
+      this.closing = new Promise((resolve) => {
+        const previous = socket.onclose;
+        const timer = setTimeout(resolve, 2500);
+        socket.onclose = (event) => {
+          clearTimeout(timer);
+          previous?.call(socket, event);
+          resolve();
+        };
+        socket.close();
+      });
+    }
   }
 }

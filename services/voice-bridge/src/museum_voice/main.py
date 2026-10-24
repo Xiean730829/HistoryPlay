@@ -5,7 +5,15 @@ import json
 import os
 from pathlib import Path
 
-from aiohttp import ClientError, ClientSession, ClientTimeout, TraceConfig, WSMsgType, web
+from aiohttp import (
+    ClientError,
+    ClientSession,
+    ClientTimeout,
+    ClientWSTimeout,
+    TraceConfig,
+    WSMsgType,
+    web,
+)
 from av.error import FFmpegError
 
 from museum_voice.codec import AudioCodec, pack_audio, unpack_audio
@@ -55,10 +63,15 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
                 heartbeat=20,
                 max_msg_size=2 * 1024 * 1024,
                 autoping=True,
+                timeout=ClientWSTimeout(ws_close=1),
             )
             await upstream.send_json(hello_message(device))
             hello = await asyncio.wait_for(upstream.receive_json(), 12)
-            if hello.get("type") != "hello" or hello.get("transport") != "websocket":
+            if (
+                not isinstance(hello, dict)
+                or hello.get("type") != "hello"
+                or hello.get("transport") != "websocket"
+            ):
                 raise ValueError("官方未接受设备握手")
             session_id = hello.get("session_id", "")
             await browser.send_json({"type": "ready", "sample_rate": 24000})
@@ -70,6 +83,8 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
                             await upstream.send_bytes(pack_audio(packet, device.version))
                     elif message.type == WSMsgType.TEXT:
                         command = json.loads(message.data)
+                        if not isinstance(command, dict):
+                            raise ValueError("语音操作必须是JSON对象")
                         op = command.get("op")
                         if op == "start":
                             mode = command.get("mode", "manual")
@@ -107,6 +122,10 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
                             await browser.send_bytes(pcm)
                     elif message.type == WSMsgType.TEXT:
                         event = json.loads(message.data)
+                        if not isinstance(event, dict):
+                            raise ValueError("云端语音事件必须是JSON对象")
+                        if event.get("type") == "tts" and event.get("state") == "start":
+                            codec.reset_decoder()
                         if event.get("type") in {"stt", "tts", "llm", "alert", "goodbye"}:
                             safe = {
                                 key: event[key] for key in ("type", "state", "text") if key in event

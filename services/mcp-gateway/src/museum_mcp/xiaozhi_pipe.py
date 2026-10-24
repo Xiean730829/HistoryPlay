@@ -51,7 +51,8 @@ class ProbeEvidence:
         elif method == "tools/list":
             self.tools_list_requests += 1
         elif method == "tools/call":
-            name = (data.get("params") or {}).get("name")
+            params = data.get("params")
+            name = params.get("name") if isinstance(params, dict) else None
             if name in {
                 "museum_probe",
                 "museum_probe_sentence",

@@ -3,20 +3,29 @@ import { MicrophoneCapture } from "../voice/MicrophoneCapture";
 import type { CaptureCallbacks } from "../voice/MicrophoneCapture";
 
 /** Explicit microphone permission entry; game orchestration is injected by MuseumShell. */
-export function VoiceEntry({ callbacks }: { callbacks: CaptureCallbacks }) {
+export function VoiceEntry({ callbacks, beforeStart, onStop }: {
+  callbacks: CaptureCallbacks;
+  /** Called from the explicit user gesture: unlock the shared output context here. */
+  beforeStart?: () => Promise<void>;
+  /** Close the voice transport and release AudioFocus on pause/unmount. */
+  onStop?: () => void;
+}) {
   const capture = useRef<MicrophoneCapture | null>(null);
   const [status, setStatus] = useState("语音未开启");
   const [active, setActive] = useState(false);
   const [opening, setOpening] = useState(false);
   const alive = useRef(true);
+  const stopLatest = useRef(onStop);
+  stopLatest.current = onStop;
   useEffect(() => {
     alive.current = true;
-    return () => { alive.current = false; capture.current?.stop(); };
+    return () => { alive.current = false; capture.current?.stop(); stopLatest.current?.(); };
   }, []);
 
   async function toggle() {
     if (active) {
       capture.current?.stop();
+      onStop?.();
       setActive(false);
       setStatus("语音已暂停");
       return;
@@ -29,6 +38,8 @@ export function VoiceEntry({ callbacks }: { callbacks: CaptureCallbacks }) {
     } });
     capture.current = microphone;
     try {
+      await beforeStart?.();
+      if (!alive.current) return;
       const settings = await microphone.start();
       if (!alive.current) return;
       setActive(true);
