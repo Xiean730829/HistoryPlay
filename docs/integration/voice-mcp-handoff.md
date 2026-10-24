@@ -94,3 +94,22 @@ $env:MUSEUM_WEB_ORIGIN = 'http://127.0.0.1:5173'
 由于云端逐轮关联尚未证明，保守的 `interrupt()` 先本地stop，再abort并退休整个旧音频连接，下一轮须显式重连同一设备；旧连接上的tts.start不会升级为新代。该路径只保证本地音频隔离，**不证明云端旧MCP动作安全，也不承诺云端聊天上下文跨重连保持**。不能把此基础提交标为CW09b/CW09c/CW11b整卡完成。
 
 A线需在根uv成员/锁登记 `services/voice-bridge`（已固定aiohttp/av），CI覆盖 `tests/voice`。VoiceEntry首次操作应先解锁播放AudioContext并connect，再start采音；新轮onSpeechStarted先stop，若旧回复仍在播放则interrupt，重连成功后startListening；onSpeechEnded调用stopListening；每帧调用sendFrame。启动/重连期间要保留最近240ms预录，避免丢首字。浏览器显示“已连接”必须来自桥的ready，不能来自麦克风权限获准。
+
+## MCP真实发现探针与WSS管道（独立PR）
+
+新增 `museum_mcp.probe_server`（两个无私密信息、无游戏控制的诊断工具）和 `museum_mcp.xiaozhi_pipe`（兼容官方stdio↔WSS路径）。无需设备Token，也不会抢占原网页的音频连接。诊断模式不需要游戏绑定，可先验证云端发现；正式museum模式才读取已绑定展台。
+
+用户只需在当前智能体的MCP接入点复制现有WSS地址，保存到本机忽略目录 `.local/voice/mcp-endpoint.txt`。这是MCP管道接入点，与设备语音WSS/Token是两种配置，不能互换。不要把接入点发到聊天、截图、PR或命令参数。
+
+```powershell
+$env:MUSEUM_MCP_ENDPOINT_FILE = '<本机mcp-endpoint.txt的绝对路径>'
+$env:MUSEUM_MCP_MODE = 'probe'
+$env:MUSEUM_MCP_REPORT_FILE = '<本机.local/voice/probe-report.json的绝对路径>'
+.venv/Scripts/python.exe -m museum_mcp.xiaozhi_pipe
+```
+
+用户在原小智页面说：“调用时空博物馆诊断工具。”然后说：“取博物馆测试句并逐字读。”工具返回的固定测试句为：“这里是时空博物馆。我们正通过一件文物，走近唐朝人的生活。”用户听到的逐字一致性另记录，工具返回句子不等于TTS验收通过。
+
+脱敏报告只记录连接状态、initialize/tools-list请求次数、白名单工具调用次数；不记录参数、响应原文、录音、设备身份或接入点。即使实际调用成功，报告中的audio/abort/turn_association仍为false，必须分别核实，不会自动把工具发现提升为全链路语音成功。
+
+本地 `tests/mcp` 已增到24项通过（含诊断工具和脱敏报告/目标校验），Ruff通过。当前没有读取到本机MCP接入点，云端发现仍未测。
