@@ -1,11 +1,25 @@
-# 当前展台语音控制接入（2026-10-24晚间B线）
+# 当前展台语音控制接入
 
-## A线只需装配的位置
+## 2026-10-25 00:10 运行与验收状态
 
-1. 游戏 `main.create_app`已有database/commands/bindings/tickets时，导入VoiceLifecycle与register_voice_lifecycle_routes，执行 `register_voice_lifecycle_routes(app, VoiceLifecycle(database, services.commands, services.bindings, tickets))`。不重复创建游戏状态或配对。
-2. MuseumShell在当前ActiveSession可用时挂载 `GameVoicePanel`，传入 `session`、`onRefresh(receipt)`、gameUrl与bridgeUrl。onRefresh应刷新当前会话并将receipt交给已有render-receipt协调器；禁止重新调用restoreSession/pair。动作返回committed仍只是提交，不能替代真实呈现回执。
-3. 语音包新增对museum-mcp-gateway==0.1.0的workspace依赖，A更新根uv.lock；CI新增tests/voice_lifecycle。现有MCP/voice测试继续执行。
-4. RenderService增加公开的 `latest(session_id, connection_id)` 方法，在现有锁中返回对应_latest回执。独占voice/view路由只在回执版本等于当前状态且status=rendered时返回应用角度；否则相机语义操作拒绝，不能按尚未呈现的目标角度计算。B未改RenderService共享文件。
+- 当前验收页面是 `http://127.0.0.1:5176/`；游戏服务8783，语音桥8782，仅允许已配置的5176 Origin。旧5173/5174/5175页面不代表这次集成版本。
+- PR #91/#92/#93/#95/#96 已依次合入main；生产装配 #101、实际相机回执 #102、真实作者故事返回出口修复 #103 均按准确head通过CI后合入。生产代码为 `e6d0def`。
+- 本机内容为隔离联调包 `cn.tang.core@0.2.1`，由当前作者稿生成，包含三件文物的PNG/展示版GLB。作者稿未被覆盖；联调published不等于历史内容审核已完成。
+- 已实测生产HTTP：会话创建→原配对→语音bind→一次性scope动作提交→本机桥绑定→MCP应用客户端读取相同焦点。未打开网页时真实呈现状态是pending，未把提交当呈现。
+- 三件固定背景正文均已从实际HTTP读回；卧牛故事进入首段63字→下一段54字已实际提交并取回。新增真实作者稿三故事开始/下一段/返回原展台回归；118项后端、46项前端与5项投影测试通过。
+- 原probe已停，唯一正式museum管道真实连接并收到initialize与tools/list；正式工具调用与新桥真实声音尚待玩家操作。设备JSON配置已校验并加载，health的device_configured=true只证明配置可读取。
+
+请玩家先断开原8765设备页及其他语音页，再打开5176，只点一次“开启语音”。按顺序测试：“我要看牛”→等待真实模型→“看背面”→“介绍这个文物”→“看背后的故事”→中途提问→“继续”→“下一段”→“返回展台”。记录实际画面、字幕、声音、是否立即停读以及继续是否仍为同段。恢复旧会话若没有当前命令回执，先定位一次文物，不能伪造基线呈现。
+
+CW10b/CW11a/b/CW12a/b 已有集成实现和工程验证，但H5/H6真实声音与打断未通过前，不把整卡标完成。当前中文意图范围是有界适配器；普通追问仍用小智问答，尚未证明重连后云端长期对话记忆。
+
+## 已完成的生产装配
+
+1. `services/museum/src/museum/main.py` 的create_app注册VoiceLifecycle与HTTP路由，复用既有database/commands/bindings/tickets。生产工厂集成测试不再手工补注册。
+2. `MuseumShell.tsx` 挂载 `GameVoicePanel`，使用现有ActiveSession；刷新回调不重新配对，并把receipt交RenderReceiptReporter。首次进入长廊的命令也保留供真实载入回执关联。
+3. 根uv.lock登记语音包到MCP包的workspace依赖；CI执行tests/voice_lifecycle和既有MCP/voice测试。
+4. `RenderService.latest(session_id, connection_id)` 在锁内只读当前回执；voice/view仅在版本匹配且rendered时开放角度。`Artifact3D` 在模型可见帧读取实际相机方向与相对距离，拒绝旧角度/旧距离。
+5. `tools/dev/run_local.py` 根据选定端口设置页面服务地址和单一Origin；Vite strictPort防止悄悄换端口。配置设备文件时启动语音桥，未配置时只启动网页/游戏。正式MCP管道单独管理，启动器不会偷偷创建第二条管道。
 
 ```tsx
 <GameVoicePanel session={session} onRefresh={async (receipt) => {
@@ -13,7 +27,7 @@
 }} gameUrl="http://127.0.0.1:8781" bridgeUrl="http://127.0.0.1:8782" />
 ```
 
-语音桥独立端口采用8782，因8781实际已被museum-game使用。页面若为5174，启动桥须设置MUSEUM_WEB_ORIGIN=http://127.0.0.1:5174。MUSEUM_XIAOZHI_DEVICE_FILE仍只指向本机私密设备配置，不能用MCP端点代替。
+当前运行使用 `MUSEUM_PORT=8783`、`MUSEUM_WEB_PORT=5176`、`MUSEUM_VOICE_PORT=8782`，并将MUSEUM_ALLOWED_ORIGINS和MUSEUM_WEB_ORIGIN都设为http://127.0.0.1:5176。MUSEUM_CONTENT_ROOT/MUSEUM_ASSET_ROOT指向同一联调包的published/assets根。MUSEUM_XIAOZHI_DEVICE_FILE只引用本机已有私密设备JSON，不复制进Git，不用MCP端点代替。配置后执行 `uv run python tools/dev/run_local.py`。
 
 ## 可信控制路径
 
@@ -26,7 +40,7 @@
 ## 第一版语音范围
 
 - 往前/下一件；往后/上一件；看牛/看铜钱/看碑（内容搜索得到稳定ID，歧义时询问而不移动）。
-- 看背面/正面/放大/缩小；背面按已有相机目标角度计算，实际应用回执仍由A整合。
+- 看背面/正面/放大/缩小；按当前实际呈现回执计算，提交与真正呈现分别确认。
 - “介绍这个文物”读已准备背景；“看背后的故事”进入当前文物故事并读当前段。
 - “继续”从被打断的同片段开头重读；“下一段”才调用continue_story；“返回展台”恢复展台。
 - 规则外问题保留小智自由问答；不会同时执行第二份游戏控制。
@@ -35,7 +49,7 @@
 
 ## 仍必须实际验证
 
-新桥设备配置尚未等同于原8765页已连接；不能同时抢连同一设备。用户复用已有导入配置JSON最省操作；原工程没有导出/共享WS接口。云端probe17968保持原样，正式只读工具切换须先停旧probe再启动，不能双管道抢同端点。
+新桥已读取已有设备JSON，仍不能将配置成功等同云端握手或声音成功。原8765页必须先断开；同一设备不能同时开麦连接。原probe已停并切到唯一正式管道，后续重启同样禁止双管道抢端点。
 
 工程测试不等于H5/H6：需在游戏页真实说“看铜钱→看牛→看背面→讲故事→中途插话→继续”，观察真正模型/视角/故事及旧输入拒绝。未完成前不把CW09c/10b/11a/b/12a/b整卡标通过。
 
