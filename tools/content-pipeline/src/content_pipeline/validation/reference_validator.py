@@ -235,10 +235,16 @@ _FIELD_REFS: dict[str, tuple[tuple[str, str | None], ...]] = {
 }
 
 
-def validate_references(pack_dir: Path) -> list[Issue]:
-    entities = _iter_entities(pack_dir)
-    if not entities:
+def validate_references(pack_dir: Path, dependency_packs: list[Path] | None = None) -> list[Issue]:
+    local_entities = _iter_entities(pack_dir)
+    if not local_entities:
         return []
+    dependency_entities = [
+        entity
+        for dependency in dependency_packs or []
+        for entity in _iter_entities(dependency)
+    ]
+    entities = [*local_entities, *dependency_entities]
     issues: list[Issue] = []
     by_id: dict[str, Entity] = {}
     for entity in entities:
@@ -250,18 +256,18 @@ def validate_references(pack_dir: Path) -> list[Issue]:
             continue
         by_id[entity.ident] = entity
 
-    namespace = _pack_namespace(entities)
+    namespace = _pack_namespace(local_entities)
     if namespace:
         prefix = namespace + "."
-        for entity in entities:
+        for entity in local_entities:
             if entity.kind == "manifest":
                 continue
             if not entity.ident.startswith(prefix):
                 issues.append(entity.locate(f"标识不属于内容包命名空间 {namespace}：{entity.ident}"))
 
-    issues.extend(_check_artifact_aliases(entities))
+    issues.extend(_check_artifact_aliases(local_entities))
 
-    for entity in entities:
+    for entity in local_entities:
         for field, expected_kind in _FIELD_REFS.get(entity.kind, ()):
             issues.extend(_check_field(entity, field, expected_kind, by_id))
         if entity.kind == "story":

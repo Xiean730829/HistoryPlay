@@ -75,6 +75,7 @@ export interface ContentPack {
   required_capabilities: Array<CapabilityId>;
   publication_status: "draft" | "reviewed" | "published" | "retired";
   title?: NonEmptyText;
+  dependencies?: Array<ContentPackDependencies>;
 }
 
 export interface SessionEvent {
@@ -362,6 +363,11 @@ export interface CommandObject {
 export interface ContentPackRegion {
   id: string;
   label: NonEmptyText;
+}
+
+export interface ContentPackDependencies {
+  pack_id: NamespacedId;
+  version: string;
 }
 
 export interface HistoricalEventPlace {
