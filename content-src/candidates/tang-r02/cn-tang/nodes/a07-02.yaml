@@ -1,0 +1,11 @@
+id: cn.tang.story.kaiyuan-coin.segment-2
+story_id: cn.tang.story.kaiyuan-coin
+fact_grade: C
+narration: 你可以看物品，问什么时候做好，或请他们把付钱的约定再讲一次。这里的物价和交易是创作示例，不是唐代统一价目。许谨说：先把话说清，比急着点头更有用。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.kaiyuan-coin.segment-3

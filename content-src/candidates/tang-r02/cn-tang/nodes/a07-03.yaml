@@ -1,0 +1,12 @@
+id: cn.tang.story.kaiyuan-coin.segment-3
+story_id: cn.tang.story.kaiyuan-coin
+fact_grade: C
+narration: 他们可以当场达成安排，也可以约好稍后再谈。你不用替他们选出唯一答案。回到文物前再想一想：共同使用的钱帮助了什么？哪些事情，仍然要靠人去商量？
+allowed_actions:
+- ask
+- observe
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.tang.story.kaiyuan-coin.segment-1
+return_checkpoint: true

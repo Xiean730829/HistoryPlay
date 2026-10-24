@@ -1,0 +1,20 @@
+id: cn.tang.artifact.kneeling-bodhisattva
+title: 跪姿胁侍菩萨
+museum:
+  name: Harvard Art Museums
+  accession: '1924.70'
+  collection_url: https://hvrd.art/o/303672
+time_range:
+  start_year: 601
+  end_year: 700
+  precision: century
+  display_label: 7世纪晚期
+  calendar_note: 作者稿精度标记：century_with_qualifier；保留原始年代标签供审核。
+material: 未烧黏土，纤维和草，木骨架；彩绘与贴金
+category: 佛教造像
+asset_ids: []
+fact_card_ids:
+- cn.tang.fact.kneeling-bodhisattva.catalog
+story_entry_ids:
+- cn.tang.story.kneeling-bodhisattva
+identity_unknown: true

@@ -1,0 +1,19 @@
+id: iq.abbasid.artifact.iraq-blue-bowl
+title: 钴蓝花纹碗（伊拉克比较展品）
+museum:
+  name: Minneapolis Institute of Art
+  accession: 32.32.3
+  collection_url: https://collections.artsmia.org/art/497/bowl-iraq
+time_range:
+  start_year: 801
+  end_year: 900
+  precision: century
+  display_label: 伊拉克，9世纪
+material: 陶，钴蓝彩绘，萨马拉类型
+category: 陶瓷器
+asset_ids: []
+fact_card_ids:
+- iq.abbasid.fact.iraq-blue-bowl.catalog
+story_entry_ids:
+- iq.abbasid.story.iraq-blue-bowl
+identity_unknown: true

@@ -1,0 +1,11 @@
+id: iq.abbasid.story.iraq-blue-bowl.segment-1
+story_id: iq.abbasid.story.iraq-blue-bowl
+fact_grade: C
+narration: 创作故事里，一位伊拉克使用者谈起自己喜欢怎样的碗。他不是为了给中国商人当背景而出现，也不代表整个地区的每一个人。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: iq.abbasid.story.iraq-blue-bowl.segment-2

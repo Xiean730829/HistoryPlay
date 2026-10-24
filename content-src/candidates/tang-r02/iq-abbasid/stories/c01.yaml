@@ -1,0 +1,9 @@
+id: iq.abbasid.story.iraq-blue-bowl
+title: 你买的碗我怎样用
+entry_node_id: iq.abbasid.story.iraq-blue-bowl.segment-1
+node_ids:
+- iq.abbasid.story.iraq-blue-bowl.segment-1
+- iq.abbasid.story.iraq-blue-bowl.segment-2
+- iq.abbasid.story.iraq-blue-bowl.segment-3
+artifact_id: iq.abbasid.artifact.iraq-blue-bowl
+return_to_exhibit: true

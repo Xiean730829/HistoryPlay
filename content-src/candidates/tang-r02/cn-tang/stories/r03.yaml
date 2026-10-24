@@ -1,0 +1,9 @@
+id: cn.tang.story.bronze-mirror
+title: 翻过来又是一个问题
+entry_node_id: cn.tang.story.bronze-mirror.segment-1
+node_ids:
+- cn.tang.story.bronze-mirror.segment-1
+- cn.tang.story.bronze-mirror.segment-2
+- cn.tang.story.bronze-mirror.segment-3
+artifact_id: cn.tang.artifact.bronze-mirror
+return_to_exhibit: true

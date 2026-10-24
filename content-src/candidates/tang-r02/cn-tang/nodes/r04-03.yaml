@@ -1,0 +1,12 @@
+id: cn.tang.story.kneeling-bodhisattva.segment-3
+story_id: cn.tang.story.kneeling-bodhisattva
+fact_grade: C
+narration: 回到模型，你仍能细看造型，同时记得作品与原来的地方有联系。保存一个物件，也包含保存和解释这些联系。
+allowed_actions:
+- ask
+- observe
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.tang.story.kneeling-bodhisattva.segment-1
+return_checkpoint: true

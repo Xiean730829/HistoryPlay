@@ -1,0 +1,9 @@
+id: cn.tang.story.changsha-bird-bowl
+title: 鸟纹碗要去远方
+entry_node_id: cn.tang.story.changsha-bird-bowl.segment-1
+node_ids:
+- cn.tang.story.changsha-bird-bowl.segment-1
+- cn.tang.story.changsha-bird-bowl.segment-2
+- cn.tang.story.changsha-bird-bowl.segment-3
+artifact_id: cn.tang.artifact.changsha-bird-bowl
+return_to_exhibit: true

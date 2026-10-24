@@ -1,0 +1,12 @@
+id: cn.tang.story.bronze-mirror.segment-3
+story_id: cn.tang.story.bronze-mirror
+fact_grade: C
+narration: 回到真镜前，漂亮的背面和曾用于映照的一面，都值得观察。今天的保存状态，还提醒我们把“现在能看见的”与“当时可能怎样使用”分开。
+allowed_actions:
+- ask
+- observe
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.tang.story.bronze-mirror.segment-1
+return_checkpoint: true

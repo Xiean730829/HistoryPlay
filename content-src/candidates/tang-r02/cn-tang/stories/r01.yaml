@@ -1,0 +1,9 @@
+id: cn.tang.story.seated-buddha-tianlongshan
+title: 石头也曾有颜色
+entry_node_id: cn.tang.story.seated-buddha-tianlongshan.segment-1
+node_ids:
+- cn.tang.story.seated-buddha-tianlongshan.segment-1
+- cn.tang.story.seated-buddha-tianlongshan.segment-2
+- cn.tang.story.seated-buddha-tianlongshan.segment-3
+artifact_id: cn.tang.artifact.seated-buddha-tianlongshan
+return_to_exhibit: true

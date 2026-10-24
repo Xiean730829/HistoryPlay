@@ -1,0 +1,12 @@
+id: cn.tang.story.lute-musician.segment-3
+story_id: cn.tang.story.lute-musician
+fact_grade: C
+narration: 排练终于有了一种大家能接受的开始方式。回到乐俑前，看看那个停住的动作：一个静静的物件，也能让我们想象人与人如何配合。
+allowed_actions:
+- ask
+- observe
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.tang.story.lute-musician.segment-1
+return_checkpoint: true

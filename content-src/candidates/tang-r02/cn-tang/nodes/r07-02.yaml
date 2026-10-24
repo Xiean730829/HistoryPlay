@@ -1,0 +1,11 @@
+id: cn.tang.story.dvarapala.segment-2
+story_id: cn.tang.story.dvarapala
+fact_grade: C
+narration: 玩家可以问守护像为何显得威严，或比较门口与墓葬中的不同守护主题。类似的愿望可以有不同形式，不能把它们混成同一种用途。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.dvarapala.segment-3

@@ -1,0 +1,23 @@
+schema_version: 1
+source_bundle: tang-r02
+cards:
+  A01: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.standing-woman-mhc, category: 陶俑}
+  A02: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.equestrian-pair, category: 陶俑}
+  A03: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.tomb-guardian, category: 陶制镇墓俑}
+  A04: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.votive-stele, category: 佛教造像碑}
+  A07: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.kaiyuan-coin, category: 钱币}
+  A08: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.kundika, category: 净水瓶}
+  A09: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.dancer-brick, category: 墓葬砖雕}
+  A10: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.changsha-bird-bowl, category: 瓷器}
+  A11a: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.lute-musician, category: 乐俑}
+  A11b: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.flute-musician, category: 乐俑}
+  A12: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.dragon-amphora, category: 陶瓷器}
+  C01: {package_id: iq.abbasid.core, artifact_id: iq.abbasid.artifact.iraq-blue-bowl, category: 陶瓷器}
+  R01: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.seated-buddha-tianlongshan, category: 佛教造像}
+  R02: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.gilt-bronze-bull, category: 鎏金铜器}
+  R03: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.bronze-mirror, category: 铜镜}
+  R04: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.kneeling-bodhisattva, category: 佛教造像}
+  R05: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.woman-figure-mia, category: 陶俑}
+  R06: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.buddha-follower, category: 佛教造像浮雕}
+  R07: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.dvarapala, category: 佛教造像}
+  R08: {package_id: cn.tang.core, artifact_id: cn.tang.artifact.guardian-head, category: 佛教造像残件}

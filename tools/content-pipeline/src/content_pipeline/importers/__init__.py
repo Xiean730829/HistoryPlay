@@ -1,1 +1,1 @@
-"""Import reviewed authoring sources without publishing candidate media."""
+"""Candidate importers for local authoring sources."""

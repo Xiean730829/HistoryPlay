@@ -1,0 +1,15 @@
+id: cn.tang.core
+version: 0.1.0
+schema_version: '1'
+language: zh-CN
+region:
+  id: cn
+  label: 中国
+time_range:
+  start_year: 601
+  end_year: 907
+  precision: range
+  display_label: 601—907
+required_capabilities: []
+publication_status: draft
+title: 唐朝逐件作者稿候选

@@ -1,0 +1,11 @@
+id: cn.tang.story.gilt-bronze-bull.segment-1
+story_id: cn.tang.story.gilt-bronze-bull
+fact_grade: C
+narration: 现代博物馆里，参观者以为卧牛能和小狗一样大。讲解员把尺度卡放在旁边：原来它可以安静地待在一张书桌上。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.gilt-bronze-bull.segment-2

@@ -1,0 +1,11 @@
+id: cn.tang.story.dvarapala.segment-1
+story_id: cn.tang.story.dvarapala
+fact_grade: C
+narration: 创作示意中，大家来到一个通用寺院入口。讲解员不放上假定的本件原位，而是问：人在进入一个空间前，会先注意什么？
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.dvarapala.segment-2

@@ -1,0 +1,20 @@
+id: cn.tang.artifact.equestrian-pair
+title: 骑马俑一对
+museum:
+  name: Mount Holyoke College Art Museum
+  accession: MH1964.5A-B.J.C
+  collection_url: http://museums.fivecolleges.edu/detail.php?museum=all&t=objects&type=all&f=&s=mh+1964.5&record=20
+time_range:
+  start_year: 618
+  end_year: 906
+  precision: range
+  display_label: 唐代，618—906年
+  calendar_note: 作者稿精度标记：catalog_range；保留原始年代标签供审核。
+material: 陶
+category: 陶俑
+asset_ids: []
+fact_card_ids:
+- cn.tang.fact.equestrian-pair.catalog
+story_entry_ids:
+- cn.tang.story.equestrian-pair
+identity_unknown: true

@@ -1,0 +1,11 @@
+id: cn.tang.story.bronze-mirror.segment-2
+story_id: cn.tang.story.bronze-mirror
+fact_grade: C
+narration: 你可以先聊纹饰，再聊整理衣发，也可以问哪些生活细节还缺资料。故事中的镜子不是已证实由阿禾拥有的本馆藏品。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.bronze-mirror.segment-3

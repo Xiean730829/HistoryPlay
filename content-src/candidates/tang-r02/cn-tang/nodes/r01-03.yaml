@@ -1,0 +1,12 @@
+id: cn.tang.story.seated-buddha-tianlongshan.segment-3
+story_id: cn.tang.story.seated-buddha-tianlongshan
+fact_grade: C
+narration: 我们可以欣赏形体，也可以继续问颜色。没有全部复原，并不妨碍理解它曾经属于一个更丰富的环境。
+allowed_actions:
+- ask
+- observe
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.tang.story.seated-buddha-tianlongshan.segment-1
+return_checkpoint: true

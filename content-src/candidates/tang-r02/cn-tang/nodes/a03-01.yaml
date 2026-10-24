@@ -1,0 +1,11 @@
+id: cn.tang.story.tomb-guardian.segment-1
+story_id: cn.tang.story.tomb-guardian
+fact_grade: C
+narration: 现代博物馆里，一位小参观者觉得它有些威严。讲解员说：你可以隔着屏幕慢慢看，也可以先听。古人给它做出特别的样子，是想表达一种守护的力量。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.tomb-guardian.segment-2

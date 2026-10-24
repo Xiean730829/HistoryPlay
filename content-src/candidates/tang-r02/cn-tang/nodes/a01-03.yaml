@@ -1,0 +1,12 @@
+id: cn.tang.story.standing-woman-mhc.segment-3
+story_id: cn.tang.story.standing-woman-mhc
+fact_grade: C
+narration: 一天不一定把所有事做完，但可以把承诺重新说清楚。阿禾不是这尊陶俑已经查明的原型。她让我们试着提问：盛世里的普通人，有哪些愿望也值得被听见？
+allowed_actions:
+- ask
+- observe
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.tang.story.standing-woman-mhc.segment-1
+return_checkpoint: true

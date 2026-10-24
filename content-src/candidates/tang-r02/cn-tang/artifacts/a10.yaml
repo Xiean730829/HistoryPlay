@@ -1,0 +1,19 @@
+id: cn.tang.artifact.changsha-bird-bowl
+title: 长沙窑鸟纹碗
+museum:
+  name: The Metropolitan Museum of Art
+  accession: 1986.97.3
+  collection_url: https://www.metmuseum.org/art/collection/search/42399
+time_range:
+  start_year: 801
+  end_year: 900
+  precision: century
+  display_label: 9世纪
+material: 釉下彩绘炻器、黄色釉
+category: 瓷器
+asset_ids: []
+fact_card_ids:
+- cn.tang.fact.changsha-bird-bowl.catalog
+story_entry_ids:
+- cn.tang.story.changsha-bird-bowl
+identity_unknown: true

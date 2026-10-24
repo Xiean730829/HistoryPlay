@@ -1,0 +1,11 @@
+id: iq.abbasid.fact.iraq-blue-bowl.catalog
+claim: 钴蓝花纹碗（伊拉克比较展品）；Minneapolis Institute of Art；伊拉克，9世纪；陶，钴蓝彩绘，萨马拉类型
+grade: F
+applicable_time:
+  start_year: 801
+  end_year: 900
+  precision: century
+  display_label: 伊拉克，9世纪
+source_ids:
+- iq.abbasid.source.c01-catalog
+evidence_note: 年代字段优先保存馆方原文；精确区间转换只是展示约定，不是新增鉴定。
