@@ -236,6 +236,7 @@ def cmd_rehearsal_pack(
     content_root: Path,
     asset_root: Path,
     version: str,
+    artifact_ids: list[str] | None = None,
 ) -> int:
     try:
         result = build_rehearsal_pack(
@@ -244,6 +245,7 @@ def cmd_rehearsal_pack(
             content_root=content_root,
             asset_root=asset_root,
             version=version,
+            artifact_ids=artifact_ids,
         )
     except (RehearsalPackError, AssetStageError) as exc:
         print(f"联调包生成失败：{exc}", file=sys.stderr)
@@ -412,6 +414,12 @@ def main(argv: list[str] | None = None) -> int:
     rehearsal.add_argument("--content-root", required=True, type=Path, help="版本化内容根目录")
     rehearsal.add_argument("--asset-root", required=True, type=Path, help="版本化资源根目录")
     rehearsal.add_argument("--version", required=True, help="联调published版本，必须是新的semver")
+    rehearsal.add_argument(
+        "--artifact-id",
+        action="append",
+        dest="artifact_ids",
+        help="显式列出作者包中的全部联调展品ID；可重复传入，省略时使用默认三件",
+    )
     story_assets = sub.add_parser(
         "import-story-asset-candidate",
         help="校验本机已选场景图并生成待审核清单，不发布到运行时内容包",
@@ -498,6 +506,7 @@ def main(argv: list[str] | None = None) -> int:
             content_root=args.content_root,
             asset_root=args.asset_root,
             version=args.version,
+            artifact_ids=args.artifact_ids,
         )
     if args.command == "import-story-asset-candidate":
         return cmd_import_story_asset_candidate(
