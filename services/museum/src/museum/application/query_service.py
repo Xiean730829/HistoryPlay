@@ -303,6 +303,7 @@ class QueryService:
             asset_ids=tuple(_text_items(artifact.get("asset_ids"))),
             fact_card_ids=tuple(_text_items(artifact.get("fact_card_ids"))),
             story_entry_ids=tuple(_text_items(artifact.get("story_entry_ids"))),
+            presentation=_optional_mapping(artifact.get("presentation")),
         )
 
 

@@ -29,6 +29,12 @@ $env:MUSEUM_MCP_BINDING_FILE = '<当前展台写出的本机私密绑定文件�
 3. CI增加 `ruff check services/mcp-gateway`、`compileall services/mcp-gateway/src`、`pytest tests/mcp -q`，边界检查增加该包禁止导入museum领域/SQLite的规则。本B线未改公共CI或边界脚本。
 4. 启动器后续启动stdio网关与经核实的小智MCP管道；不将带Token的接入URL放命令参数、日志、PR或浏览器。
 
+## A线集成进度
+
+- 只读网关代码已随PR #71合入main；此后由A线把网关登记到根uv workspace和锁文件，并将Ruff、编译、导入边界及`tests/mcp`纳入主线CI。
+- #71的18项专项测试在Windows/Python 3.13.3重新运行通过。根CI集成PR未合入前，这些测试仍不能算主线持续验证。
+- `VoiceEntry`保持独立模块；待根CI覆盖该模块后，再由A线在`MuseumShell`挂载到当前会话。真实设备与云端链路仍待验证。
+
 ## 真实预检状态
 
 原网页测试台已经由开发者启动并保留运行，地址为 `http://127.0.0.1:8765`，health返回 `version=2.2.0/status=ok`。没有修改原工程。
