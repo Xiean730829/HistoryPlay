@@ -23,6 +23,14 @@
         "$ref": "common.schema.json#/$defs/namespacedId"
       }
     },
+    "fact_card_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/namespacedId"
+      },
+      "description": "Fact cards that ground this story; each claim links its own sources."
+    },
     "artifact_id": {
       "$ref": "common.schema.json#/$defs/namespacedId"
     },

@@ -1,0 +1,12 @@
+id: cn.tang.node.t01.n06
+story_id: cn.tang.story.t01
+fact_grade: C
+narration: >-
+  你请一位熟人帮忙复述约定。熟人没有替他们裁决，只把“要修什么、何时再看、报酬怎么谈”逐项说出来。顾客和许谨各自补上遗漏的一句，最后约好先完成一小部分再核对。
+allowed_actions:
+  - ask
+  - observe
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.t01.n07

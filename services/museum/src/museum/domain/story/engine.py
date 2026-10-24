@@ -75,20 +75,29 @@ def advance_story(
     state: SessionState,
     story: StoryDefinition,
     action: ExitAction,
+    *,
+    target_node_id: str | None = None,
 ) -> StoryTransition:
     current = _current_node(state, story)
+    if action == ExitAction.RETURN_TO_EXHIBIT:
+        raise InvalidStoryAction("返回展台必须使用会话返回命令")
     if StoryAction(action.value) not in current.allowed_actions:
         raise InvalidStoryAction(f"当前节点不允许动作：{action.value}")
+    if target_node_id is not None and action != ExitAction.CHOOSE_ROUTE:
+        raise InvalidStoryAction("只有选路动作可以指定目标节点")
     candidates = tuple(
         exit
         for exit in available_exits(state, story)
         if exit.action == action
+        and (target_node_id is None or exit.target_node_id == target_node_id)
     )
     targets = {exit.target_node_id for exit in candidates}
     if not candidates:
         raise InvalidStoryAction("当前状态下没有符合条件的故事出口")
     if len(targets) > 1:
-        raise InvalidStoryAction("多个分支条件同时成立，拒绝自行选择故事走向")
+        if target_node_id is None:
+            raise InvalidStoryAction("有多个可选故事走向，必须明确指定目标节点")
+        raise InvalidStoryAction("选定的故事走向仍有多个可用出口")
 
     target_id = targets.pop()
     target = story.nodes[target_id]

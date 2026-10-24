@@ -13,6 +13,7 @@ import {
   loadGalleryArtifacts,
   enterStory,
   continueStory,
+  chooseStoryRoute,
   returnToExhibit,
   reportRenderReceipt,
   prepareArtifactInspection,
@@ -243,24 +244,31 @@ export function MuseumShell() {
     }
   }
 
-  async function runStoryAction(action: "enter" | "continue" | "return") {
+  async function runStoryAction(action: "enter" | "continue" | "choose_route" | "return", targetNodeId?: string) {
     if (!session) return;
     const focused = session.context.focused_artifact;
     const storyId = focused?.story_entry_ids?.[0];
     if (action === "enter" && !storyId) return;
+    if (action === "choose_route" && !targetNodeId) return;
     setBusy(true);
     try {
       const result = action === "enter"
         ? await enterStory(session, storyId!)
         : action === "continue"
           ? await continueStory(session)
-          : await returnToExhibit(session);
+          : action === "choose_route"
+            ? await chooseStoryRoute(session, targetNodeId!)
+            : await returnToExhibit(session);
       const store = projectionStore.current;
       if (store) await store.acceptQuery(result.session);
       else setSession(result.session);
       setRenderCommand(result.receipt.status === "committed" ? result.receipt : null);
       if (result.receipt.status === "committed") {
-        setNotice(action === "return" ? "故事已退出，正在恢复原展台与相机。" : "已切换到服务端提交的故事段落。");
+        setNotice(action === "return"
+          ? "故事已退出，正在恢复原展台与相机。"
+          : action === "choose_route"
+            ? "已按所选方向进入下一段。"
+            : "已切换到服务端提交的故事段落。");
         setNoticeTone("success");
       } else {
         setNotice(result.receipt.reason ?? "故事状态未提交，展台保持当前状态。");
@@ -323,6 +331,7 @@ export function MuseumShell() {
           session={session}
           busy={busy}
           onContinue={() => void runStoryAction("continue")}
+          onChooseRoute={(targetNodeId) => void runStoryAction("choose_route", targetNodeId)}
           onReturn={() => void runStoryAction("return")}
         />
       )}

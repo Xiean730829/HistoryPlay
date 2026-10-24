@@ -15,6 +15,7 @@ COMMAND_ACTIONS = frozenset(
         "locate_artifact",
         "enter_story",
         "continue_story",
+        "choose_route",
         "pause_story",
         "return_to_story",
         "focus_detail",

@@ -141,6 +141,25 @@ def test_complete_pack_references_pass(tmp_path: Path) -> None:
     assert validate_references(write_pack(tmp_path)) == []
 
 
+def test_story_fact_cards_must_resolve_to_fact_entities(tmp_path: Path) -> None:
+    pack = write_pack(tmp_path)
+    story = pack / "stories" / "observation.yaml"
+    story.write_text(
+        STORY.replace(
+            "artifact_id:",
+            "fact_card_ids:\n  - cn.tang.fact.missing\nartifact_id:",
+        ),
+        encoding="utf-8",
+    )
+
+    issues = validate_references(pack)
+
+    assert any(
+        "fact_card_ids 缺少引用：cn.tang.fact.missing" in issue.message
+        for issue in issues
+    )
+
+
 def test_missing_asset_reference_fails(tmp_path: Path) -> None:
     pack = write_pack(
         tmp_path,

@@ -6,7 +6,7 @@ export type NonNegativeInt = number;
 export type FactGrade = "F" | "R" | "C" | "H" | "U";
 export type CapabilityId = "artifact3d" | "comic" | "map" | "timeline" | "relationship_graph" | "compare";
 export type SessionMode = "explore" | "story" | "qa" | "hypothesis";
-export type CommandAction = "open_artifact" | "enter_gallery" | "move_next" | "move_previous" | "locate_artifact" | "return_to_exhibit" | "enter_story" | "continue_story" | "pause_story" | "return_to_story" | "focus_detail" | "set_view" | "choose_action";
+export type CommandAction = "open_artifact" | "enter_gallery" | "move_next" | "move_previous" | "locate_artifact" | "return_to_exhibit" | "enter_story" | "continue_story" | "choose_route" | "pause_story" | "return_to_story" | "focus_detail" | "set_view" | "choose_action";
 export type VariableValue = boolean | number | string;
 
 export interface TimeRange {
@@ -60,7 +60,7 @@ export interface Command {
   /** Opaque short-lived ticket issued by the application. Models must not mint this. */
   control_ticket?: string;
   action: CommandAction;
-  /** Target gallery for enter_gallery; target artifact for artifact-directed actions. Never a client-provided position. */
+  /** Target gallery for enter_gallery, target node for choose_route, or target artifact for artifact-directed actions. Never a client-provided position. */
   target_id?: NamespacedId;
   params?: CommandObject;
 }
@@ -301,6 +301,8 @@ export interface Story {
   title: NonEmptyText;
   entry_node_id: NamespacedId;
   node_ids: Array<NamespacedId>;
+  /** Fact cards that ground this story; each claim links its own sources. */
+  fact_card_ids?: Array<NamespacedId>;
   artifact_id?: NamespacedId;
   return_to_exhibit?: boolean;
 }
@@ -398,6 +400,8 @@ export interface StoryNodePresentation {
 export interface StoryNodeExits {
   action: "continue_story" | "choose_route" | "enter_hypothesis" | "return_to_exhibit";
   target_node_id: NamespacedId;
+  /** Short visitor-facing label for an explicit route choice. */
+  route_label?: string;
   when?: StoryNodeCondition;
 }
 

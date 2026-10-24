@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from content_pipeline.build.compiler import compile_pack
-from museum.application.command_service import _load_story
+from museum.application.story_content import load_story
 from museum.domain.session.models import SessionMode, SessionState
 from museum.domain.session.transitions import return_to_exhibit
 from museum.domain.story.engine import advance_story, available_exits, start_story
@@ -25,7 +25,16 @@ def test_three_real_authored_stories_enter_advance_and_return_to_same_exhibit():
             gallery_id="cn.tang.gallery.main",
             station_id=f"cn.tang.station.{name}",
         )
-        story = _load_story((pack,), f"cn.tang.story.{name}")
+        story = load_story(
+            (pack,),
+            f"cn.tang.story.{name}",
+            lambda packs, document_id, directory: next(
+                document
+                for item in packs
+                for path, document in item.documents.items()
+                if path.startswith(directory) and document.get("id") == document_id
+            ),
+        )
         entered = start_story(original, story)
         assert entered.state.node_id == f"cn.tang.node.{name}.01"
         advanced = advance_story(entered.state, story, ExitAction.CONTINUE_STORY)

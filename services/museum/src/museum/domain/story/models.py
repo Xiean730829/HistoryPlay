@@ -33,10 +33,13 @@ class StoryExit:
     action: ExitAction
     target_node_id: str
     when: Condition | None = None
+    route_label: str | None = None
 
     def __post_init__(self) -> None:
         if not self.target_node_id:
             raise ValueError("故事出口必须指定目标节点")
+        if self.route_label is not None and not self.route_label.strip():
+            raise ValueError("故事选路标签不能为空")
 
 
 @dataclass(frozen=True, slots=True)

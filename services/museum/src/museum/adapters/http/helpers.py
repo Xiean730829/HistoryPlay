@@ -113,6 +113,14 @@ def context_projection(context: Any) -> dict[str, Any]:
                 "fact_grade": context.story_node.fact_grade,
                 "presentation": context.story_node.presentation,
                 "allowed_actions": list(context.story_node.allowed_actions),
+                "available_exits": [
+                    {
+                        "action": exit.action,
+                        "target_node_id": exit.target_node_id,
+                        **({"route_label": exit.route_label} if exit.route_label else {}),
+                    }
+                    for exit in context.story_node.available_exits
+                ],
             }
             if context.story_node
             else None

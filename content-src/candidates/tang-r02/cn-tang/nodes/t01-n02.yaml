@@ -1,0 +1,12 @@
+id: cn.tang.node.t01.n02
+story_id: cn.tang.story.t01
+fact_grade: C
+narration: >-
+  621年，修补匠许谨接下一件活。顾客怕修得不合用，许谨担心忙完以后拿不到说好的报酬。两人都想把事情做好，却还没说清要修到什么样、何时交付。许谨问你：我们先查什么，才能开始谈？人物和交易情境均为现代创作。
+allowed_actions:
+  - ask
+  - observe
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.t01.n03

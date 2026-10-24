@@ -40,7 +40,7 @@
     },
     "target_id": {
       "$ref": "common.schema.json#/$defs/namespacedId",
-      "description": "Target gallery for enter_gallery; target artifact for artifact-directed actions. Never a client-provided position."
+      "description": "Target gallery for enter_gallery, target node for choose_route, or target artifact for artifact-directed actions. Never a client-provided position."
     },
     "params": {
       "$ref": "common.schema.json#/$defs/actionParams"
@@ -51,7 +51,7 @@
       "if": {
         "properties": {
           "action": {
-            "enum": ["open_artifact", "enter_gallery", "locate_artifact", "enter_story", "focus_detail", "choose_action"]
+            "enum": ["open_artifact", "enter_gallery", "locate_artifact", "enter_story", "focus_detail", "choose_action", "choose_route"]
           }
         },
         "required": ["action"]
