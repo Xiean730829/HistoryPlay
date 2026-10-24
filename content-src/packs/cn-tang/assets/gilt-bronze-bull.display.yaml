@@ -1,0 +1,14 @@
+id: cn.tang.asset.gilt-bronze-bull.display
+kind: model3d
+format: glb
+sha256: 950a5f1079b89148fd29c5e9b4b0a9451e5b3e1ad377ec5664d56951abc62adf
+byte_size: 4213088
+derived_from: cn.tang.asset.gilt-bronze-bull.glb
+license:
+  spdx: CC0-1.0
+  attribution: Cleveland Museum of Art; 1985.74 Recumbent Bull
+  url: https://sketchfab.com/3d-models/198574-recumbent-bull-774c1c5f1cd4484f98b68ee96d886950
+lod: display
+framing:
+  camera_orbit: three-quarter
+  orientation_note: 四分之三卧姿，头朝左；4K贴图缩至1024。原件33.9MB不得宣称已达5—10MB。
