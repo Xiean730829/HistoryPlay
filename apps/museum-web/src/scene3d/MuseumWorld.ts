@@ -9,7 +9,7 @@ import type { ActiveSession, ArtifactProjection } from "../application/museumApi
 import { galleryAssets } from "../capabilities/galleryAssets";
 import type { AssetLease } from "../capabilities/assetLoader";
 import { buildHall, inscription } from "./architecture";
-import { MODEL_SURFACE_OFFSET, nearbyModelIndices, seatModel, stationPlacement } from "./layout";
+import { MODEL_SURFACE_OFFSET, maintainSurfaceContact, nearbyModelIndices, seatModel, stationPlacement } from "./layout";
 import { stairCameraPose, stationFacingYaw } from "./stairCamera";
 import { disposeTree } from "./resources";
 import { pickArtifact } from "./picking";
@@ -222,6 +222,7 @@ export class MuseumWorld {
       const pitch = (this.preview?.pitch ?? state.camera_pose?.pitch ?? 0) * Math.PI / 180;
       entry.spin.rotation.y += Math.atan2(Math.sin(yaw - entry.spin.rotation.y), Math.cos(yaw - entry.spin.rotation.y)) * easing;
       entry.spin.rotation.x += (pitch - entry.spin.rotation.x) * easing;
+      if (entry.loaded) maintainSurfaceContact(entry.spin, entry.root.position.y);
     }
     this.renderer.render(this.scene, this.camera);
     const receiptKey = `${state.revision}:${state.view_revision}:${state.interaction_epoch}`;

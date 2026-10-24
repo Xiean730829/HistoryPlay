@@ -35,6 +35,12 @@ export function nearbyModelIndices(count: number, focused: number, limit = 3): S
     .sort((a, b) => Math.abs(a - focused) - Math.abs(b - focused)).slice(0, limit));
 }
 
+/** The display parent uses unit scale and only Y rotation; tilt must not enter the deck. */
+export function maintainSurfaceContact(model: Group, worldSurfaceY: number): void {
+  const bottom = new Box3().setFromObject(model).min.y;
+  if (Number.isFinite(bottom)) model.position.y += worldSurfaceY - bottom;
+}
+
 /** Fit the true mesh above the plinth; the object keeps its original proportions. */
 export function seatModel(model: Group, width = 1.65, height = 1.9): Group {
   const bounds = new Box3().setFromObject(model);
