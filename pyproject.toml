@@ -12,6 +12,7 @@ package = false
 members = [
   "services/museum",
   "services/mcp-gateway",
+  "services/voice-bridge",
   "packages/contracts-python",
   "tools/content-pipeline",
 ]

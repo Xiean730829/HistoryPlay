@@ -1,0 +1,59 @@
+from __future__ import annotations
+
+import asyncio
+import sys
+from pathlib import Path
+
+from aiohttp import ClientSession, web
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "services/voice-bridge/src"))
+
+from museum_voice.config import DeviceConfig
+from museum_voice.main import create_app, reject_redirect
+
+
+def test_loopback_host_and_origin_protect_bridge_before_any_upstream_connection():
+    async def run():
+        config = DeviceConfig(
+            "aa:bb:cc:dd:ee:ff",
+            "4032ca38-fd23-4844-9f8a-e97035b0838c",
+            "wss://api.xiaozhi.me/v1/",
+            "test-token",
+        )
+        app = create_app(config)
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(runner, "127.0.0.1", 0)
+        await site.start()
+        port = site._server.sockets[0].getsockname()[1]
+        async with ClientSession() as client:
+            async with client.get(
+                f"http://127.0.0.1:{port}/health", headers={"Host": "evil.invalid"}
+            ) as response:
+                assert response.status == 403
+            async with client.get(
+                f"http://127.0.0.1:{port}/voice/ws",
+                headers={"Host": "127.0.0.1:8781", "Origin": "http://evil.invalid"},
+            ) as response:
+                assert response.status == 403
+            async with client.get(
+                f"http://127.0.0.1:{port}/health", headers={"Host": "127.0.0.1:8781"}
+            ) as response:
+                result = await response.json()
+                assert result["status"] == "ok"
+                assert "token" not in str(result)
+        await runner.cleanup()
+
+    asyncio.run(run())
+
+
+def test_redirect_callback_always_rejects_without_echoing_endpoint():
+    async def run():
+        try:
+            await reject_redirect("wss://private-token")
+        except ValueError as error:
+            assert "private-token" not in str(error)
+        else:
+            raise AssertionError("redirect was accepted")
+
+    asyncio.run(run())
