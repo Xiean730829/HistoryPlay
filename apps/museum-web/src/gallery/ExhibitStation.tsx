@@ -12,9 +12,10 @@ interface ExhibitStationProps {
   artifact: ArtifactProjection;
   projection: CorridorProjection;
   session: ActiveSession | null;
+  onRender?: (status: "rendered" | "degraded", reason?: string) => void;
 }
 
-export function ArtifactStation({ artifact, projection, session }: ExhibitStationProps) {
+export function ArtifactStation({ artifact, projection, session, onRender }: ExhibitStationProps) {
   const style = {
     "--station-x": `${projection.xPercent}%`,
     "--station-scale": projection.scale,
@@ -72,7 +73,7 @@ export function ArtifactStation({ artifact, projection, session }: ExhibitStatio
       <div className="station-light" aria-hidden="true" />
       <div className="station-object" aria-label={objectLabel}>
         {projection.isFocused && session && artifact.presentation?.display ? (
-          <FocusedArtifact artifact={artifact} poster={previewUrl} session={session} />
+          <FocusedArtifact artifact={artifact} poster={previewUrl} session={session} onRender={onRender} />
         ) : previewUrl ? (
           <img alt="" className="station-preview" decoding="async" src={previewUrl} />
         ) : (
