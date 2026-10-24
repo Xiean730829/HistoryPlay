@@ -44,3 +44,11 @@
 已通过真实本机HTTP与SQLite的端到端：创建独立测试会话与原配对→绑定本机桥→上传三帧真实Opus编码的PCM→模拟独占云连接返回最终STT→ActionTools→游戏HTTP一次性scope→展台从coin移动到bull。重复STT不再执行。另测旧输入读最新context后仍403，一次动作后不可重放。这里云端为测试适配器，不冒充真实账号声学验证。
 
 修正了固定稿字幕会被迟到STT覆盖、否定旧目标误定位、普通“为什么”追问误转角度，以及动作等待画面刷新时新问题先到导致旧正文迟到开口。真实新桥设备仍待本机配置与用户操作，probe17968未切换。
+
+## 当前页面进入正式MCP只读讲解
+
+语音桥与正式MCP服务同时设置同一绝对路径 `MUSEUM_MCP_BINDING_FILE=<root>/.local/voice/game-binding.json`。页面原配对通过/voice/bind验证后，桥原子写入本机当前绑定；正式MCP只读工具每次调用加载此绑定，刷新/更换页面后不需要手抄会话ID。绑定文件不含任何云端动作scope，云端museum_act仍拒绝无来源调用。
+
+先协调停止probe17968，再以 `MUSEUM_MCP_MODE=museum` 重启唯一官方MCP管道；不得同端点开两个进程。正式SDK在页面尚未绑定时也可先发现工具，查询会诚实提示尚未绑定。
+
+如果设备JSON暂缺，可显式设置 `MUSEUM_VOICE_ALLOW_UNCONFIGURED=1` 启动本机桥，只提供当前展台绑定与MCP上下文。/voice/status明确device_configured=false；Panel绑定后阻止开启采音并提示一次性设备配置，不假装音频已连接。原8765语音页面可继续配合正式MCP只读工具询问当前文物。配置完成并暂停原设备后重启新桥，才能测试真正的游戏语音控制。

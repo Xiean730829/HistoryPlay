@@ -57,3 +57,35 @@ def test_redirect_callback_always_rejects_without_echoing_endpoint():
             raise AssertionError("redirect was accepted")
 
     asyncio.run(run())
+
+
+def test_unconfigured_bridge_status_is_explicit_and_contains_no_credentials():
+    async def run():
+        app = create_app(None, port=8782, origin="http://127.0.0.1:5174")
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(runner, "127.0.0.1", 0)
+        await site.start()
+        port = site._server.sockets[0].getsockname()[1]
+        try:
+            async with ClientSession() as client:
+                async with client.get(
+                    f"http://127.0.0.1:{port}/voice/status",
+                    headers={
+                        "Host": "127.0.0.1:8782",
+                        "Origin": "http://127.0.0.1:5174",
+                    },
+                ) as response:
+                    result = await response.json()
+                    assert result == {
+                        "service": "museum-voice",
+                        "status": "ok",
+                        "device_configured": False,
+                    }
+                    assert (
+                        response.headers["Access-Control-Allow-Origin"] == "http://127.0.0.1:5174"
+                    )
+        finally:
+            await runner.cleanup()
+
+    asyncio.run(run())

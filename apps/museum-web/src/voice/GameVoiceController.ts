@@ -40,6 +40,12 @@ export class GameVoiceController {
     if (!response.ok) throw new Error("当前展台语音绑定失败，请确认游戏与语音服务已启动");
     const result = await response.json() as { binding_id: string };
     if (this.disposed) return;
+    const healthResponse = await fetch(`${this.bridgeUrl}/voice/status`, { signal: AbortSignal.timeout(8000) });
+    const health = await healthResponse.json() as { service?: string; device_configured?: boolean };
+    if (health.service !== "museum-voice" || health.device_configured !== true) {
+      this.hooks.onStatus("展台已绑定，讲解员设备尚未配置；当前可用MCP只读讲解");
+      throw new Error("展台已绑定，完成一次讲解员设备配置后即可开启游戏语音");
+    }
     this.voice = new VoiceClient(new PlaybackQueue(this.audio), {
       onState: (state, message) => {
         if (!this.disposed) this.hooks.onStatus(message ?? ({ connecting: "正在连接讲解员",

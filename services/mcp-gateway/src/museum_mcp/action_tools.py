@@ -74,11 +74,13 @@ class VoiceApplicationClient(ApplicationClient):
 class ActionTools:
     """The same bounded action implementation for MCP and local trusted orchestration."""
 
-    def __init__(self, client: VoiceApplicationClient, scope: TrustedInput | None = None):
+    def __init__(
+        self, client: VoiceApplicationClient | None = None, scope: TrustedInput | None = None
+    ):
         self.client, self.scope = client, scope
 
     async def act(self, action: str, target_id: str | None = None) -> dict:
-        if self.scope is None:
+        if self.scope is None or self.client is None:
             raise GatewayError("该云端调用没有可信输入来源，保持只读；请通过已绑定网页语音输入")
         context = await self.client.get("context")
         focused = context.get("focused_artifact") or {}

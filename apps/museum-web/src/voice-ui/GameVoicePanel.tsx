@@ -25,7 +25,8 @@ export function GameVoicePanel({ session, onRefresh, gameUrl, bridgeUrl }: {
         onRefresh: (receipt) => latest.current.onRefresh(receipt),
       }, gameUrl, bridgeUrl);
       controller.current = current;
-      await current.initialize();
+      try { await current.initialize(); }
+      catch (error) { current.dispose(); throw error; }
     }} onStop={() => { controller.current?.dispose(); controller.current = null; }} callbacks={{
       onSpeechStarted: () => controller.current?.beginTurn(),
       onSpeechEnded: () => controller.current?.endTurn(),
