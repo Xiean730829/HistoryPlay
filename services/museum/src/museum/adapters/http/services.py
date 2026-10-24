@@ -7,6 +7,7 @@ from museum.adapters.sqlite.database import SQLiteDatabase
 from museum.application.binding_service import BindingService
 from museum.application.command_service import CommandService
 from museum.application.event_hub import EventHub
+from museum.application.event_tickets import EventTickets
 from museum.application.query_service import QueryService
 from museum.application.render_service import RenderService
 from museum.ports.asset_store import AssetStore
@@ -22,6 +23,7 @@ class HttpServices:
     authenticator: SessionAuthenticator
     bindings: BindingService
     event_hub: EventHub
+    event_tickets: EventTickets
     renders: RenderService
     assets: AssetStore
     allowed_origins: frozenset[str]

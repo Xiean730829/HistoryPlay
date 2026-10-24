@@ -8,10 +8,10 @@ from aiohttp import WSMsgType, web
 from museum.adapters.http.auth import OriginRejected, require_allowed_origin
 from museum.adapters.http.helpers import (
     load_state,
-    require_binding,
-    require_session,
+    services,
     state_projection,
 )
+from museum.application.event_tickets import InvalidEventTicket
 
 
 def register_event_routes(app: web.Application) -> None:
@@ -20,12 +20,24 @@ def register_event_routes(app: web.Application) -> None:
 
 async def event_stream(request: web.Request) -> web.WebSocketResponse:
     session_id = request.match_info["session_id"]
-    configured = require_session(request, session_id)
+    configured = services(request)
     try:
         require_allowed_origin(request.headers.get("Origin"), configured.allowed_origins)
     except OriginRejected as error:
         raise web.HTTPForbidden(text=str(error)) from error
-    require_binding(request, configured, session_id)
+    origin = request.headers.get("Origin")
+    protocols = _protocols(request.headers.get("Sec-WebSocket-Protocol"))
+    if "museum-events.v1" not in protocols:
+        raise web.HTTPBadRequest(text="事件通道子协议不受支持")
+    try:
+        connection_id = configured.event_tickets.consume(
+            _event_ticket(request.headers.get("Sec-WebSocket-Protocol")),
+            session_id=session_id,
+            origin=origin or "",
+        )
+        configured.bindings.require_active(session_id, connection_id)
+    except (InvalidEventTicket, PermissionError) as error:
+        raise web.HTTPForbidden(text=str(error)) from error
     raw_cursor = request.query.get("after_seq")
     try:
         cursor = None if raw_cursor is None else int(raw_cursor)
@@ -34,7 +46,11 @@ async def event_stream(request: web.Request) -> web.WebSocketResponse:
     except ValueError as error:
         raise web.HTTPBadRequest(text="after_seq必须是非负整数") from error
 
-    socket = web.WebSocketResponse(heartbeat=30, max_msg_size=4096)
+    socket = web.WebSocketResponse(
+        heartbeat=30,
+        max_msg_size=4096,
+        protocols=("museum-events.v1",),
+    )
     await socket.prepare(request)
     queue = configured.event_hub.subscribe(session_id)
     try:
@@ -59,6 +75,22 @@ async def event_stream(request: web.Request) -> web.WebSocketResponse:
     finally:
         configured.event_hub.unsubscribe(session_id, queue)
     return socket
+
+
+def _event_ticket(protocol_header: str | None) -> str:
+    protocols = _protocols(protocol_header)
+    tickets = [
+        item.removeprefix("museum-ticket.")
+        for item in protocols
+        if item.startswith("museum-ticket.")
+    ]
+    if len(tickets) != 1:
+        raise web.HTTPUnauthorized(text="需要一次性事件通道票据")
+    return tickets[0]
+
+
+def _protocols(protocol_header: str | None) -> set[str]:
+    return {item.strip() for item in (protocol_header or "").split(",") if item.strip()}
 
 
 async def _send_updates(socket, configured, session_id, queue, cursor: int) -> None:
