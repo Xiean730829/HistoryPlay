@@ -26,6 +26,27 @@ export interface SessionContext {
   };
 }
 
+export interface StoryParagraph {
+  content_id: string;
+  version: string;
+  paragraph_number: number;
+  text: string;
+  authorship: { node_id: string; story_id: string | null; fact_grade: string };
+  presentation: Record<string, unknown> | null;
+  allowed_actions: string[];
+}
+
+export interface StoryNodePage {
+  content_id: string;
+  content_kind: string;
+  pack_id: string;
+  version: string;
+  title: string;
+  artifact_id: string | null;
+  paragraphs: StoryParagraph[];
+  next_cursor: string | null;
+}
+
 export type ArtifactProjection = Pick<
   Artifact,
   | "id"
@@ -73,6 +94,71 @@ export async function loadGalleryArtifacts(
     { headers: boundHeaders(session) },
   );
   return response.stations.map((station) => station.artifact);
+}
+
+/** Read only the currently committed node from the session's pinned published pack. */
+export async function readStoryNode(
+  session: ActiveSession,
+  nodeId: string,
+  signal: AbortSignal,
+): Promise<StoryNodePage> {
+  const params = new URLSearchParams({
+    pack_id: session.pack_id,
+    version: session.version,
+    content_id: nodeId,
+    limit: "1",
+  });
+  return request<StoryNodePage>(
+    `/api/sessions/${encodeURIComponent(session.session_id)}/content?${params.toString()}`,
+    { headers: boundHeaders(session), signal },
+  );
+}
+
+export async function enterStory(
+  session: ActiveSession,
+  storyId: string,
+): Promise<{ session: ActiveSession; receipt: CommandReceipt }> {
+  return dispatchSessionCommand(session, "enter_story", storyId);
+}
+
+export async function continueStory(
+  session: ActiveSession,
+): Promise<{ session: ActiveSession; receipt: CommandReceipt }> {
+  return dispatchSessionCommand(session, "continue_story", session.state.story_id ?? undefined);
+}
+
+export async function returnToExhibit(
+  session: ActiveSession,
+): Promise<{ session: ActiveSession; receipt: CommandReceipt }> {
+  return dispatchSessionCommand(session, "return_to_exhibit");
+}
+
+async function dispatchSessionCommand(
+  session: ActiveSession,
+  action: CommandAction,
+  targetId?: string,
+): Promise<{ session: ActiveSession; receipt: CommandReceipt }> {
+  const dispatchKey = [session.session_id, action, targetId ?? "", session.state.revision,
+    session.state.view_revision, session.state.interaction_epoch].join(":");
+  const receipt = await commandDispatcher.dispatch(dispatchKey, (requestId) => request<CommandReceipt>(
+    `/api/sessions/${encodeURIComponent(session.session_id)}/commands`,
+    {
+      method: "POST",
+      headers: boundHeaders(session),
+      body: JSON.stringify({
+        schema_version: "1",
+        request_id: requestId,
+        expected_revision: session.state.revision,
+        expected_view_revision: session.state.view_revision,
+        interaction_epoch: session.state.interaction_epoch,
+        control_ticket: session.control_ticket,
+        action,
+        ...(targetId ? { target_id: targetId } : {}),
+      }),
+    },
+    (status, body) => status === 409 && isCommandReceipt(body),
+  ));
+  return { session: await refreshSession(session), receipt };
 }
 
 interface SessionResponse {
