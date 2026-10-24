@@ -18,6 +18,8 @@
 | `schemas/v1/relation.schema.json` | 实体关系；解释性联系不冒充物件亲历 | 02-b |
 | `schemas/v1/session.schema.json` | 会话投影：固定包版本、焦点、显示顺序、模式与修订号 | 03-a |
 | `schemas/v1/command.schema.json` | 命令信封、有限动作、目标及动作参数；request_id 去重 | 03-a |
+| `schemas/v1/event.schema.json` | 有序会话事件；缺口时要求完整快照 | 03-a |
+| `schemas/v1/receipt.schema.json` | 命令提交回执与呈现超时状态 | 03-a |
 
 公开样例在 `examples/v1/`。样例不含密钥、本机盘符或未授权路径。校验命令：
 

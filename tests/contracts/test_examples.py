@@ -22,6 +22,8 @@ SCHEMA_FILES = {
     "relation": "relation.schema.json",
     "session": "session.schema.json",
     "command": "command.schema.json",
+    "event": "event.schema.json",
+    "receipt": "receipt.schema.json",
 }
 
 
