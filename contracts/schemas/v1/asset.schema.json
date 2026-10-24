@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historyplay.dev/contracts/schemas/v1/asset.schema.json",
+  "title": "Asset",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "kind", "format", "sha256", "byte_size", "license"],
+  "properties": {
+    "id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "kind": {
+      "enum": ["model3d", "image", "audio", "comic", "preview"]
+    },
+    "format": {
+      "enum": ["glb", "jpg", "png", "webp", "mp3", "ogg"]
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "byte_size": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spdx", "attribution"],
+      "properties": {
+        "spdx": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 64
+        },
+        "attribution": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 500
+        }
+      }
+    },
+    "derived_from": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "lod": {
+      "enum": ["source", "display", "mobile"]
+    },
+    "framing": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "camera_orbit": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "orientation_note": {
+          "type": "string",
+          "maxLength": 200
+        }
+      }
+    },
+    "hotspots": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "label": {
+            "$ref": "common.schema.json#/$defs/nonEmptyText"
+          }
+        }
+      }
+    },
+    "fallback_asset_id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    }
+  }
+}

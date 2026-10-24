@@ -1,0 +1,10 @@
+id: cn.tang.asset.gilt-bronze-bull.glb
+kind: model3d
+format: glb
+sha256: 55904b44f74be7f87baa9a2b5c179ecfa26126be8e1f86b66b6c71a1e0865215
+byte_size: 33939664
+license:
+  spdx: CC0-1.0
+  attribution: Cleveland Museum of Art; 1985.74 Recumbent Bull
+  url: https://sketchfab.com/3d-models/198574-recumbent-bull-774c1c5f1cd4484f98b68ee96d886950
+lod: source

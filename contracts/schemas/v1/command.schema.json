@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historyplay.dev/contracts/schemas/v1/command.schema.json",
+  "title": "Command",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "expected_revision",
+    "interaction_epoch",
+    "action"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1"
+    },
+    "request_id": {
+      "$ref": "common.schema.json#/$defs/opaqueId",
+      "description": "Idempotency key. Same ID and payload retries the original receipt; same ID different payload conflicts."
+    },
+    "expected_revision": {
+      "$ref": "common.schema.json#/$defs/nonNegativeInt"
+    },
+    "expected_view_revision": {
+      "$ref": "common.schema.json#/$defs/nonNegativeInt"
+    },
+    "interaction_epoch": {
+      "$ref": "common.schema.json#/$defs/nonNegativeInt"
+    },
+    "control_ticket": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "description": "Opaque short-lived ticket issued by the application. Models must not mint this."
+    },
+    "action": {
+      "$ref": "common.schema.json#/$defs/commandAction"
+    },
+    "target_id": {
+      "$ref": "common.schema.json#/$defs/namespacedId",
+      "description": "Target gallery for enter_gallery; target artifact for artifact-directed actions. Never a client-provided position."
+    },
+    "params": {
+      "$ref": "common.schema.json#/$defs/actionParams"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "enum": ["open_artifact", "enter_gallery", "locate_artifact", "enter_story", "focus_detail", "choose_action"]
+          }
+        },
+        "required": ["action"]
+      },
+      "then": {
+        "required": ["target_id"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "enum": ["enter_gallery", "move_next", "move_previous", "locate_artifact", "return_to_exhibit"]
+          }
+        },
+        "required": ["action"]
+      },
+      "then": {
+        "required": ["expected_view_revision"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "const": "set_view"
+          }
+        },
+        "required": ["action"]
+      },
+      "then": {
+        "required": ["expected_view_revision", "params"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "const": "choose_action"
+          }
+        },
+        "required": ["action"]
+      },
+      "then": {
+        "required": ["params"]
+      }
+    }
+  ]
+}

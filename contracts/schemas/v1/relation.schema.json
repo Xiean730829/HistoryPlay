@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historyplay.dev/contracts/schemas/v1/relation.schema.json",
+  "title": "Relation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "kind", "from_id", "to_id"],
+  "properties": {
+    "id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "kind": {
+      "enum": ["physical", "same_period", "explanatory", "created"],
+      "description": "physical object link, contemporaneous, interpretive, or authored connection."
+    },
+    "from_id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "to_id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "fact_card_id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "note": {
+      "type": "string",
+      "maxLength": 400
+    }
+  }
+}

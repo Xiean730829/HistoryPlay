@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historyplay.dev/contracts/schemas/v1/gallery.schema.json",
+  "title": "Gallery",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "region", "status", "stations"],
+  "properties": {
+    "id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "title": {
+      "$ref": "common.schema.json#/$defs/nonEmptyText"
+    },
+    "region": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 64,
+          "pattern": "^[a-z]{2}(\\.[a-z0-9-]+)?$"
+        },
+        "label": {
+          "$ref": "common.schema.json#/$defs/nonEmptyText"
+        }
+      }
+    },
+    "status": {
+      "enum": ["open", "planned", "closed"]
+    },
+    "default_station_id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "stations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/station"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"status": {"const": "open"}},
+        "required": ["status"]
+      },
+      "then": {"required": ["default_station_id"]}
+    }
+  ],
+  "$defs": {
+    "station": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "order", "time_range", "placement_basis", "artifact_id"],
+      "properties": {
+        "id": {
+          "$ref": "common.schema.json#/$defs/namespacedId"
+        },
+        "order": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Stable curator-defined order, independent from frame coordinates or uncertain date overlap."
+        },
+        "time_range": {
+          "$ref": "common.schema.json#/$defs/timeRange"
+        },
+        "placement_basis": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "description": "Why this object belongs at this point in the visitor route; do not imply a precise creation order when dates overlap."
+        },
+        "artifact_id": {
+          "$ref": "common.schema.json#/$defs/namespacedId"
+        },
+        "comparison_artifact_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "common.schema.json#/$defs/namespacedId"
+          },
+          "description": "Other real artifacts shown for comparison at this station, with their own identity and region retained."
+        },
+        "side": {
+          "enum": ["left", "center", "right"]
+        }
+      }
+    }
+  }
+}

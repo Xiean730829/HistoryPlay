@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historyplay.dev/contracts/schemas/v1/fact-card.schema.json",
+  "title": "FactCard",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "claim", "grade", "applicable_time", "source_ids"],
+  "properties": {
+    "id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400
+    },
+    "grade": {
+      "$ref": "common.schema.json#/$defs/factGrade"
+    },
+    "applicable_time": {
+      "$ref": "common.schema.json#/$defs/timeRange"
+    },
+    "source_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/namespacedId"
+      }
+    },
+    "evidence_note": {
+      "type": "string",
+      "maxLength": 400
+    },
+    "dispute": {
+      "type": "string",
+      "maxLength": 400
+    },
+    "reviewer": {
+      "type": "string",
+      "maxLength": 80
+    }
+  }
+}

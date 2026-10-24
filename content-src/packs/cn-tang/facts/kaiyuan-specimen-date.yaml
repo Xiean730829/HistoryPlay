@@ -1,0 +1,10 @@
+id: cn.tang.fact.kaiyuan-coin.specimen-date
+claim: 馆藏记录将这枚开元通宝钱币断代为718至732年。
+grade: F
+applicable_time:
+  start_year: 718
+  end_year: 732
+  precision: range
+source_ids:
+  - cn.tang.source.a07-catalog
+evidence_note: 这是该馆藏钱币个体的断代。

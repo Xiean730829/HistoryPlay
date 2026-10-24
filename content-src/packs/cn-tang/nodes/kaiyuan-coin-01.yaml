@@ -1,0 +1,9 @@
+id: cn.tang.node.kaiyuan-coin.01
+story_id: cn.tang.story.kaiyuan-coin
+fact_grade: F
+narration: 这枚开元通宝的馆藏记录将钱币本身断代为718至732年。另一个常见年份621年说的是这一钱币类型的初铸时间，不是眼前这枚钱。
+allowed_actions:
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.kaiyuan-coin.02

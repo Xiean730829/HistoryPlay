@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historyplay.dev/contracts/schemas/v1/artifact.schema.json",
+  "title": "Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "museum",
+    "time_range",
+    "material",
+    "category",
+    "asset_ids"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "title": {
+      "$ref": "common.schema.json#/$defs/nonEmptyText"
+    },
+    "aliases": {
+      "type": "array",
+      "maxItems": 30,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      },
+      "description": "Explicit search aliases, including common Chinese names; never inferred from unpublished sources."
+    },
+    "museum": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "accession"],
+      "properties": {
+        "name": {
+          "$ref": "common.schema.json#/$defs/nonEmptyText"
+        },
+        "accession": {
+          "$ref": "common.schema.json#/$defs/nonEmptyText"
+        },
+        "collection_url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 500
+        }
+      }
+    },
+    "time_range": {
+      "$ref": "common.schema.json#/$defs/timeRange"
+    },
+    "material": {
+      "$ref": "common.schema.json#/$defs/nonEmptyText"
+    },
+    "category": {
+      "$ref": "common.schema.json#/$defs/nonEmptyText"
+    },
+    "asset_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/namespacedId"
+      },
+      "description": "Logical digital asset IDs. Replacing a model does not change this artifact ID."
+    },
+    "fact_card_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/namespacedId"
+      }
+    },
+    "story_entry_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/namespacedId"
+      }
+    },
+    "identity_unknown": {
+      "type": "boolean"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "cn.tang.fact.stele.dated-678",
+  "claim": "馆方将此造像碑断代为678年，题记涉及高宗与武后。",
+  "grade": "F",
+  "applicable_time": {
+    "start_year": 678,
+    "end_year": 678,
+    "precision": "year",
+    "display_label": "678年"
+  },
+  "source_ids": ["cn.tang.source.mia.stele-record"],
+  "evidence_note": "不能据此说武后此时已经称帝。"
+}

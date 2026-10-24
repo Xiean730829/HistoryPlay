@@ -1,0 +1,19 @@
+{
+  "id": "cn.tang.node.stele-observation.01",
+  "story_id": "cn.tang.story.stele-observation",
+  "fact_grade": "F",
+  "allowed_actions": ["observe"],
+  "exits": [
+    {
+      "action": "continue_story",
+      "target_node_id": "cn.tang.node.stele-observation.02"
+    }
+  ],
+  "effects": [
+    {
+      "op": "add_discovery",
+      "path": "discoveries.stele_dated",
+      "value": "678"
+    }
+  ]
+}

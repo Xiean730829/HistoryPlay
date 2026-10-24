@@ -1,0 +1,16 @@
+{
+  "id": "cn.tang.asset.stele.original",
+  "kind": "model3d",
+  "format": "glb",
+  "sha256": "9df4392c5d16e92fd704737f4037be19b55e69b28635ec3d47142e5180d87ed4",
+  "byte_size": 4855856,
+  "license": {
+    "spdx": "CC0-1.0",
+    "attribution": "Minneapolis Institute of Art",
+    "url": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "lod": "source",
+  "framing": {
+    "orientation_note": "馆方扫描朝向，展示镜头待生产配置。"
+  }
+}

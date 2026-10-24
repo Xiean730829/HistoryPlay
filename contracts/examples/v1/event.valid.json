@@ -1,0 +1,11 @@
+{
+  "schema_version": "1",
+  "event_seq": 6,
+  "session_id": "sess_stele_001",
+  "kind": "story_advanced",
+  "revision": 4,
+  "view_revision": 1,
+  "interaction_epoch": 2,
+  "request_id": "req_continue_001",
+  "receipt_id": "rcpt_continue_001"
+}

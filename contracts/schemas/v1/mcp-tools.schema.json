@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historyplay.dev/contracts/schemas/v1/mcp-tools.schema.json",
+  "title": "McpToolCall",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/connect"
+    },
+    {
+      "$ref": "#/$defs/getContext"
+    },
+    {
+      "$ref": "#/$defs/search"
+    },
+    {
+      "$ref": "#/$defs/readContent"
+    },
+    {
+      "$ref": "#/$defs/act"
+    }
+  ],
+  "$defs": {
+    "connect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool", "pair_code"],
+      "properties": {
+        "tool": {
+          "const": "museum_connect"
+        },
+        "pair_code": {
+          "type": "string",
+          "minLength": 6,
+          "maxLength": 16,
+          "pattern": "^[A-Za-z0-9]+$"
+        }
+      }
+    },
+    "getContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool"],
+      "properties": {
+        "tool": {
+          "const": "museum_get_context"
+        },
+        "cursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "receipt_id": {
+          "$ref": "common.schema.json#/$defs/opaqueId"
+        }
+      }
+    },
+    "search": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool", "query"],
+      "properties": {
+        "tool": {
+          "const": "museum_search"
+        },
+        "query": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "kind": {
+          "enum": ["artifact", "event", "story", "fact"]
+        },
+        "cursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        }
+      }
+    },
+    "readContent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool", "content_id"],
+      "properties": {
+        "tool": {
+          "const": "museum_read_content"
+        },
+        "content_id": {
+          "$ref": "common.schema.json#/$defs/namespacedId"
+        },
+        "cursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        }
+      }
+    },
+    "act": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool", "action", "request_id", "expected_revision"],
+      "properties": {
+        "tool": {
+          "const": "museum_act"
+        },
+        "action": {
+          "$ref": "common.schema.json#/$defs/commandAction"
+        },
+        "target_id": {
+          "$ref": "common.schema.json#/$defs/namespacedId"
+        },
+        "request_id": {
+          "$ref": "common.schema.json#/$defs/opaqueId"
+        },
+        "expected_revision": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt"
+        },
+        "expected_view_revision": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt"
+        },
+        "interaction_epoch": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt",
+          "description": "Navigation actions require the current input epoch so interrupted commands cannot move the session."
+        },
+        "control_ticket": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._-]+$"
+        },
+        "params": {
+          "$ref": "common.schema.json#/$defs/actionParams"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "tool": {"const": "museum_act"},
+          "action": {
+            "enum": ["enter_gallery", "move_next", "move_previous", "locate_artifact", "return_to_exhibit"]
+          }
+        },
+        "required": ["tool", "action"]
+      },
+      "then": {
+        "required": ["expected_view_revision", "interaction_epoch"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "tool": {"const": "museum_act"},
+          "action": {
+            "enum": ["enter_gallery", "locate_artifact"]
+          }
+        },
+        "required": ["tool", "action"]
+      },
+      "then": {
+        "required": ["target_id"]
+      }
+    }
+  ]
+}

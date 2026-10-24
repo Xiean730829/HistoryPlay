@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://historyplay.dev/contracts/schemas/v1/historical-event.schema.json",
+  "title": "HistoricalEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "time_range", "place", "fact_card_ids"],
+  "properties": {
+    "id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "title": {
+      "$ref": "common.schema.json#/$defs/nonEmptyText"
+    },
+    "time_range": {
+      "$ref": "common.schema.json#/$defs/timeRange"
+    },
+    "place": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label"],
+      "properties": {
+        "label": {
+          "$ref": "common.schema.json#/$defs/nonEmptyText"
+        },
+        "region_id": {
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[a-z]{2}(\\.[a-z0-9-]+)?$"
+        }
+      }
+    },
+    "participant_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/namespacedId"
+      }
+    },
+    "fact_card_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/namespacedId"
+      }
+    },
+    "related_artifact_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/namespacedId"
+      },
+      "description": "Thematic links only. Listing an artifact does not mean it witnessed the event."
+    },
+    "tell_story_id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    },
+    "role_story_id": {
+      "$ref": "common.schema.json#/$defs/namespacedId"
+    }
+  }
+}

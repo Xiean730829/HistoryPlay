@@ -1,0 +1,13 @@
+{
+  "id": "cn.tang.event.wuzhou-690",
+  "title": "武周建立",
+  "time_range": {
+    "start_year": 690,
+    "end_year": 690,
+    "precision": "year"
+  },
+  "place": {
+    "label": "洛阳"
+  },
+  "fact_card_ids": []
+}

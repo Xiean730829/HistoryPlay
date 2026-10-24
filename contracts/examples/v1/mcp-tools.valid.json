@@ -1,0 +1,8 @@
+{
+  "tool": "museum_act",
+  "action": "move_next",
+  "request_id": "request-nav-0001",
+  "expected_revision": 7,
+  "expected_view_revision": 3,
+  "interaction_epoch": 12
+}

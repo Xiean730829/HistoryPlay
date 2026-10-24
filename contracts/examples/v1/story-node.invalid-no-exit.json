@@ -1,0 +1,7 @@
+{
+  "id": "cn.tang.node.stele-observation.01",
+  "story_id": "cn.tang.story.stele-observation",
+  "fact_grade": "F",
+  "allowed_actions": ["observe"],
+  "exits": []
+}
