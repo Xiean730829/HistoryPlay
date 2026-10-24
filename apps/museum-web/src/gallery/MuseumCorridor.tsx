@@ -1,5 +1,5 @@
 import React from "react";
-import type { ArtifactProjection } from "../application/museumApi";
+import type { ArtifactProjection, SessionCredentials } from "../application/museumApi";
 import { projectCorridor } from "./corridorProjection";
 import { ArtifactStation } from "./ExhibitStation";
 import { FloorTimeline } from "./FloorTimeline";
@@ -8,10 +8,17 @@ interface MuseumCorridorProps {
   artifacts: readonly ArtifactProjection[];
   displayOrder: readonly string[];
   focusedId: string | null;
+  session?: SessionCredentials | null;
   loading?: boolean;
 }
 
-export function MuseumCorridor({ artifacts, displayOrder, focusedId, loading = false }: MuseumCorridorProps) {
+export function MuseumCorridor({
+  artifacts,
+  displayOrder,
+  focusedId,
+  session = null,
+  loading = false,
+}: MuseumCorridorProps) {
   const [width, setWidth] = React.useState(() => window.innerWidth);
   React.useEffect(() => {
     const onResize = () => setWidth(window.innerWidth);
@@ -41,7 +48,9 @@ export function MuseumCorridor({ artifacts, displayOrder, focusedId, loading = f
 
       {projection.filter((item) => item.isVisible).map((item) => {
         const artifact = byId.get(item.id);
-        return artifact ? <ArtifactStation artifact={artifact} projection={item} key={item.id} /> : null;
+        return artifact
+          ? <ArtifactStation artifact={artifact} projection={item} session={session} key={item.id} />
+          : null;
       })}
 
       <FloorTimeline labels={years} activeIndex={activeIndex !== null && activeIndex >= 0 ? activeIndex : null} />

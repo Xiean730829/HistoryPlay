@@ -4,6 +4,7 @@ import {
   restoreSession,
   searchArtifacts,
   openArtifact,
+  enterGallery,
   unpairSession,
   requestEventTicket,
   refreshSession,
@@ -20,6 +21,8 @@ import { MuseumCorridor } from "../gallery/MuseumCorridor";
 const SESSION_KEY = "history-play.session.v1";
 const DEFAULT_PACK_ID = import.meta.env.VITE_MUSEUM_PACK_ID?.trim() || "cn.tang.core";
 const DEFAULT_VERSION = import.meta.env.VITE_MUSEUM_PACK_VERSION?.trim() || "1.0.0";
+const DEFAULT_GALLERY_ID =
+  import.meta.env.VITE_MUSEUM_GALLERY_ID?.trim() || "cn.tang.gallery.main";
 const SHOW_DIAGNOSTICS = new URLSearchParams(window.location.search).get("debug") === "1";
 type Health = { status: "ok"; service: string };
 
@@ -183,6 +186,7 @@ export function MuseumShell() {
         artifacts={session?.context.visible_artifacts ?? []}
         displayOrder={session?.state.display_order ?? []}
         focusedId={session?.context.focused_artifact?.id ?? session?.state.focused_entity_id ?? null}
+        session={session}
         loading={!session && !healthError}
       />
 
@@ -267,11 +271,19 @@ async function restoreSavedSession(): Promise<ActiveSession | null> {
 
 async function openDefaultSession(): Promise<ActiveSession> {
   const restored = await restoreSavedSession();
-  if (restored) return restored;
+  if (restored) return ensureTangGallery(restored);
 
   const credentials = await createSession(DEFAULT_PACK_ID, DEFAULT_VERSION);
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(credentials));
-  return restoreSession(credentials);
+  return ensureTangGallery(await restoreSession(credentials));
+}
+
+async function ensureTangGallery(session: ActiveSession): Promise<ActiveSession> {
+  if (session.state.gallery_id === DEFAULT_GALLERY_ID) return session;
+  const result = await enterGallery(session, DEFAULT_GALLERY_ID);
+  if (result.receipt.status === "committed") return result.session;
+  if (result.session.state.gallery_id === DEFAULT_GALLERY_ID) return result.session;
+  throw new Error(result.receipt.reason ?? "未能进入唐朝展厅");
 }
 
 function modeLabel(mode: string): string {
