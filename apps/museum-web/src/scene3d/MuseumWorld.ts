@@ -1,6 +1,6 @@
 import {
   ACESFilmicToneMapping, Box3, Color, FogExp2, Group, Mesh, MeshStandardMaterial,
-  PCFSoftShadowMap, PerspectiveCamera, Raycaster, Scene, Vector2, Vector3, WebGLRenderer,
+  PCFShadowMap, PerspectiveCamera, Raycaster, Scene, Vector2, Vector3, WebGLRenderer,
   PMREMGenerator, BoxGeometry, MeshBasicMaterial, type WebGLRenderTarget,
 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
@@ -9,7 +9,8 @@ import type { ActiveSession, ArtifactProjection } from "../application/museumApi
 import { galleryAssets } from "../capabilities/galleryAssets";
 import type { AssetLease } from "../capabilities/assetLoader";
 import { buildHall, inscription } from "./architecture";
-import { nearbyModelIndices, seatModel, stationPlacement } from "./layout";
+import { MODEL_SURFACE_OFFSET, nearbyModelIndices, seatModel, stationPlacement } from "./layout";
+import { stairCameraPose, stationFacingYaw } from "./stairCamera";
 import { disposeTree } from "./resources";
 import { pickArtifact } from "./picking";
 
@@ -28,8 +29,8 @@ export class MuseumWorld {
   readonly camera = new PerspectiveCamera(47, 1, 0.08, 100);
   readonly renderer: WebGLRenderer;
   private readonly exhibits = new Map<string, Exhibit>();
-  private readonly targetPosition = new Vector3(0.4, 2.5, 8.4);
-  private readonly targetLook = new Vector3(0, 1.65, -8);
+  private readonly targetPosition = new Vector3().fromArray(stairCameraPose(0, false).position);
+  private readonly targetLook = new Vector3().fromArray(stairCameraPose(0, false).lookAt);
   private readonly currentLook = this.targetLook.clone();
   private readonly raycaster = new Raycaster();
   private readonly pointer = new Vector2();
@@ -56,7 +57,7 @@ export class MuseumWorld {
     this.renderer.toneMapping = ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.15;
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = PCFSoftShadowMap;
+    this.renderer.shadowMap.type = PCFShadowMap;
     this.renderer.domElement.setAttribute("aria-label", "可点击文物的三维宫殿展廊");
     this.renderer.domElement.style.touchAction = "none";
     host.appendChild(this.renderer.domElement);
@@ -91,19 +92,20 @@ export class MuseumWorld {
 
   private createExhibit(artifact: ArtifactProjection, index: number): void {
     const p = stationPlacement(index);
-    const root = new Group(); root.position.set(p.x, p.top + 0.04, p.z);
+    const root = new Group(); root.position.set(p.x, p.plinthTop + MODEL_SURFACE_OFFSET, p.z);
+    root.rotation.y = stationFacingYaw(index);
     root.userData.artifactId = artifact.id;
     const spin = new Group(); root.add(spin); this.scene.add(root);
     const entry: Exhibit = { root, spin, loaded: false, loading: false, controller: new AbortController() };
     this.exhibits.set(artifact.id, entry);
     // A case-sized target catches the coin hole and the supporting plinth as one exhibit.
     const pickVolume = new Mesh(new BoxGeometry(2.25, 3.15, 1.95), new MeshBasicMaterial({ visible: false }));
-    pickVolume.position.set(p.x, 1.575, p.z); pickVolume.userData.artifactId = artifact.id;
+    pickVolume.position.set(p.x, p.landingY + 1.575, p.z); pickVolume.userData.artifactId = artifact.id;
     this.scene.add(pickVolume);
     const label = inscription(artifact.title, 2.1, 0.4);
-    label.position.set(p.x, 0.76, p.z + 0.895); this.scene.add(label);
+    label.position.set(p.x, p.plinthTop - 0.28, p.z + 0.895); this.scene.add(label);
     const date = inscription(artifact.time_range.display_label ?? `${artifact.time_range.start_year}年`, 2.3, 0.6, true);
-    date.position.set(p.x * 0.6, 0.017, p.z + 1.65); this.scene.add(date);
+    date.position.set(p.x, p.landingY + 0.017, p.z + 1.3); this.scene.add(date);
   }
 
   private async loadModel(artifact: ArtifactProjection, entry: Exhibit): Promise<void> {
@@ -156,14 +158,9 @@ export class MuseumWorld {
         entry.controller = new AbortController();
       }
     });
-    const p = stationPlacement(index);
-    if (inspection) {
-      this.targetPosition.set(p.x + 0.15, 2.0, p.z + 3.05 / Math.sqrt(session.state.camera_pose?.zoom ?? 1));
-      this.targetLook.set(p.x, 1.8, p.z);
-    } else {
-      this.targetPosition.set(0.35, 2.45, Math.min(8.4, p.z + 10.4));
-      this.targetLook.set(0, 1.65, p.z - 6);
-    }
+    const cameraPose = stairCameraPose(index, inspection, session.state.camera_pose?.zoom ?? 1);
+    this.targetPosition.fromArray(cameraPose.position);
+    this.targetLook.fromArray(cameraPose.lookAt);
   }
 
   private click = (event: MouseEvent): void => {
