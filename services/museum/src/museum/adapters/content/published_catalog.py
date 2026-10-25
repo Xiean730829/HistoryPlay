@@ -102,6 +102,7 @@ class PublishedCatalog:
             version=version,
             schema_version=schema_version,
             documents=MappingProxyType(documents),  # type: ignore[arg-type]
+            dependencies=_parse_dependencies(index, manifest, index_path),
         )
 
     @staticmethod
@@ -117,3 +118,42 @@ class PublishedCatalog:
             return json.loads(encoded.decode("utf-8"))
         except (UnicodeDecodeError, json.JSONDecodeError) as error:
             raise CatalogIntegrityError(f"内容包JSON格式错误：{path}") from error
+
+
+def _parse_dependencies(
+    index: dict[str, Any], manifest: dict[str, Any], index_path: Path
+) -> tuple[PackReference, ...]:
+    raw_index = index.get("dependencies", [])
+    raw_manifest = manifest.get("dependencies", [])
+    if raw_index in (None, []):
+        raw_index = []
+    if raw_manifest in (None, []):
+        raw_manifest = []
+    if not isinstance(raw_index, list) or not isinstance(raw_manifest, list):
+        raise CatalogIntegrityError(f"内容包依赖清单格式错误：{index_path}")
+    parsed_index = _normalize_dependencies(raw_index, index_path)
+    parsed_manifest = _normalize_dependencies(raw_manifest, index_path)
+    if parsed_index and parsed_manifest and parsed_index != parsed_manifest:
+        raise CatalogIntegrityError(f"内容包依赖清单与索引不匹配：{index_path}")
+    return parsed_index or parsed_manifest
+
+
+def _normalize_dependencies(raw: list[object], index_path: Path) -> tuple[PackReference, ...]:
+    seen: set[str] = set()
+    parsed: list[PackReference] = []
+    for item in raw:
+        if not isinstance(item, dict):
+            raise CatalogIntegrityError(f"内容包依赖条目格式错误：{index_path}")
+        pack_id, version = item.get("pack_id"), item.get("version")
+        if not isinstance(pack_id, str) or not isinstance(version, str):
+            raise CatalogIntegrityError(f"内容包依赖条目格式错误：{index_path}")
+        if not PACK_ID.fullmatch(pack_id) or not VERSION.fullmatch(version):
+            raise CatalogIntegrityError(f"内容包依赖条目无效：{pack_id}@{version}")
+        if pack_id in seen:
+            raise CatalogIntegrityError(f"内容包依赖重复声明：{pack_id}")
+        seen.add(pack_id)
+        sha256 = item.get("sha256")
+        if sha256 is not None and (not isinstance(sha256, str) or not SHA256.fullmatch(sha256)):
+            raise CatalogIntegrityError(f"内容包依赖哈希无效：{pack_id}@{version}")
+        parsed.append(PackReference(pack_id, version, sha256 if isinstance(sha256, str) else None))
+    return tuple(sorted(parsed, key=lambda item: (item.pack_id, item.version)))
