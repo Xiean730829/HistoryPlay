@@ -1,7 +1,7 @@
 import { AmbientLight, Group, HemisphereLight, PointLight } from "three";
 import { stationPlacement } from "./layout";
 
-/** Warm amber pools illuminate real exhibits along the rising stair landings. */
+/** Warm amber pools identify real exhibits on alternating bends of the rising river route. */
 export function buildGalleryLighting(count: number): Group {
   const rig = new Group();
   rig.name = "gallery-exhibit-lights";
