@@ -13,6 +13,11 @@ export default defineConfig(({ mode }) => {
           target: `http://127.0.0.1:${env.MUSEUM_PORT ?? 8780}`,
           rewrite: (path) => (path === "/api/health" ? "/health" : path),
         },
+        "/voice": {
+          target: `http://127.0.0.1:${env.MUSEUM_VOICE_PORT ?? 8782}`,
+          changeOrigin: true,
+          ws: true,
+        },
       },
     },
   };
