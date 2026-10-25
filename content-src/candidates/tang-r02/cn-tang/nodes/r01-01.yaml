@@ -1,0 +1,11 @@
+id: cn.tang.story.seated-buddha-tianlongshan.segment-1
+story_id: cn.tang.story.seated-buddha-tianlongshan
+fact_grade: C
+narration: 现代研究桌上，参观者发现石像并不只有一种灰色。讲解员提醒：先看看哪些痕迹真实可见，别急着把整尊像重新涂满。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.seated-buddha-tianlongshan.segment-2

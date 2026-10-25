@@ -1,0 +1,17 @@
+id: cn.tang.node.t03.n04
+story_id: cn.tang.story.t03
+fact_grade: C
+narration: >-
+  许宁把观察卡分成两栏：左边写“碑铭与馆方记录”，右边写“后来查到的时间线”。她说：“我在678年写信时，还不知道690年和705年的变化。你可以再对照一次，也可以回到展台继续观察造像碑。”
+allowed_actions:
+  - ask
+  - observe
+  - choose_route
+  - return_to_exhibit
+exits:
+  - action: choose_route
+    target_node_id: cn.tang.node.t03.n02
+    route_label: 再看碑铭的证据边界
+  - action: return_to_exhibit
+    target_node_id: cn.tang.node.t03.n01
+return_checkpoint: true

@@ -1,0 +1,12 @@
+id: cn.tang.story.tomb-guardian.segment-3
+story_id: cn.tang.story.tomb-guardian
+fact_grade: C
+narration: 我们知道它属于镇墓兽这一类，却未必知道每位制作者和使用者当时说过什么。把不知道的地方留出来，也能尊重那些真实生活过的人。
+allowed_actions:
+- ask
+- observe
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.tang.story.tomb-guardian.segment-1
+return_checkpoint: true

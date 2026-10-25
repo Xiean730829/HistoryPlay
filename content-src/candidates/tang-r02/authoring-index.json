@@ -1,0 +1,545 @@
+{
+  "schema_version": 1,
+  "status": "candidate_not_published",
+  "timeline_id": "cn.tang.timeline.main.v1",
+  "timeline_chapters": [
+    {
+      "id": "cn.tang.chapter.t01",
+      "legacy_id": "T01",
+      "title": "新钱，新日子",
+      "date_label": "618／621",
+      "story_year_range": [
+        618,
+        621
+      ],
+      "character_id": "cn.tang.person.t01.v1",
+      "artifact_ids": [
+        "cn.tang.artifact.kaiyuan-coin"
+      ],
+      "historical_source_ids": [
+        "cn.tang.source.history-h01",
+        "cn.tang.source.history-h02"
+      ],
+      "nodes": [
+        {
+          "id": "cn.tang.node.t01.n01",
+          "legacy_id": "T01.01",
+          "scene_asset_id": "cn.tang.scene.t01.market.v1"
+        },
+        {
+          "id": "cn.tang.node.t01.n02",
+          "legacy_id": "T01.02",
+          "scene_asset_id": "cn.tang.scene.t01.negotiation.v1"
+        },
+        {
+          "id": "cn.tang.node.t01.n03",
+          "legacy_id": "T01.03",
+          "scene_asset_id": "cn.tang.scene.t01.examine.v1"
+        },
+        {
+          "id": "cn.tang.node.t01.n04",
+          "legacy_id": "T01.04",
+          "scene_asset_id": "cn.tang.scene.t01.agreement.v1"
+        }
+      ]
+    },
+    {
+      "id": "cn.tang.chapter.t02",
+      "legacy_id": "T02",
+      "title": "门内与门外",
+      "date_label": "626—627",
+      "story_year_range": [
+        626,
+        627
+      ],
+      "character_id": "cn.tang.person.t02.v1",
+      "artifact_ids": [
+        "cn.tang.artifact.equestrian-pair"
+      ],
+      "historical_source_ids": [
+        "cn.tang.source.history-h03"
+      ],
+      "nodes": [
+        {
+          "id": "cn.tang.node.t02.n01",
+          "legacy_id": "T02.01",
+          "scene_asset_id": "cn.tang.art.t02-environment.v1"
+        },
+        {
+          "id": "cn.tang.node.t02.n02",
+          "legacy_id": "T02.02",
+          "scene_asset_id": "cn.tang.art.t02-ask.v1"
+        },
+        {
+          "id": "cn.tang.node.t02.n03",
+          "legacy_id": "T02.03",
+          "scene_asset_id": "cn.tang.art.t02-ask.v1"
+        },
+        {
+          "id": "cn.tang.node.t02.n04",
+          "legacy_id": "T02.04",
+          "scene_asset_id": "cn.tang.art.t02-environment.v1"
+        }
+      ]
+    },
+    {
+      "id": "cn.tang.chapter.t03",
+      "legacy_id": "T03",
+      "title": "刻进石头的名字",
+      "date_label": "678→690→705",
+      "story_year_range": [
+        678,
+        705
+      ],
+      "character_id": "cn.tang.person.t03.v1",
+      "artifact_ids": [
+        "cn.tang.artifact.votive-stele",
+        "cn.tang.artifact.kneeling-bodhisattva"
+      ],
+      "historical_source_ids": [
+        "cn.tang.source.history-h04",
+        "cn.tang.source.history-h13",
+        "cn.tang.source.history-h14"
+      ],
+      "nodes": [
+        {
+          "id": "cn.tang.node.t03.n01",
+          "legacy_id": "T03.01",
+          "scene_asset_id": "cn.tang.art.t03-environment.v1"
+        },
+        {
+          "id": "cn.tang.node.t03.n02",
+          "legacy_id": "T03.02",
+          "scene_asset_id": "cn.tang.scene.t03.evidence-table.v1"
+        },
+        {
+          "id": "cn.tang.node.t03.n03",
+          "legacy_id": "T03.03",
+          "scene_asset_id": "cn.tang.scene.t03.evidence-table.v1"
+        },
+        {
+          "id": "cn.tang.node.t03.n04",
+          "legacy_id": "T03.04",
+          "scene_asset_id": "cn.tang.art.t03-environment.v1"
+        }
+      ]
+    },
+    {
+      "id": "cn.tang.chapter.t04",
+      "legacy_id": "T04",
+      "title": "热闹不是全部",
+      "date_label": "713—741；故事736",
+      "story_year_range": [
+        713,
+        741
+      ],
+      "character_id": "cn.tang.person.t04.v1",
+      "artifact_ids": [
+        "cn.tang.artifact.standing-woman-mhc",
+        "cn.tang.artifact.lute-musician",
+        "cn.tang.artifact.flute-musician",
+        "cn.tang.artifact.dragon-amphora",
+        "cn.tang.artifact.seated-buddha-tianlongshan",
+        "cn.tang.artifact.gilt-bronze-bull",
+        "cn.tang.artifact.bronze-mirror",
+        "cn.tang.artifact.woman-figure-mia",
+        "cn.tang.artifact.buddha-follower",
+        "cn.tang.artifact.dvarapala",
+        "cn.tang.artifact.guardian-head"
+      ],
+      "historical_source_ids": [
+        "cn.tang.source.history-h05"
+      ],
+      "nodes": [
+        {
+          "id": "cn.tang.node.t04.n01",
+          "legacy_id": "T04.01",
+          "scene_asset_id": "cn.tang.art.t04-environment.v1"
+        },
+        {
+          "id": "cn.tang.node.t04.n02",
+          "legacy_id": "T04.02",
+          "scene_asset_id": "cn.tang.art.a01-life.v1"
+        },
+        {
+          "id": "cn.tang.node.t04.n03",
+          "legacy_id": "T04.03",
+          "scene_asset_id": "cn.tang.art.t04-negotiate.v1"
+        },
+        {
+          "id": "cn.tang.node.t04.n04",
+          "legacy_id": "T04.04",
+          "scene_asset_id": "cn.tang.art.a01-life.v1"
+        }
+      ]
+    },
+    {
+      "id": "cn.tang.chapter.t05",
+      "legacy_id": "T05",
+      "title": "没有按时到的信",
+      "date_label": "755—763",
+      "story_year_range": [
+        755,
+        763
+      ],
+      "character_id": "cn.tang.person.t05.v1",
+      "artifact_ids": [
+        "cn.tang.artifact.equestrian-pair",
+        "cn.tang.artifact.tomb-guardian"
+      ],
+      "historical_source_ids": [
+        "cn.tang.source.history-h06"
+      ],
+      "nodes": [
+        {
+          "id": "cn.tang.node.t05.n01",
+          "legacy_id": "T05.01",
+          "scene_asset_id": "cn.tang.art.t05-environment.v1"
+        },
+        {
+          "id": "cn.tang.node.t05.n02",
+          "legacy_id": "T05.02",
+          "scene_asset_id": "cn.tang.art.a02-road.v1"
+        },
+        {
+          "id": "cn.tang.node.t05.n03",
+          "legacy_id": "T05.03",
+          "scene_asset_id": "cn.tang.art.a02-road.v1"
+        },
+        {
+          "id": "cn.tang.node.t05.n04",
+          "legacy_id": "T05.04",
+          "scene_asset_id": "cn.tang.art.t05-environment.v1"
+        }
+      ]
+    },
+    {
+      "id": "cn.tang.chapter.t06",
+      "legacy_id": "T06",
+      "title": "日子要重新算",
+      "date_label": "780",
+      "story_year_range": [
+        780,
+        780
+      ],
+      "character_id": "cn.tang.person.t06.v1",
+      "artifact_ids": [
+        "cn.tang.artifact.kaiyuan-coin"
+      ],
+      "historical_source_ids": [
+        "cn.tang.source.history-h08"
+      ],
+      "nodes": [
+        {
+          "id": "cn.tang.node.t06.n01",
+          "legacy_id": "T06.01",
+          "scene_asset_id": "cn.tang.art.t06-environment.v1"
+        },
+        {
+          "id": "cn.tang.node.t06.n02",
+          "legacy_id": "T06.02",
+          "scene_asset_id": "cn.tang.art.t06-ledger.v1"
+        },
+        {
+          "id": "cn.tang.node.t06.n03",
+          "legacy_id": "T06.03",
+          "scene_asset_id": "cn.tang.art.t06-ledger.v1"
+        },
+        {
+          "id": "cn.tang.node.t06.n04",
+          "legacy_id": "T06.04",
+          "scene_asset_id": "cn.tang.art.t06-environment.v1"
+        }
+      ]
+    },
+    {
+      "id": "cn.tang.chapter.t07",
+      "legacy_id": "T07",
+      "title": "鸟纹碗要去远方",
+      "date_label": "约830年代",
+      "story_year_range": [
+        830,
+        839
+      ],
+      "character_id": "cn.tang.person.t07.v1",
+      "artifact_ids": [
+        "cn.tang.artifact.changsha-bird-bowl",
+        "iq.abbasid.artifact.iraq-blue-bowl"
+      ],
+      "historical_source_ids": [
+        "cn.tang.source.history-h07"
+      ],
+      "nodes": [
+        {
+          "id": "cn.tang.node.t07.n01",
+          "legacy_id": "T07.01",
+          "scene_asset_id": "cn.tang.art.t07-environment.v1"
+        },
+        {
+          "id": "cn.tang.node.t07.n02",
+          "legacy_id": "T07.02",
+          "scene_asset_id": "cn.tang.art.a10-pack.v1"
+        },
+        {
+          "id": "cn.tang.node.t07.n03",
+          "legacy_id": "T07.03",
+          "scene_asset_id": "cn.tang.art.c01-meeting.v1"
+        },
+        {
+          "id": "cn.tang.node.t07.n04",
+          "legacy_id": "T07.04",
+          "scene_asset_id": "cn.tang.art.a10-pack.v1"
+        }
+      ]
+    },
+    {
+      "id": "cn.tang.chapter.t08",
+      "legacy_id": "T08",
+      "title": "一只器物，几种用途",
+      "date_label": "845",
+      "story_year_range": [
+        845,
+        845
+      ],
+      "character_id": "cn.tang.person.t08.v1",
+      "artifact_ids": [
+        "cn.tang.artifact.kundika"
+      ],
+      "historical_source_ids": [
+        "cn.tang.source.history-h09"
+      ],
+      "nodes": [
+        {
+          "id": "cn.tang.node.t08.n01",
+          "legacy_id": "T08.01",
+          "scene_asset_id": "cn.tang.art.t08-environment.v1"
+        },
+        {
+          "id": "cn.tang.node.t08.n02",
+          "legacy_id": "T08.02",
+          "scene_asset_id": "cn.tang.art.a08-ask.v1"
+        },
+        {
+          "id": "cn.tang.node.t08.n03",
+          "legacy_id": "T08.03",
+          "scene_asset_id": "cn.tang.art.a08-ask.v1"
+        },
+        {
+          "id": "cn.tang.node.t08.n04",
+          "legacy_id": "T08.04",
+          "scene_asset_id": "cn.tang.art.t08-environment.v1"
+        }
+      ]
+    },
+    {
+      "id": "cn.tang.chapter.t09",
+      "legacy_id": "T09",
+      "title": "把故事留在砖上",
+      "date_label": "880年代；回看870年之前",
+      "story_year_range": [
+        880,
+        884
+      ],
+      "character_id": "cn.tang.person.t09.v1",
+      "artifact_ids": [
+        "cn.tang.artifact.dancer-brick"
+      ],
+      "historical_source_ids": [
+        "cn.tang.source.history-h10",
+        "cn.tang.source.history-h11"
+      ],
+      "nodes": [
+        {
+          "id": "cn.tang.node.t09.n01",
+          "legacy_id": "T09.01",
+          "scene_asset_id": "cn.tang.art.t09-environment.v1"
+        },
+        {
+          "id": "cn.tang.node.t09.n02",
+          "legacy_id": "T09.02",
+          "scene_asset_id": "cn.tang.art.a09-pattern.v1"
+        },
+        {
+          "id": "cn.tang.node.t09.n03",
+          "legacy_id": "T09.03",
+          "scene_asset_id": "cn.tang.art.t09-share.v1"
+        },
+        {
+          "id": "cn.tang.node.t09.n04",
+          "legacy_id": "T09.04",
+          "scene_asset_id": "cn.tang.art.a09-pattern.v1"
+        }
+      ]
+    },
+    {
+      "id": "cn.tang.chapter.t10",
+      "legacy_id": "T10",
+      "title": "最后一个唐字",
+      "date_label": "904→907",
+      "story_year_range": [
+        904,
+        907
+      ],
+      "character_id": "cn.tang.person.t10.v1",
+      "artifact_ids": [
+        "cn.tang.artifact.kaiyuan-coin",
+        "cn.tang.artifact.changsha-bird-bowl",
+        "cn.tang.artifact.dancer-brick"
+      ],
+      "historical_source_ids": [
+        "cn.tang.source.history-h12"
+      ],
+      "nodes": [
+        {
+          "id": "cn.tang.node.t10.n01",
+          "legacy_id": "T10.01",
+          "scene_asset_id": "cn.tang.art.t10-environment.v1"
+        },
+        {
+          "id": "cn.tang.node.t10.n02",
+          "legacy_id": "T10.02",
+          "scene_asset_id": "cn.tang.art.t10-archive.v1"
+        },
+        {
+          "id": "cn.tang.node.t10.n03",
+          "legacy_id": "T10.03",
+          "scene_asset_id": "cn.tang.art.t10-archive.v1"
+        },
+        {
+          "id": "cn.tang.node.t10.n04",
+          "legacy_id": "T10.04",
+          "scene_asset_id": "cn.tang.art.t10-environment.v1"
+        }
+      ]
+    }
+  ],
+  "author_character_ids": [
+    "cn.tang.person.t01.v1",
+    "cn.tang.person.t02.v1",
+    "cn.tang.person.t03.v1",
+    "cn.tang.person.t04.v1",
+    "cn.tang.person.t05.v1",
+    "cn.tang.person.t06.v1",
+    "cn.tang.person.t07.v1",
+    "cn.tang.person.t08.v1",
+    "cn.tang.person.t09.v1",
+    "cn.tang.person.t10.v1"
+  ],
+  "historical_person_ids": [
+    "cn.tang.person.li-yuan",
+    "cn.tang.person.li-shimin",
+    "cn.tang.person.wu-zetian",
+    "cn.tang.person.tang-xuanzong",
+    "cn.tang.person.an-lushan",
+    "cn.tang.person.tang-suzong",
+    "cn.tang.person.huang-chao",
+    "cn.tang.person.tang-zhaozong",
+    "cn.tang.person.tang-aidi",
+    "cn.tang.person.zhu-wen"
+  ],
+  "scene_asset_ids": [
+    "cn.tang.art.a01-life.v1",
+    "cn.tang.art.a02-road.v1",
+    "cn.tang.art.a03-protect.v1",
+    "cn.tang.art.a08-ask.v1",
+    "cn.tang.art.a09-pattern.v1",
+    "cn.tang.art.a10-pack.v1",
+    "cn.tang.art.a11a-strings.v1",
+    "cn.tang.art.a11b-breath.v1",
+    "cn.tang.art.a12-shapes.v1",
+    "cn.tang.art.c01-meeting.v1",
+    "cn.tang.art.r01-color.v1",
+    "cn.tang.art.r02-small.v1",
+    "cn.tang.art.r03-two-sides.v1",
+    "cn.tang.art.r04-context.v1",
+    "cn.tang.art.r05-evidence.v1",
+    "cn.tang.art.r06-gesture.v1",
+    "cn.tang.art.r07-door.v1",
+    "cn.tang.art.r08-fragment.v1",
+    "cn.tang.scene.t01.negotiation.v1",
+    "cn.tang.scene.t03.evidence-table.v1"
+  ],
+  "story_scene_bindings": {
+    "A01": "cn.tang.art.a01-life.v1",
+    "A02": "cn.tang.art.a02-road.v1",
+    "A03": "cn.tang.art.a03-protect.v1",
+    "A04": "cn.tang.scene.t03.evidence-table.v1",
+    "A07": "cn.tang.scene.t01.negotiation.v1",
+    "A08": "cn.tang.art.a08-ask.v1",
+    "A09": "cn.tang.art.a09-pattern.v1",
+    "A10": "cn.tang.art.a10-pack.v1",
+    "A11a": "cn.tang.art.a11a-strings.v1",
+    "A11b": "cn.tang.art.a11b-breath.v1",
+    "A12": "cn.tang.art.a12-shapes.v1",
+    "C01": "cn.tang.art.c01-meeting.v1",
+    "R01": "cn.tang.art.r01-color.v1",
+    "R02": "cn.tang.art.r02-small.v1",
+    "R03": "cn.tang.art.r03-two-sides.v1",
+    "R04": "cn.tang.art.r04-context.v1",
+    "R05": "cn.tang.art.r05-evidence.v1",
+    "R06": "cn.tang.art.r06-gesture.v1",
+    "R07": "cn.tang.art.r07-door.v1",
+    "R08": "cn.tang.art.r08-fragment.v1"
+  },
+  "chapter_scene_asset_ids": [
+    "cn.tang.art.a01-life.v1",
+    "cn.tang.art.a02-road.v1",
+    "cn.tang.art.a08-ask.v1",
+    "cn.tang.art.a09-pattern.v1",
+    "cn.tang.art.a10-pack.v1",
+    "cn.tang.art.c01-meeting.v1",
+    "cn.tang.art.t02-ask.v1",
+    "cn.tang.art.t02-environment.v1",
+    "cn.tang.art.t03-environment.v1",
+    "cn.tang.art.t04-environment.v1",
+    "cn.tang.art.t04-negotiate.v1",
+    "cn.tang.art.t05-environment.v1",
+    "cn.tang.art.t06-environment.v1",
+    "cn.tang.art.t06-ledger.v1",
+    "cn.tang.art.t07-environment.v1",
+    "cn.tang.art.t08-environment.v1",
+    "cn.tang.art.t09-environment.v1",
+    "cn.tang.art.t09-share.v1",
+    "cn.tang.art.t10-archive.v1",
+    "cn.tang.art.t10-environment.v1",
+    "cn.tang.scene.t01.agreement.v1",
+    "cn.tang.scene.t01.examine.v1",
+    "cn.tang.scene.t01.market.v1",
+    "cn.tang.scene.t01.negotiation.v1",
+    "cn.tang.scene.t03.evidence-table.v1"
+  ],
+  "deferred_cards": [
+    {
+      "code": "A08",
+      "artifact_id": "cn.tang.artifact.kundika",
+      "date_label": "模型发布资料标唐代；馆方页面年代字段存在冲突",
+      "review_status": "editorial_candidate_history_review_pending",
+      "reason": "日期字段无法映射为Schema整数范围；保留原始日期标签，不推造日期"
+    },
+    {
+      "code": "A09",
+      "artifact_id": "cn.tang.artifact.dancer-brick",
+      "date_label": "870年之前",
+      "review_status": "editorial_candidate_history_review_pending",
+      "reason": "日期字段无法映射为Schema整数范围；保留原始日期标签，不推造日期"
+    },
+    {
+      "code": "A12",
+      "artifact_id": "cn.tang.artifact.dragon-amphora",
+      "date_label": "8世纪前半叶",
+      "review_status": "editorial_candidate_history_review_pending",
+      "reason": "Schema必需字段待补：accession"
+    },
+    {
+      "code": "R08",
+      "artifact_id": "cn.tang.artifact.guardian-head",
+      "date_label": "约735年",
+      "review_status": "editorial_candidate_history_review_pending",
+      "reason": "日期字段无法映射为Schema整数范围；保留原始日期标签，不推造日期"
+    }
+  ],
+  "pending": [
+    "章节正文节点、人物档案和未审核媒体不编入运行包，由后续独立任务导入。",
+    "该候选包没有模型/图像资产绑定，不能直接用于运行时发布。"
+  ]
+}

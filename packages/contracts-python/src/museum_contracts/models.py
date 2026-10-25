@@ -11,7 +11,7 @@ type NonNegativeInt = int
 type FactGrade = Literal["F", "R", "C", "H", "U"]
 type CapabilityId = Literal["artifact3d", "comic", "map", "timeline", "relationship_graph", "compare"]
 type SessionMode = Literal["explore", "story", "qa", "hypothesis"]
-type CommandAction = Literal["open_artifact", "enter_gallery", "move_next", "move_previous", "locate_artifact", "return_to_exhibit", "enter_story", "continue_story", "pause_story", "return_to_story", "focus_detail", "set_view", "choose_action"]
+type CommandAction = Literal["open_artifact", "enter_gallery", "move_next", "move_previous", "locate_artifact", "return_to_exhibit", "enter_story", "continue_story", "choose_route", "pause_story", "return_to_story", "focus_detail", "set_view", "choose_action"]
 type VariableValue = bool | int | float | str
 
 class TimeRange(TypedDict):
@@ -255,6 +255,7 @@ class Story(TypedDict):
     title: NonEmptyText
     entry_node_id: NamespacedId
     node_ids: list[NamespacedId]
+    fact_card_ids: NotRequired[list[NamespacedId]]
     artifact_id: NotRequired[NamespacedId]
     return_to_exhibit: NotRequired[bool]
 
@@ -330,6 +331,7 @@ class StoryNodePresentation(TypedDict):
 class StoryNodeExits(TypedDict):
     action: Literal["continue_story", "choose_route", "enter_hypothesis", "return_to_exhibit"]
     target_node_id: NamespacedId
+    route_label: NotRequired[str]
     when: NotRequired[StoryNodeCondition]
 
 class ArtifactDisplay(TypedDict):

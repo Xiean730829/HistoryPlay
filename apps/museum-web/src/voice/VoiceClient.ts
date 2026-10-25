@@ -1,8 +1,21 @@
 import { PlaybackQueue } from "./PlaybackQueue";
+import type { CommandReceipt } from "@history-play/contracts";
+import type { NarrationSegment } from "../narration/NarrationPlayer";
+
+export interface VoiceControlResult {
+  kind: "action" | "narration" | "resume" | "clarification" | "error";
+  message?: string;
+  receipt?: CommandReceipt;
+  narration?: NarrationSegment;
+  render_status?: "pending";
+}
+
+export type RenderAcknowledgement = "rendered" | "degraded" | "pending";
 
 export interface VoiceCallbacks {
   onState(state: "connecting" | "connected" | "disconnected" | "error", message?: string): void;
   onText(type: "stt" | "tts" | "llm", text: string, state?: string): void;
+  onControl?(result: VoiceControlResult): void;
 }
 
 /** Device secrets stay in the local bridge. Every socket has its own local generation. */
@@ -20,7 +33,8 @@ export class VoiceClient {
   constructor(
     private readonly playback: PlaybackQueue,
     private readonly callbacks: VoiceCallbacks,
-    private readonly endpoint = "ws://127.0.0.1:8781/voice/ws",
+    private readonly endpoint = "ws://127.0.0.1:8782/voice/ws",
+    private readonly bindingId?: string,
   ) {
     const url = new URL(endpoint);
     if (url.protocol !== "ws:" || url.hostname !== "127.0.0.1"
@@ -45,6 +59,11 @@ export class VoiceClient {
     const socket = new WebSocket(this.endpoint);
     socket.binaryType = "arraybuffer";
     this.socket = socket;
+    socket.onopen = () => {
+      if (this.bindingId && connection === this.connection) {
+        socket.send(JSON.stringify({ op: "bind", binding_id: this.bindingId }));
+      }
+    };
     return new Promise((resolve, reject) => {
       let settled = false;
       const fail = () => {
@@ -54,7 +73,7 @@ export class VoiceClient {
       socket.onmessage = (event: MessageEvent<string | ArrayBuffer>) => {
         if (connection !== this.connection) return;
         if (typeof event.data === "string") {
-          let data: { type?: string; state?: string; text?: string };
+          let data: { type?: string; state?: string; text?: string; result?: VoiceControlResult };
           try { data = JSON.parse(event.data); } catch { return; }
           if (data.type === "ready") {
             this.ready = true;
@@ -62,6 +81,8 @@ export class VoiceClient {
             settled = true;
             this.callbacks.onState("connected");
             resolve();
+          } else if (data.type === "control" && data.result) {
+            this.callbacks.onControl?.(data.result);
           } else if (data.type === "bridge_error") {
             fail(); this.callbacks.onState("error", "语音连接中止，请检查固定设备配置");
           } else if (data.type === "stt" || data.type === "tts" || data.type === "llm") {
@@ -139,6 +160,15 @@ export class VoiceClient {
       this.stopListening();
       this.turnRequested = false;
     }
+  }
+
+  acknowledgeRender(requestId: string, status: RenderAcknowledgement): void {
+    if (!this.ready || !requestId) return;
+    this.socket?.send(JSON.stringify({
+      op: "render_receipt",
+      request_id: requestId,
+      status: status === "rendered" ? "rendered" : "degraded",
+    }));
   }
 
   stopListening(): void {

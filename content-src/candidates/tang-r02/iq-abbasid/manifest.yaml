@@ -1,0 +1,15 @@
+id: iq.abbasid.core
+version: 0.1.0
+schema_version: '1'
+language: zh-CN
+region:
+  id: iq.abbasid
+  label: 阿拔斯王朝比较器
+time_range:
+  start_year: 801
+  end_year: 900
+  precision: range
+  display_label: 801—900
+required_capabilities: []
+publication_status: draft
+title: 阿拔斯比较器作者稿候选

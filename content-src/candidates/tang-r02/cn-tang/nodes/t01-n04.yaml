@@ -1,0 +1,12 @@
+id: cn.tang.node.t01.n04
+story_id: cn.tang.story.t01
+fact_grade: C
+narration: >-
+  你先看钱。钱文、形制能帮助你认出它是哪一类钱币；但一枚钱不能替两个人验货，也不能保证约定一定兑现。许谨把钱放回桌边：“知道付的是什么，还得把要做的事说清楚。”
+allowed_actions:
+  - ask
+  - observe
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.t01.n07

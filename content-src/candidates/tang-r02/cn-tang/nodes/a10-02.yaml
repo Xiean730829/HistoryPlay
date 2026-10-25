@@ -1,0 +1,11 @@
+id: cn.tang.story.changsha-bird-bowl.segment-2
+story_id: cn.tang.story.changsha-bird-bowl
+fact_grade: C
+narration: 你可以问同行者需要什么，商量先带哪些东西，或者关心买碗的人怎样吃饭。远方不是等着我们去填满的空白，那里的人也有自己的生活和选择。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.changsha-bird-bowl.segment-3

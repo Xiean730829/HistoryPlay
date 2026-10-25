@@ -1,0 +1,12 @@
+id: cn.tang.story.flute-musician.segment-3
+story_id: cn.tang.story.flute-musician
+fact_grade: C
+narration: 当需要被听见，大家就能商量新的节奏。真实乐俑仍然安静地站在展台上，创作故事把一个动作延伸成今天也能理解的体谅。
+allowed_actions:
+- ask
+- observe
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.tang.story.flute-musician.segment-1
+return_checkpoint: true

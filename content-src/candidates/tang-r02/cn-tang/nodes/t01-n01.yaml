@@ -1,0 +1,12 @@
+id: cn.tang.node.t01.n01
+story_id: cn.tang.story.t01
+fact_grade: F
+narration: >-
+  618年唐建立，建立政权之后仍有统一和恢复的过程。621年开始铸行开元通宝；眼前展出的这枚钱，馆方断代为718—732年，是后来的实例，不是621年铸成的那一枚。我们先借它看看钱币的样子，再听一封普通人的信。
+allowed_actions:
+  - ask
+  - observe
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.t01.n02

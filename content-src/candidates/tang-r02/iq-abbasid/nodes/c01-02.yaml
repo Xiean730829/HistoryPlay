@@ -1,0 +1,11 @@
+id: iq.abbasid.story.iraq-blue-bowl.segment-2
+story_id: iq.abbasid.story.iraq-blue-bowl
+fact_grade: C
+narration: 你可以问他在意外形、耐用还是摆放，也可以讲自己的习惯。许沅需要倾听，而不是先替对方决定。两人的会面是创作，并非有记录的一次历史交易。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: iq.abbasid.story.iraq-blue-bowl.segment-3

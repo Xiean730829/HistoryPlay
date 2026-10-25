@@ -1,0 +1,11 @@
+id: cn.tang.story.kneeling-bodhisattva.segment-2
+story_id: cn.tang.story.kneeling-bodhisattva
+fact_grade: C
+narration: 你可以问它属于哪里、今天的模型看不到哪些关系。没有完整证据时，我们只用概括示意，不把想象的群像位置冒充原窟测绘。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.kneeling-bodhisattva.segment-3

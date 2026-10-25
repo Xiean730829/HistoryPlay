@@ -1,0 +1,11 @@
+id: cn.tang.fact.dvarapala.catalog
+claim: 佛教门卫守护像；Minneapolis Institute of Art；8世纪；石
+grade: F
+applicable_time:
+  start_year: 701
+  end_year: 800
+  precision: century
+  display_label: 8世纪
+source_ids:
+- cn.tang.source.r07-catalog
+evidence_note: 年代字段优先保存馆方原文；精确区间转换只是展示约定，不是新增鉴定。

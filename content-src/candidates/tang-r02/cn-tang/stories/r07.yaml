@@ -1,0 +1,9 @@
+id: cn.tang.story.dvarapala
+title: 为什么站在入口
+entry_node_id: cn.tang.story.dvarapala.segment-1
+node_ids:
+- cn.tang.story.dvarapala.segment-1
+- cn.tang.story.dvarapala.segment-2
+- cn.tang.story.dvarapala.segment-3
+artifact_id: cn.tang.artifact.dvarapala
+return_to_exhibit: true

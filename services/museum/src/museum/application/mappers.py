@@ -59,6 +59,13 @@ class GalleryProjection:
 
 
 @dataclass(frozen=True, slots=True)
+class StoryExitProjection:
+    action: str
+    target_node_id: str
+    route_label: str | None
+
+
+@dataclass(frozen=True, slots=True)
 class StoryNodeProjection:
     story_id: str
     node_id: str
@@ -66,6 +73,7 @@ class StoryNodeProjection:
     fact_grade: str
     presentation: dict[str, Any] | None
     allowed_actions: tuple[str, ...]
+    available_exits: tuple[StoryExitProjection, ...]
 
 
 @dataclass(frozen=True, slots=True)

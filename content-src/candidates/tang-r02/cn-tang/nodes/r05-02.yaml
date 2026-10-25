@@ -1,0 +1,11 @@
+id: cn.tang.story.woman-figure-mia.segment-2
+story_id: cn.tang.story.woman-figure-mia
+fact_grade: C
+narration: 你可以问材料、年代、与另一件俑有什么不同。不知道姓名，并不需要立刻编一个姓名来填满；如果想听人生故事，我们会明确告诉你那是创作。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.woman-figure-mia.segment-3

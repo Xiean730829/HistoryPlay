@@ -1,0 +1,9 @@
+id: cn.tang.story.equestrian-pair
+title: 没有按时到来的信
+entry_node_id: cn.tang.story.equestrian-pair.segment-1
+node_ids:
+- cn.tang.story.equestrian-pair.segment-1
+- cn.tang.story.equestrian-pair.segment-2
+- cn.tang.story.equestrian-pair.segment-3
+artifact_id: cn.tang.artifact.equestrian-pair
+return_to_exhibit: true

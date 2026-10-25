@@ -1,0 +1,16 @@
+id: cn.tang.node.t03.n02
+story_id: cn.tang.story.t03
+fact_grade: F
+narration: >-
+  馆方说明指出，这件造像碑的铭文把唐高宗与皇后武氏列为功德对象。678年，她的身份是皇后；这条物证显示她受到怎样的礼敬，却不能证明她当时已经称帝。可先记下铭文与年代，也可以继续查看后来身份和国号怎样变化。
+allowed_actions:
+  - ask
+  - observe
+  - choose_route
+exits:
+  - action: choose_route
+    target_node_id: cn.tang.node.t03.n03
+    route_label: 对照690年和705年的时间卡
+  - action: choose_route
+    target_node_id: cn.tang.node.t03.n04
+    route_label: 先写下这件物证能说明什么

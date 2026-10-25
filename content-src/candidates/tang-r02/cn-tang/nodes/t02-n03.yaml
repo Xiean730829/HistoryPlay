@@ -1,0 +1,12 @@
+id: cn.tang.node.t02.n03
+story_id: cn.tang.story.t02
+fact_grade: F
+narration: >-
+  先把身份分开：李世民当时是秦王，李建成是太子，李元吉是齐王。这个称谓能帮助我们看懂各方位置，但不能单凭身份推断每个人所有的想法。有关事件的记载见史实卡及其来源。
+allowed_actions:
+  - ask
+  - observe
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.t02.n05

@@ -1,0 +1,15 @@
+id: cn.tang.story.t01
+title: 新钱，新日子
+entry_node_id: cn.tang.node.t01.n01
+node_ids:
+  - cn.tang.node.t01.n01
+  - cn.tang.node.t01.n02
+  - cn.tang.node.t01.n03
+  - cn.tang.node.t01.n04
+  - cn.tang.node.t01.n05
+  - cn.tang.node.t01.n06
+  - cn.tang.node.t01.n07
+fact_card_ids:
+  - cn.tang.fact.t01.chronology
+artifact_id: cn.tang.artifact.kaiyuan-coin
+return_to_exhibit: true

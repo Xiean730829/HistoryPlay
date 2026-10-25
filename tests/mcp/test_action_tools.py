@@ -16,7 +16,9 @@ class Client:
     async def get(self, route):
         return {"focused_artifact": {"story_entry_ids": ["cn.tang.story.bull"]}}
 
-    async def voice(self, operation, body, scope):
+    async def voice(self, operation, body=None, scope=None):
+        if operation == "view":
+            return {"status": "rendered", "camera": {"yaw": 0, "pitch": 0, "zoom": 1}}
         self.submitted.append(body)
         return {"status": "committed", "revision": 3}
 
@@ -45,3 +47,5 @@ def test_continue_does_not_mean_next_segment_and_last_artifact_wins():
     assert interpret("不要看铜钱了，去看牛").query == "牛"
     assert interpret("介绍一下这个文物").kind == "background"
     assert interpret("普通人也用它吗") is None
+    assert interpret("不要看铜钱了，再往前走").kind == "next"
+    assert interpret("它的背面为什么这么黑") is None

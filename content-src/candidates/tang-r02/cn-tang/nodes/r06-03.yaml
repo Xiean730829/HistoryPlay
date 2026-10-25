@@ -1,0 +1,12 @@
+id: cn.tang.story.buddha-follower.segment-3
+story_id: cn.tang.story.buddha-follower
+fact_grade: C
+narration: 观察、解释和未知可以一起保留。回到三维画面，你可以再转一次，看看刚才没注意的地方。
+allowed_actions:
+- ask
+- observe
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.tang.story.buddha-follower.segment-1
+return_checkpoint: true

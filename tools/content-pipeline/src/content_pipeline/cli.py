@@ -21,6 +21,14 @@ from content_pipeline.assets.stage_assets import AssetStageError, stage_assets
 from content_pipeline.build.compiler import compile_pack, write_documents
 from content_pipeline.build.pack_writer import write_immutable_pack
 from content_pipeline.build.rehearsal_pack import RehearsalPackError, build_rehearsal_pack
+from content_pipeline.importers.story_assets import (
+    StoryAssetImportError,
+    import_story_asset_candidate,
+)
+from content_pipeline.importers.tang_cards import (
+    TangCardImportError,
+    import_tang_card_candidates,
+)
 
 
 def cmd_validate(pack: Path, dependency_packs: list[Path] | None = None) -> int:
@@ -228,6 +236,7 @@ def cmd_rehearsal_pack(
     content_root: Path,
     asset_root: Path,
     version: str,
+    artifact_ids: list[str] | None = None,
 ) -> int:
     try:
         result = build_rehearsal_pack(
@@ -236,6 +245,7 @@ def cmd_rehearsal_pack(
             content_root=content_root,
             asset_root=asset_root,
             version=version,
+            artifact_ids=artifact_ids,
         )
     except (RehearsalPackError, AssetStageError) as exc:
         print(f"联调包生成失败：{exc}", file=sys.stderr)
@@ -264,6 +274,52 @@ def cmd_stage_assets(
         return 1
     print(f"已写入版本化资源根：{dest}")
     return 0
+
+
+def cmd_import_story_asset_candidate(
+    *,
+    source_root: Path,
+    pack: Path,
+    out: Path,
+    binding_key: str,
+    story_id: str,
+    node_ids: list[str],
+) -> int:
+    try:
+        candidate = import_story_asset_candidate(
+            source_root=source_root,
+            pack_dir=pack,
+            output_file=out,
+            binding_key=binding_key,
+            story_id=story_id,
+            node_ids=node_ids,
+        )
+    except StoryAssetImportError as exc:
+        print(f"故事素材候选导入失败：{exc}", file=sys.stderr)
+        return 1
+    print(f"已写入未发布的故事素材候选清单：{out}")
+    print(f"故事：{candidate['story_id']}；素材：{candidate['assets'][0]['id']}")
+    return 0
+
+
+def cmd_import_tang_cards(
+    *,
+    source_root: Path,
+    candidate_root: Path,
+    id_map: Path,
+) -> int:
+    try:
+        result = import_tang_card_candidates(
+            source_root=source_root,
+            candidate_root=candidate_root,
+            id_map_path=id_map,
+        )
+    except TangCardImportError as exc:
+        print(f"唐朝作者卡候选导入失败：{exc}", file=sys.stderr)
+        return 1
+    print(f"已生成唐朝作者卡候选包：{candidate_root}")
+    print(f"状态：{result['status']}；文件：{len(result['written'])}；冲突：{len(result['conflicts'])}")
+    return 0 if result["status"] == "candidate_not_published" else 1
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -358,6 +414,34 @@ def main(argv: list[str] | None = None) -> int:
     rehearsal.add_argument("--content-root", required=True, type=Path, help="版本化内容根目录")
     rehearsal.add_argument("--asset-root", required=True, type=Path, help="版本化资源根目录")
     rehearsal.add_argument("--version", required=True, help="联调published版本，必须是新的semver")
+    rehearsal.add_argument(
+        "--artifact-id",
+        action="append",
+        dest="artifact_ids",
+        help="显式列出作者包中的全部联调展品ID；可重复传入，省略时使用默认三件",
+    )
+    story_assets = sub.add_parser(
+        "import-story-asset-candidate",
+        help="校验本机已选场景图并生成待审核清单，不发布到运行时内容包",
+    )
+    story_assets.add_argument("--source-root", required=True, type=Path, help="本机生成素材批次目录")
+    story_assets.add_argument("--pack", required=True, type=Path, help="目标作者内容包目录")
+    story_assets.add_argument("--binding-key", required=True, help="scene-bindings中的素材选择键")
+    story_assets.add_argument("--story-id", required=True, help="目标故事稳定ID")
+    story_assets.add_argument("--node-id", required=True, action="append", help="目标故事节点ID，可重复")
+    story_assets.add_argument("--out", required=True, type=Path, help="未发布候选清单输出路径")
+    tang_cards = sub.add_parser(
+        "import-tang-cards-candidate",
+        help="将本机作者卡转换为独立的未发布Schema候选包",
+    )
+    tang_cards.add_argument("--source-root", required=True, type=Path, help="作者content目录")
+    tang_cards.add_argument("--candidate-root", required=True, type=Path, help="独立候选输出目录")
+    tang_cards.add_argument(
+        "--id-map",
+        default=Path("content-src/imports/tang-r02/id-map.yaml"),
+        type=Path,
+        help="受版本控制的稳定ID映射表",
+    )
     args = parser.parse_args(argv)
     if args.command == "validate":
         return cmd_validate(args.pack, args.dependency_pack)
@@ -422,6 +506,22 @@ def main(argv: list[str] | None = None) -> int:
             content_root=args.content_root,
             asset_root=args.asset_root,
             version=args.version,
+            artifact_ids=args.artifact_ids,
+        )
+    if args.command == "import-story-asset-candidate":
+        return cmd_import_story_asset_candidate(
+            source_root=args.source_root,
+            pack=args.pack,
+            out=args.out,
+            binding_key=args.binding_key,
+            story_id=args.story_id,
+            node_ids=args.node_id,
+        )
+    if args.command == "import-tang-cards-candidate":
+        return cmd_import_tang_cards(
+            source_root=args.source_root,
+            candidate_root=args.candidate_root,
+            id_map=args.id_map,
         )
     parser.error("未知命令")
     return 2

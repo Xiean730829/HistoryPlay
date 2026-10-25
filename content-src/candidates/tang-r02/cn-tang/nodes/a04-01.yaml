@@ -1,0 +1,11 @@
+id: cn.tang.story.votive-stele.segment-1
+story_id: cn.tang.story.votive-stele
+fact_grade: C
+narration: 678年，许宁把已经核实的信息写在一边，把仍想查的问题留在另一边。他说：看到武后的名字受到重视，很值得注意，但我不能把以后发生的事先写进今天。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.votive-stele.segment-2

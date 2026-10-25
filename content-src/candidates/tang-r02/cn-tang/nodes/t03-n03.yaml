@@ -1,0 +1,12 @@
+id: cn.tang.node.t03.n03
+story_id: cn.tang.story.t03
+fact_grade: F
+narration: >-
+  时间线把后来的事另列一格：690年，武则天称帝，国号由唐改为周；705年，国号又恢复为唐。它们不是这块678年造像碑记录的同一时刻。把三年放在前后顺序里，才看得出后来发生的事如何改变人们回望这件物证的方式。
+allowed_actions:
+  - ask
+  - observe
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.t03.n04

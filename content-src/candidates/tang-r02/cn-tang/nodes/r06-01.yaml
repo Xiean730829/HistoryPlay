@@ -1,0 +1,11 @@
+id: cn.tang.story.buddha-follower.segment-1
+story_id: cn.tang.story.buddha-follower
+fact_grade: C
+narration: 现代参观者先看见手，另一人先看见两人的距离。讲解员邀请大家把观察说完整，再介绍馆方对佛教叙事的解释。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.buddha-follower.segment-2

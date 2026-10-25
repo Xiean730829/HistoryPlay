@@ -1,0 +1,12 @@
+id: cn.tang.fact.buddha-follower.catalog
+claim: 佛陀抚触随从头部浮雕；Minneapolis Institute of Art；8世纪晚期；砂岩
+grade: F
+applicable_time:
+  start_year: 701
+  end_year: 800
+  precision: century
+  display_label: 8世纪晚期
+  calendar_note: 作者稿精度标记：century_with_qualifier；保留原始年代标签供审核。
+source_ids:
+- cn.tang.source.r06-catalog
+evidence_note: 年代字段优先保存馆方原文；精确区间转换只是展示约定，不是新增鉴定。

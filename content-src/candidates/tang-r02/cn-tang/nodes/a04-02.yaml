@@ -1,0 +1,11 @@
+id: cn.tang.story.votive-stele.segment-2
+story_id: cn.tang.story.votive-stele
+fact_grade: C
+narration: 玩家可以请时间线走到690年，也可以先问高宗和武后的关系。后来建立武周，是另一组史料需要说明的事实，不能让这块碑替整段历史作证。
+allowed_actions:
+- ask
+- observe
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.story.votive-stele.segment-3

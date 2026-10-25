@@ -13,8 +13,11 @@ import {
   loadGalleryArtifacts,
   enterStory,
   continueStory,
+  chooseStoryRoute,
   returnToExhibit,
   reportRenderReceipt,
+  prepareArtifactInspection,
+  setArtifactView,
   type ActiveSession,
   type ArtifactProjection,
   type SessionCredentials,
@@ -24,8 +27,8 @@ import { EventChannel } from "../api/eventChannel";
 import { SessionProjectionStore } from "../state/sessionProjection";
 import { ExhibitList } from "./ExhibitList";
 import { StatusNotice } from "./StatusNotice";
-import { MuseumCorridor } from "../gallery/MuseumCorridor";
-import { SessionVoicePanel } from "../voice-ui/SessionVoicePanel";
+import { MuseumSpace } from "../scene3d/MuseumSpace";
+import { GameVoicePanel } from "../voice-ui/GameVoicePanel";
 import { ArtifactStoryStage } from "../story/ArtifactStoryStage";
 import { RenderReceiptReporter } from "../capabilities/RenderReceiptReporter";
 
@@ -36,6 +39,7 @@ const DEFAULT_GALLERY_ID =
   import.meta.env.VITE_MUSEUM_GALLERY_ID?.trim() || "cn.tang.gallery.main";
 const SHOW_DIAGNOSTICS = new URLSearchParams(window.location.search).get("debug") === "1";
 type Health = { status: "ok"; service: string };
+type OpenedMuseum = { active: ActiveSession; receipt?: CommandReceipt };
 
 export function MuseumShell() {
   const [health, setHealth] = React.useState<Health | null>(null);
@@ -46,11 +50,73 @@ export function MuseumShell() {
   const [query, setQuery] = React.useState("");
   const [results, setResults] = React.useState<SearchHit[]>([]);
   const [busy, setBusy] = React.useState(false);
+  const [inspection, setInspection] = React.useState(false);
+  const [voiceDrivenStory, setVoiceDrivenStory] = React.useState(false);
+  const previousFocus = React.useRef<string | null>(null);
   const [notice, setNotice] = React.useState("正在连接本地游戏服务…");
   const [noticeTone, setNoticeTone] = React.useState<"info" | "error" | "success">("info");
-  const restoreTask = React.useRef<Promise<ActiveSession> | null>(null);
+  const restoreTask = React.useRef<Promise<OpenedMuseum> | null>(null);
   const projectionStore = React.useRef<SessionProjectionStore | null>(null);
   const renderReporter = React.useRef(new RenderReceiptReporter(reportRenderReceipt));
+  const voiceRenderWaiters = React.useRef(new Map<string, {
+    resolve: (status: "rendered" | "degraded" | "pending") => void;
+    timeout: ReturnType<typeof setTimeout>;
+  }>());
+
+  function settleVoiceRender(requestId: string, status: "rendered" | "degraded" | "pending") {
+    const waiter = voiceRenderWaiters.current.get(requestId);
+    if (!waiter) return;
+    clearTimeout(waiter.timeout);
+    voiceRenderWaiters.current.delete(requestId);
+    waiter.resolve(status);
+  }
+
+  function cancelVoiceRenderWaiters() {
+    for (const requestId of voiceRenderWaiters.current.keys()) settleVoiceRender(requestId, "pending");
+  }
+
+  React.useEffect(() => () => cancelVoiceRenderWaiters(), []);
+
+  React.useEffect(() => {
+    const focus = session?.state.focused_entity_id ?? null;
+    if (previousFocus.current && focus !== previousFocus.current) setInspection(true);
+    previousFocus.current = focus;
+  }, [session?.state.focused_entity_id]);
+
+  async function selectExhibit(id: string) {
+    if (!session || busy || session.state.mode !== "explore") return;
+    cancelVoiceRenderWaiters();
+    const current = projectionStore.current?.snapshot ?? session;
+    setBusy(true);
+    try {
+      const result = await prepareArtifactInspection(current, id);
+      if (projectionStore.current) await projectionStore.current.acceptQuery(result.session);
+      else setSession(result.session);
+      if (result.receipt?.status === "committed") setRenderCommand(result.receipt);
+      if (result.session.state.focused_entity_id === id) setInspection(true);
+      else throw new Error(result.receipt?.reason ?? "暂时无法走近这件文物");
+    } catch (error) { showError(error, setNotice, setNoticeTone); }
+    finally { setBusy(false); }
+  }
+
+  async function observeExhibit(deltaYaw: number, deltaPitch: number, zoomFactor: number) {
+    if (!session || busy || session.state.mode !== "explore") return;
+    cancelVoiceRenderWaiters();
+    const pose = session.state.camera_pose ?? { yaw: 0, pitch: 0, zoom: 1 };
+    setBusy(true);
+    try {
+      const result = await setArtifactView(session, {
+        yaw: ((pose.yaw + deltaYaw + 540) % 360) - 180,
+        pitch: Math.max(-45, Math.min(45, pose.pitch + deltaPitch)),
+        zoom: Math.max(0.65, Math.min(2.3, pose.zoom * zoomFactor)),
+      });
+      if (projectionStore.current) await projectionStore.current.acceptQuery(result.session);
+      else setSession(result.session);
+      setRenderCommand(result.receipt.status === "committed" ? result.receipt : null);
+      if (result.receipt.status !== "committed") throw new Error(result.receipt.reason ?? "观察视角暂未改变");
+    } catch (error) { showError(error, setNotice, setNoticeTone); }
+    finally { setBusy(false); }
+  }
 
   React.useEffect(() => {
     if (!session) {
@@ -97,9 +163,10 @@ export function MuseumShell() {
         setHealth(value);
         restoreTask.current ??= openDefaultSession();
         restoreTask.current
-          .then((active) => {
+          .then(({ active, receipt }) => {
             if (!current) return;
             setSession(active);
+            setRenderCommand(receipt ?? null);
             setNotice("已进入唐朝长廊。文物顺序与年代由当前发布版本和服务端状态决定。");
             setNoticeTone("success");
           })
@@ -119,9 +186,11 @@ export function MuseumShell() {
     setBusy(true);
     try {
       restoreTask.current = null;
-      const active = await openDefaultSession();
-      restoreTask.current = Promise.resolve(active);
+      const opened = await openDefaultSession();
+      const { active, receipt } = opened;
+      restoreTask.current = Promise.resolve(opened);
       setSession(active);
+      setRenderCommand(receipt ?? null);
       setResults([]);
       setQuery("");
       setNotice("已进入唐朝长廊。文物顺序与年代由当前发布版本和服务端状态决定。");
@@ -157,6 +226,7 @@ export function MuseumShell() {
       const store = projectionStore.current;
       if (store) await store.acceptQuery(result.session);
       else setSession(result.session);
+      setRenderCommand(result.receipt.status === "committed" ? result.receipt : null);
       if (result.receipt.status === "committed") {
         setNotice("展品已按服务端状态开放，并已更新展厅顺序。");
         setNoticeTone("success");
@@ -173,6 +243,7 @@ export function MuseumShell() {
 
   async function moveStation(direction: "next" | "previous") {
     if (!session) return;
+    cancelVoiceRenderWaiters();
     setRenderCommand(null);
     setBusy(true);
     try {
@@ -195,23 +266,33 @@ export function MuseumShell() {
     }
   }
 
-  async function runStoryAction(action: "enter" | "continue" | "return") {
+  async function runStoryAction(action: "enter" | "continue" | "choose_route" | "return", targetNodeId?: string) {
     if (!session) return;
+    cancelVoiceRenderWaiters();
     const focused = session.context.focused_artifact;
+    setVoiceDrivenStory(false);
     const storyId = focused?.story_entry_ids?.[0];
     if (action === "enter" && !storyId) return;
+    if (action === "choose_route" && !targetNodeId) return;
     setBusy(true);
     try {
       const result = action === "enter"
         ? await enterStory(session, storyId!)
         : action === "continue"
           ? await continueStory(session)
-          : await returnToExhibit(session);
+          : action === "choose_route"
+            ? await chooseStoryRoute(session, targetNodeId!)
+            : await returnToExhibit(session);
       const store = projectionStore.current;
       if (store) await store.acceptQuery(result.session);
       else setSession(result.session);
+      setRenderCommand(result.receipt.status === "committed" ? result.receipt : null);
       if (result.receipt.status === "committed") {
-        setNotice(action === "return" ? "故事已退出，正在恢复原展台与相机。" : "已切换到服务端提交的故事段落。");
+        setNotice(action === "return"
+          ? "故事已退出，正在恢复原展台与相机。"
+          : action === "choose_route"
+            ? "已按所选方向进入下一段。"
+            : "已切换到服务端提交的故事段落。");
         setNoticeTone("success");
       } else {
         setNotice(result.receipt.reason ?? "故事状态未提交，展台保持当前状态。");
@@ -225,6 +306,7 @@ export function MuseumShell() {
   }
 
   async function leaveMuseum() {
+    cancelVoiceRenderWaiters();
     let unpairFailed = false;
     if (session) {
       try {
@@ -244,7 +326,7 @@ export function MuseumShell() {
   }
 
   return (
-    <main className="museum-page">
+    <main className="museum-page museum-page-spatial">
       <header className="masthead">
         <div className="brand-mark" aria-hidden="true">时</div>
         <div>
@@ -257,34 +339,37 @@ export function MuseumShell() {
         </div>
       </header>
 
-      <StatusNotice message={notice} tone={noticeTone} />
+      {(noticeTone === "error" || SHOW_DIAGNOSTICS) && <StatusNotice message={notice} tone={noticeTone} />}
 
-      {session?.state.mode === "story" ? (
+      {session && <MuseumSpace
+        artifacts={galleryArtifacts.length ? galleryArtifacts : session.context.visible_artifacts}
+        session={session}
+        inspection={inspection}
+        onSelect={(id) => void selectExhibit(id)}
+        onObserve={(yaw, pitch, zoom) => void observeExhibit(yaw, pitch, zoom)}
+        onRender={(status, reason) => {
+          if (session.state.mode === "explore") {
+            void renderReporter.current.report(session, renderCommand, status, reason)
+              .then((reported) => {
+                if (reported && renderCommand) settleVoiceRender(renderCommand.request_id, status);
+              }).catch(() => undefined);
+          }
+        }}
+      />}
+      {session?.state.mode === "story" && (
         <ArtifactStoryStage
           session={session}
           busy={busy}
+          voiceDriven={voiceDrivenStory}
           onContinue={() => void runStoryAction("continue")}
+          onChooseRoute={(targetNodeId) => void runStoryAction("choose_route", targetNodeId)}
           onReturn={() => void runStoryAction("return")}
-        />
-      ) : (
-        <MuseumCorridor
-          artifacts={galleryArtifacts.length ? galleryArtifacts : session?.context.visible_artifacts ?? []}
-          displayOrder={galleryArtifacts.length ? galleryArtifacts.map((artifact) => artifact.id) : session?.state.display_order ?? []}
-          focusedId={session?.context.focused_artifact?.id ?? session?.state.focused_entity_id ?? null}
-          session={session}
-          onRender={(status, reason) => {
-            if (session) void renderReporter.current.report(session, renderCommand, status, reason)
-              .catch(() => undefined);
-          }}
-          loading={!session && !healthError}
-          navigationDisabled={busy}
-          onMove={(direction) => void moveStation(direction)}
         />
       )}
 
-      {session?.state.mode === "explore" && session.context.focused_artifact?.story_entry_ids?.length ? (
+      {session?.state.mode === "explore" && inspection && session.context.focused_artifact?.story_entry_ids?.length ? (
         <div className="story-entry-row">
-          <span>按需打开与当前文物绑定的已发布故事。</span>
+          <span>{session.context.focused_artifact.title} · 它经历了怎样的时代？</span>
           <button
             className="button"
             disabled={busy}
@@ -293,14 +378,50 @@ export function MuseumShell() {
           >
             {busy ? "正在打开…" : "进入故事"}
           </button>
+          <button className="button button-quiet" onClick={() => setInspection(false)} type="button">继续参观</button>
         </div>
       ) : null}
 
+      {session?.state.mode === "explore" && <nav className="museum-walk-controls" aria-label="长廊漫步">
+        <button disabled={busy} onClick={() => void moveStation("previous")} type="button">← 上一件</button>
+        <span>{session.context.focused_artifact?.title ?? "大唐文物"}</span>
+        <button disabled={busy} onClick={() => void moveStation("next")} type="button">下一件 →</button>
+      </nav>}
+
       {session && (
-        <SessionVoicePanel
+        <GameVoicePanel
           key={`${session.session_id}:${session.connection_id}`}
-          packId={session.pack_id}
-          version={session.version}
+          session={session}
+          gameUrl={import.meta.env.VITE_MUSEUM_GAME_URL?.trim() || "http://127.0.0.1:8781"}
+          bridgeUrl={import.meta.env.VITE_MUSEUM_BRIDGE_URL?.trim() || "http://127.0.0.1:8782"}
+          onNewInput={cancelVoiceRenderWaiters}
+          onStoryTransition={(action) => setVoiceDrivenStory(action !== "return_to_exhibit")}
+          onRefresh={async (receipt) => {
+            if (receipt?.status === "committed" && ["enter_story", "continue_story"].includes(receipt.action ?? "")) setVoiceDrivenStory(true);
+            if (receipt?.status === "committed" && receipt.action === "return_to_exhibit") setVoiceDrivenStory(false);
+            const expectsRenderedFrame = receipt?.status === "committed"
+              && ["locate_artifact", "move_next", "move_previous", "return_to_exhibit", "set_view"]
+                .includes(receipt.action ?? "");
+            let rendered: Promise<"rendered" | "degraded" | "pending"> | null = null;
+            if (expectsRenderedFrame && receipt) {
+              rendered = new Promise((resolve) => {
+                const timeout = setTimeout(() => settleVoiceRender(receipt.request_id, "pending"), 8000);
+                voiceRenderWaiters.current.set(receipt.request_id, { resolve, timeout });
+              });
+            }
+            try {
+              const active = await refreshSession(session);
+              const store = projectionStore.current;
+              if (store) await store.acceptQuery(active);
+              else setSession(active);
+              setRenderCommand(receipt?.status === "committed" ? receipt : null);
+              if (receipt?.status === "committed" && ["locate_artifact", "move_next", "move_previous", "set_view"].includes(receipt.action ?? "")) setInspection(true);
+              return rendered ? await rendered : "pending";
+            } catch (error) {
+              if (receipt) settleVoiceRender(receipt.request_id, "degraded");
+              throw error;
+            }
+          }}
         />
       )}
 
@@ -383,7 +504,7 @@ async function restoreSavedSession(): Promise<ActiveSession | null> {
   return restoreSession(credentials);
 }
 
-async function openDefaultSession(): Promise<ActiveSession> {
+async function openDefaultSession(): Promise<OpenedMuseum> {
   const restored = await restoreSavedSession();
   if (restored) return ensureTangGallery(restored);
 
@@ -392,11 +513,11 @@ async function openDefaultSession(): Promise<ActiveSession> {
   return ensureTangGallery(await restoreSession(credentials));
 }
 
-async function ensureTangGallery(session: ActiveSession): Promise<ActiveSession> {
-  if (session.state.gallery_id === DEFAULT_GALLERY_ID) return session;
+async function ensureTangGallery(session: ActiveSession): Promise<OpenedMuseum> {
+  if (session.state.gallery_id === DEFAULT_GALLERY_ID) return { active: session };
   const result = await enterGallery(session, DEFAULT_GALLERY_ID);
-  if (result.receipt.status === "committed") return result.session;
-  if (result.session.state.gallery_id === DEFAULT_GALLERY_ID) return result.session;
+  if (result.receipt.status === "committed") return { active: result.session, receipt: result.receipt };
+  if (result.session.state.gallery_id === DEFAULT_GALLERY_ID) return { active: result.session };
   throw new Error(result.receipt.reason ?? "未能进入唐朝展厅");
 }
 

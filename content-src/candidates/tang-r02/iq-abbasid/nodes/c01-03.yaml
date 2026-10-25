@@ -1,0 +1,12 @@
+id: iq.abbasid.story.iraq-blue-bowl.segment-3
+story_id: iq.abbasid.story.iraq-blue-bowl
+fact_grade: C
+narration: 回到两只真碗前，我们可以同时看到联系与差别。比较不要求找出一个谁更好的排名，而是让原本遥远的人变得具体。
+allowed_actions:
+- ask
+- observe
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: iq.abbasid.story.iraq-blue-bowl.segment-1
+return_checkpoint: true

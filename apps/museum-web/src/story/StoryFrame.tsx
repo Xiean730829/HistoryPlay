@@ -6,11 +6,12 @@ interface StoryFrameProps {
   session: ActiveSession;
   busy: boolean;
   onContinue: () => void;
+  onChooseRoute: (targetNodeId: string) => void;
   onReturn: () => void;
 }
 
 /** Presents only the node committed by the current session projection. */
-export function StoryFrame({ session, busy, onContinue, onReturn }: StoryFrameProps) {
+export function StoryFrame({ session, busy, onContinue, onChooseRoute, onReturn }: StoryFrameProps) {
   const node = session.context.story_node;
   const committed = session.state.mode === "story"
     && session.context.revision === session.state.revision
@@ -84,6 +85,19 @@ export function StoryFrame({ session, busy, onContinue, onReturn }: StoryFramePr
               {busy ? "正在继续…" : "继续故事"}
             </button>
           )}
+          {actions.includes("choose_route") && node.available_exits
+            .filter((exit) => exit.action === "choose_route")
+            .map((exit) => (
+              <button
+                className="button"
+                disabled={busy || !page}
+                key={exit.target_node_id}
+                onClick={() => onChooseRoute(exit.target_node_id)}
+                type="button"
+              >
+                {exit.route_label ?? "选择此方向"}
+              </button>
+            ))}
           <button className="button button-quiet" disabled={busy} onClick={onReturn} type="button">
             返回原展台
           </button>

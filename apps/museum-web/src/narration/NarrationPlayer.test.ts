@@ -44,6 +44,22 @@ describe("固定稿与音频焦点", () => {
     requests[1].start(); requests[1].finish();
     expect(await resumed).toBe(true);
   });
+  it("朗读追问答复不会覆盖被打断的故事恢复点", async () => {
+    const { player, requests } = fixture();
+    const story = { ...segment, role: "story" as const };
+    const answer = { ...segment, contentId: "answer-1", text: "这是追问答复。", role: "answer" as const };
+    const firstPlay = player.play(story); requests[0].start();
+    player.stop();
+    requests[0].finish();
+    expect(await firstPlay).toBe(false);
+    const answerPlay = player.play(answer); requests[1].start(); requests[1].finish();
+    expect(await answerPlay).toBe(true);
+    const resumedStory = player.resume();
+    expect(requests[2].segment).toEqual(story);
+    requests[2].start(); requests[2].finish();
+    expect(await resumedStory).toBe(true);
+    expect(player.getCheckpoint().lastCompleted).toBe(story.contentId);
+  });
   it("离开后迟到回调不能标完成，也不能复活故事", async () => {
     const { player, requests } = fixture();
     const playing = player.play(segment); requests[0].start();

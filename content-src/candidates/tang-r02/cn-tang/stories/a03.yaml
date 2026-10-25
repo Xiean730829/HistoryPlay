@@ -1,0 +1,9 @@
+id: cn.tang.story.tomb-guardian
+title: 守护的愿望
+entry_node_id: cn.tang.story.tomb-guardian.segment-1
+node_ids:
+- cn.tang.story.tomb-guardian.segment-1
+- cn.tang.story.tomb-guardian.segment-2
+- cn.tang.story.tomb-guardian.segment-3
+artifact_id: cn.tang.artifact.tomb-guardian
+return_to_exhibit: true

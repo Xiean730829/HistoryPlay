@@ -1,0 +1,12 @@
+id: cn.tang.node.t02.n01
+story_id: cn.tang.story.t02
+fact_grade: C
+narration: >-
+  骑马俑让人想到出行和传信，但它的馆藏年代只说明它属于唐代，并不能证明它见过626年的宫门事件。许青听见城门方向传来几种互不相同的说法：“有人说自己什么都知道，有人只说听见了动静。我不知道该先信哪一句。”
+allowed_actions:
+  - ask
+  - observe
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.t02.n02

@@ -1,0 +1,12 @@
+id: cn.tang.story.changsha-bird-bowl.segment-3
+story_id: cn.tang.story.changsha-bird-bowl
+fact_grade: C
+narration: 旁边有一只9世纪伊拉克碗。两件东西可以比较，却不能因为同时展出，就认定它们坐过同一条船。你想先看纹饰，还是先问不同地方的人怎样使用器物？
+allowed_actions:
+- ask
+- observe
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.tang.story.changsha-bird-bowl.segment-1
+return_checkpoint: true

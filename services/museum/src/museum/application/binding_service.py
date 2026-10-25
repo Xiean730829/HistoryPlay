@@ -4,24 +4,8 @@ import secrets
 from dataclasses import dataclass
 from threading import RLock
 
+from museum.application.command_service import COMMAND_ACTIONS
 from museum.application.control_tickets import ControlTickets
-
-COMMAND_ACTIONS = frozenset(
-    {
-        "open_artifact",
-        "enter_gallery",
-        "move_next",
-        "move_previous",
-        "locate_artifact",
-        "enter_story",
-        "continue_story",
-        "pause_story",
-        "return_to_story",
-        "focus_detail",
-        "set_view",
-        "choose_action",
-    }
-)
 
 
 class InvalidBinding(PermissionError):

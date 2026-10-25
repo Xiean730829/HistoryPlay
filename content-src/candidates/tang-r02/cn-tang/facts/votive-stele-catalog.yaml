@@ -1,0 +1,11 @@
+id: cn.tang.fact.votive-stele.catalog
+claim: 佛与二菩萨造像碑；Minneapolis Institute of Art；678年；石灰岩、颜料
+grade: F
+applicable_time:
+  start_year: 678
+  end_year: 678
+  precision: year
+  display_label: 678年
+source_ids:
+- cn.tang.source.a04-catalog
+evidence_note: 年代字段优先保存馆方原文；精确区间转换只是展示约定，不是新增鉴定。

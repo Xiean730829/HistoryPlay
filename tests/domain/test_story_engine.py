@@ -102,7 +102,7 @@ def test_advance_checks_action_and_merges_branches_without_order_bias() -> None:
     story = make_story(ambiguous=True)
     started = start_story(make_session(), story)
 
-    with pytest.raises(InvalidStoryAction, match="多个分支"):
+    with pytest.raises(InvalidStoryAction, match="必须明确指定目标节点"):
         advance_story(started.state, story, ExitAction.CHOOSE_ROUTE)
 
     story = make_story()
@@ -112,6 +112,32 @@ def test_advance_checks_action_and_merges_branches_without_order_bias() -> None:
     assert "discoveries.stele_dated" in advanced.state.discoveries
     assert advanced.state.revision == started.state.revision + 1
     assert advanced.event.kind.value == "story_advanced"
+
+
+def test_choose_route_requires_and_honors_an_explicit_eligible_target() -> None:
+    story = make_story(ambiguous=True)
+    started = start_story(make_session(), story)
+
+    with pytest.raises(InvalidStoryAction, match="指定目标节点"):
+        advance_story(started.state, story, ExitAction.CHOOSE_ROUTE)
+
+    selected = advance_story(
+        started.state,
+        story,
+        ExitAction.CHOOSE_ROUTE,
+        target_node_id=NODE_THREE,
+    )
+    assert selected.state.node_id == NODE_THREE
+    assert selected.state.revision == started.state.revision + 1
+
+    with pytest.raises(InvalidStoryAction, match="没有符合条件"):
+        advance_story(
+            started.state,
+            story,
+            ExitAction.CHOOSE_ROUTE,
+            target_node_id="cn.tang.node.observation.missing",
+        )
+    assert started.state.node_id == NODE_ONE
 
 
 def test_ineligible_target_and_disallowed_action_do_not_change_state() -> None:

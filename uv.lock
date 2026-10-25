@@ -829,12 +829,14 @@ source = { editable = "services/voice-bridge" }
 dependencies = [
     { name = "aiohttp" },
     { name = "av" },
+    { name = "museum-mcp-gateway" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", specifier = "==3.14.5" },
     { name = "av", specifier = "==17.1.0" },
+    { name = "museum-mcp-gateway", editable = "services/mcp-gateway" },
 ]
 
 [[package]]

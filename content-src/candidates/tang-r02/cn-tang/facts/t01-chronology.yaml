@@ -1,0 +1,13 @@
+id: cn.tang.fact.t01.chronology
+claim: 618年唐建立；621年开始铸行开元通宝。展出的馆藏钱币个体由馆方断代为718—732年，类型年代与个体年代不同。
+grade: F
+applicable_time:
+  start_year: 618
+  end_year: 732
+  precision: range
+  display_label: 618年唐建立；621年开元通宝始铸；展品个体为718—732年
+source_ids:
+  - cn.tang.source.history-h01
+  - cn.tang.source.history-h02
+  - cn.tang.source.a07-catalog
+evidence_note: 年代只适用于对应的政权事件、钱币类型或馆藏个体；不把621年的类型起始误写为展品本件的制作时间。

@@ -1,0 +1,9 @@
+id: cn.tang.story.lute-musician
+title: 合奏先从听开始
+entry_node_id: cn.tang.story.lute-musician.segment-1
+node_ids:
+- cn.tang.story.lute-musician.segment-1
+- cn.tang.story.lute-musician.segment-2
+- cn.tang.story.lute-musician.segment-3
+artifact_id: cn.tang.artifact.lute-musician
+return_to_exhibit: true

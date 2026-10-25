@@ -16,6 +16,7 @@ VERSION = "1.0.0"
 STORY_ID = "cn.tang.story.observe"
 NODE_ONE = "cn.tang.node.observe.one"
 NODE_TWO = "cn.tang.node.observe.two"
+NODE_THREE = "cn.tang.node.observe.three"
 ACTOR_ID = "web.console.01"
 
 
@@ -30,14 +31,18 @@ class MemoryCatalog:
                     "id": STORY_ID,
                     "title": "观察故事",
                     "entry_node_id": NODE_ONE,
-                    "node_ids": [NODE_ONE, NODE_TWO],
+                    "node_ids": [NODE_ONE, NODE_TWO, NODE_THREE],
                 },
                 "nodes/one.json": {
                     "id": NODE_ONE,
                     "story_id": STORY_ID,
                     "fact_grade": "F",
-                    "allowed_actions": ["continue_story"],
-                    "exits": [{"action": "continue_story", "target_node_id": NODE_TWO}],
+                    "allowed_actions": ["continue_story", "choose_route"],
+                    "exits": [
+                        {"action": "continue_story", "target_node_id": NODE_TWO},
+                        {"action": "choose_route", "target_node_id": NODE_TWO},
+                        {"action": "choose_route", "target_node_id": NODE_THREE},
+                    ],
                     "effects": [{"op": "set", "path": "step", "value": 1}],
                 },
                 "nodes/two.json": {
@@ -46,6 +51,13 @@ class MemoryCatalog:
                     "fact_grade": "F",
                     "allowed_actions": ["continue_story"],
                     "exits": [{"action": "continue_story", "target_node_id": NODE_TWO}],
+                },
+                "nodes/three.json": {
+                    "id": NODE_THREE,
+                    "story_id": STORY_ID,
+                    "fact_grade": "C",
+                    "allowed_actions": ["continue_story"],
+                    "exits": [{"action": "continue_story", "target_node_id": NODE_THREE}],
                 },
                 "artifacts/stele.json": {"id": "cn.tang.artifact.stele"},
                 "artifacts/coin.json": {"id": "cn.tang.artifact.coin"},
@@ -129,6 +141,7 @@ def make_service(tmp_path):
         actions=frozenset(
             {
                 "continue_story",
+                "choose_route",
                 "open_artifact",
                 "enter_gallery",
                 "move_next",
@@ -170,6 +183,25 @@ def test_same_request_returns_original_receipt_without_advancing_twice(tmp_path)
     assert saved is not None
     assert (saved.node_id, saved.revision, saved.event_seq) == (NODE_TWO, 5, 1)
     assert len(events) == 1
+
+
+def test_choose_route_command_selects_the_requested_node(tmp_path) -> None:
+    database, state, _, token, service = make_service(tmp_path)
+    payload = command(token)
+    payload.update(
+        {
+            "action": "choose_route",
+            "target_id": NODE_THREE,
+        }
+    )
+
+    receipt = service.execute(state.session_id, ACTOR_ID, payload)
+
+    assert receipt.status == "committed"
+    with database.transaction() as unit:
+        saved = unit.sessions.get(state.session_id)
+    assert saved is not None
+    assert (saved.node_id, saved.revision, saved.event_seq) == (NODE_THREE, 5, 1)
 
 
 def test_same_request_id_with_different_payload_is_a_conflict(tmp_path) -> None:

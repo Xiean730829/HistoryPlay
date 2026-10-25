@@ -1,0 +1,12 @@
+id: cn.tang.node.t01.n05
+story_id: cn.tang.story.t01
+fact_grade: C
+narration: >-
+  你先问约定。顾客把需要修好的地方指出来，许谨复述一遍：先做哪处、何时来看、怎样算修好。两人仍要谈报酬；这个创作情境不提供唐代统一价格，也不把一次商量说成人人都能获得同样结果。
+allowed_actions:
+  - ask
+  - observe
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.t01.n07

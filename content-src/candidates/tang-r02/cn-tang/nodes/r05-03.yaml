@@ -1,0 +1,12 @@
+id: cn.tang.story.woman-figure-mia.segment-3
+story_id: cn.tang.story.woman-figure-mia
+fact_grade: C
+narration: 把“我看见的”和“我想知道的”各留一条，就完成了一次很好的参观。你不需要猜中讲解员心里的唯一答案。
+allowed_actions:
+- ask
+- observe
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.tang.story.woman-figure-mia.segment-1
+return_checkpoint: true

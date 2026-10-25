@@ -30,10 +30,16 @@ def interpret(text: str) -> Intent | None:
     if not isinstance(text, str) or not 0 < len(text) <= 500:
         return None
     text = re.sub(r"\s+", "", text)
+    if re.search(r"为什么|为何|怎么会|是不是|是否|什么时候|怎样制作", text):
+        return None
     candidates = [
         (match.start(), query)
         for query, pattern in ALIASES.items()
         for match in re.finditer(pattern, text)
+        if not re.search(
+            r"不要(?:看)?$|别看$|不想(?:看)?$|不是$",
+            text[max(0, match.start() - 6) : match.start()],
+        )
     ]
     if (
         candidates

@@ -1,0 +1,13 @@
+id: cn.tang.story.t03
+title: 刻进石头的名字
+entry_node_id: cn.tang.node.t03.n01
+node_ids:
+  - cn.tang.node.t03.n01
+  - cn.tang.node.t03.n02
+  - cn.tang.node.t03.n03
+  - cn.tang.node.t03.n04
+fact_card_ids:
+  - cn.tang.fact.t03.stele-inscription
+  - cn.tang.fact.t03.state-transition
+artifact_id: cn.tang.artifact.votive-stele
+return_to_exhibit: true

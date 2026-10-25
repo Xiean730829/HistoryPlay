@@ -1,0 +1,17 @@
+id: cn.tang.node.t01.n07
+story_id: cn.tang.story.t01
+fact_grade: C
+narration: >-
+  他们有了一种今天可以接受的安排，但以后仍可能需要再商量。观察册记下你的问题：共同使用的钱帮助人们做了什么？还有哪些事情要靠人把话说明白？你可以回到展台再看这枚钱，或返回展馆。
+allowed_actions:
+  - ask
+  - observe
+  - choose_route
+  - return_to_exhibit
+exits:
+  - action: choose_route
+    target_node_id: cn.tang.node.t01.n03
+    route_label: 换一条观察路线
+  - action: return_to_exhibit
+    target_node_id: cn.tang.node.t01.n01
+return_checkpoint: true

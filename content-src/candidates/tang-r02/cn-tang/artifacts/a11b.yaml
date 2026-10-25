@@ -1,0 +1,20 @@
+id: cn.tang.artifact.flute-musician
+title: 吹竹笛乐俑
+museum:
+  name: Minneapolis Institute of Art
+  accession: 50.46.181
+  collection_url: https://collections.artsmia.org/art/867/tomb-figure-representing-a-musician-playing-a-bamboo-flute-china
+time_range:
+  start_year: 618
+  end_year: 906
+  precision: range
+  display_label: 唐代，618—906年
+  calendar_note: 作者稿精度标记：catalog_range；保留原始年代标签供审核。
+material: 彩绘陶及白色化妆土
+category: 乐俑
+asset_ids: []
+fact_card_ids:
+- cn.tang.fact.flute-musician.catalog
+story_entry_ids:
+- cn.tang.story.flute-musician
+identity_unknown: true
