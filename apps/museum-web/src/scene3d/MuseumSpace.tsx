@@ -45,7 +45,7 @@ export function MuseumSpace({ artifacts, session, onSelect, onObserve, onRender,
   return <section className={`museum-space museum-space--${environment}`} aria-label="大唐三维文物展廊" data-renderer="three-webgl" data-models-loaded={loaded} data-last-picked={picked ?? ""}>
     <div className="museum-space-background" aria-hidden="true" />
     <div className="museum-webgl" ref={host} />
-    <div className="museum-space-brand"><span>时空博物馆</span><h2>大唐 · 星河寻珍</h2><p>沿阶拾级 · 618 — 907</p></div>
+    <div className="museum-space-brand"><span>时空博物馆</span><h2>大唐 · 星河寻珍</h2><p>沿星河弯道漫游 · 618 — 907</p></div>
     {focused && !inspection && <div className="museum-focused-artifact" aria-live="polite" aria-label="当前文物">
       <span>当前展品</span><strong>{focused.title}</strong><span>{focusedEra}</span>
     </div>}
