@@ -61,7 +61,9 @@ def main() -> int:
     environment.setdefault("MUSEUM_WEB_ORIGIN", configured_origins[0])
     environment.setdefault("MUSEUM_WEB_ORIGINS", ",".join(configured_origins))
     environment.setdefault("VITE_MUSEUM_GAME_URL", f"http://127.0.0.1:{MUSEUM_PORT}")
-    environment.setdefault("VITE_MUSEUM_BRIDGE_URL", f"http://127.0.0.1:{VOICE_PORT}")
+    # Keep browser voice requests on the page's own origin. Vite forwards the
+    # HTTP and WebSocket routes to the private local bridge.
+    environment.setdefault("VITE_MUSEUM_BRIDGE_URL", origin)
     try:
         backend = subprocess.Popen(
             [uv, "run", "--package", "museum-game", "python", "-m", "museum.main"],
