@@ -2,11 +2,17 @@ import { Box3, Group, Vector3 } from "three";
 import { RIVER_STATION_SPACING, riverBankNormalAt, riverPointAt } from "./riverPath";
 
 export const MODEL_SURFACE_OFFSET = 0.014;
-export const PLINTH_TOP_Y = 0.18;
+export const PEDESTAL_HEIGHT = 0.18;
+export const STAIR_STEPS_PER_FLIGHT = 10;
+export const STAIR_STEP_RISE = 0.14;
+export const STAIR_TREAD_DEPTH = RIVER_STATION_SPACING / STAIR_STEPS_PER_FLIGHT;
+export const STAIR_WIDTH = 2.75;
+export const LANDING_RISE = STAIR_STEPS_PER_FLIGHT * STAIR_STEP_RISE;
+export const LANDING_DEPTH = 1.25;
 export { RIVER_STATION_SPACING } from "./riverPath";
 
 export interface StationPlacement {
-  /** Exhibit position and tangent frame sampled from the same curved river path. */
+  /** World-space artifact center and the side of the stair it occupies. */
   x: number;
   z: number;
   distance: number;
@@ -15,28 +21,64 @@ export interface StationPlacement {
   centerZ: number;
   bankX: number;
   bankZ: number;
-  /** World height at the top of the thin pedestal. */
+  /** World heights: visitor floor, landing surface, and top of the model support. */
+  walkY: number;
+  landingY: number;
   plinthTop: number;
   top: number;
 }
 
+export interface StairStepPlacement {
+  x: number;
+  z: number;
+  distance: number;
+  walkY: number;
+  topY: number;
+  height: number;
+  treadDepth: number;
+}
+
 export function stationPlacement(index: number): StationPlacement {
-  const distance = Math.max(0, index) * RIVER_STATION_SPACING;
+  const station = Math.max(0, Math.floor(index));
+  const distance = station * RIVER_STATION_SPACING;
   const center = riverPointAt(distance);
   const bank = riverBankNormalAt(distance);
-  const side: -1 | 1 = index % 2 === 0 ? -1 : 1;
-  const offset = side * 4.1;
+  const side: -1 | 1 = station % 2 === 0 ? -1 : 1;
+  const walkY = station * LANDING_RISE;
+  const landingY = walkY;
   return {
-    x: center.x + bank.x * offset,
-    z: center.z + bank.z * offset,
+    x: center.x + bank.x * side * 4.1,
+    z: center.z + bank.z * side * 4.1,
     distance,
     side,
     centerX: center.x,
     centerZ: center.z,
     bankX: bank.x,
     bankZ: bank.z,
-    plinthTop: PLINTH_TOP_Y,
-    top: PLINTH_TOP_Y,
+    walkY,
+    landingY,
+    plinthTop: landingY + PEDESTAL_HEIGHT,
+    top: landingY + PEDESTAL_HEIGHT,
+  };
+}
+
+/** Shared geometry/camera placement for one tread in the flight after `flightIndex`. */
+export function stairStepPlacement(flightIndex: number, stepIndex: number, fraction = 0): StairStepPlacement {
+  const flight = Math.max(0, Math.floor(flightIndex));
+  const step = Math.max(0, Math.min(STAIR_STEPS_PER_FLIGHT - 1, Math.floor(stepIndex)));
+  const part = Math.max(0, Math.min(1, fraction));
+  const stepOffset = step + part;
+  const distance = flight * RIVER_STATION_SPACING + stepOffset * STAIR_TREAD_DEPTH;
+  const point = riverPointAt(distance);
+  const walkY = flight * LANDING_RISE + stepOffset * STAIR_STEP_RISE;
+  return {
+    x: point.x,
+    z: point.z,
+    distance,
+    walkY,
+    topY: flight * LANDING_RISE + (step + 1) * STAIR_STEP_RISE,
+    height: (step + 1) * STAIR_STEP_RISE,
+    treadDepth: STAIR_TREAD_DEPTH,
   };
 }
 
@@ -51,7 +93,7 @@ export function maintainSurfaceContact(model: Group, worldSurfaceY: number): voi
   if (Number.isFinite(bottom)) model.position.y += worldSurfaceY - bottom;
 }
 
-/** Fit the true mesh above the fine pedestal without changing its proportions. */
+/** Fit the true mesh above its own landing without changing proportions. */
 export function seatModel(model: Group, width = 1.65, height = 1.9): Group {
   const bounds = new Box3().setFromObject(model);
   const size = bounds.getSize(new Vector3());

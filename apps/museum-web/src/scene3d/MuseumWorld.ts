@@ -48,6 +48,8 @@ export class MuseumWorld {
   private inspection = false;
   private drag: { x: number; y: number; yaw: number; pitch: number } | null = null;
   private preview: { yaw: number; pitch: number } | null = null;
+  private routePosition = 0;
+  private targetRoutePosition = 0;
   private suppressClick = false;
   private wheelTimer: ReturnType<typeof setTimeout> | null = null;
   private wheelFactor = 1;
@@ -62,7 +64,7 @@ export class MuseumWorld {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = PCFShadowMap;
     this.renderer.setClearColor(0x000000, 0);
-    this.renderer.domElement.setAttribute("aria-label", "沿星尘路线陈列的三维文物展廊");
+    this.renderer.domElement.setAttribute("aria-label", "沿弯曲阶梯逐级上行的三维文物展廊");
     this.renderer.domElement.style.touchAction = "none";
     host.appendChild(this.renderer.domElement);
     this.scene.background = null;
@@ -148,6 +150,7 @@ export class MuseumWorld {
     this.inspection = inspection;
     const index = this.artifacts.findIndex((item) => item.id === session.state.focused_entity_id);
     if (index < 0) return;
+    this.targetRoutePosition = index;
     const near = nearbyModelIndices(this.artifacts.length, index);
     this.artifacts.forEach((artifact, itemIndex) => {
       const entry = this.exhibits.get(artifact.id)!;
@@ -216,6 +219,12 @@ export class MuseumWorld {
     }
     const dt = Math.min((time - (this.lastTime || time)) / 1000, 0.05); this.lastTime = time;
     const easing = 1 - Math.exp(-dt * 5.5);
+    if (!this.inspection) {
+      this.routePosition += (this.targetRoutePosition - this.routePosition) * easing;
+      const route = routeCameraPose(this.routePosition, false);
+      this.targetPosition.fromArray(route.position);
+      this.targetLook.fromArray(route.lookAt);
+    }
     this.camera.position.lerp(this.targetPosition, easing);
     this.currentLook.lerp(this.targetLook, easing); this.camera.lookAt(this.currentLook);
     this.river.update(time);
