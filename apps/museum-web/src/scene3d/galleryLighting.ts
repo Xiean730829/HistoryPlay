@@ -11,7 +11,7 @@ export function buildGalleryLighting(count: number): Group {
   for (let index = 0; index < count; index += 1) {
     const p = stationPlacement(index);
     const light = new PointLight(accents[index % accents.length], 17, 7.5, 2);
-    light.position.set(p.x - Math.sign(p.x) * 0.45, 3.7, p.z + 0.45);
+    light.position.set(p.x - p.bankX * p.side * 0.55, 3.7, p.z - p.bankZ * p.side * 0.55);
     rig.add(light);
   }
   return rig;

@@ -1,5 +1,5 @@
 import {
-  CanvasTexture, Color, DoubleSide, MeshPhysicalMaterial, MeshStandardMaterial,
+  CanvasTexture, Color, MeshStandardMaterial,
   SRGBColorSpace,
 } from "three";
 
@@ -26,17 +26,12 @@ function stoneTexture(): CanvasTexture {
   return texture;
 }
 
-/** Only the low plinth and fine case edges use these materials; no structural hall is built. */
+/** Stone and warm metal are reserved for the thin circular exhibit supports. */
 export function createGalleryMaterials() {
   const stoneMap = stoneTexture();
   const stone = new MeshStandardMaterial({
     color: new Color("#c3b49a"), map: stoneMap, roughness: 0.84,
   });
   const bronze = new MeshStandardMaterial({ color: "#c4a06b", metalness: 0.58, roughness: 0.4 });
-  const glass = new MeshPhysicalMaterial({
-    color: "#e1e8ef", metalness: 0, roughness: 0.12,
-    transparent: true, opacity: 0.035, depthWrite: false, side: DoubleSide,
-    envMapIntensity: 0.28, clearcoat: 0.5, clearcoatRoughness: 0.18,
-  });
-  return { stone, bronze, glass };
+  return { stone, bronze };
 }

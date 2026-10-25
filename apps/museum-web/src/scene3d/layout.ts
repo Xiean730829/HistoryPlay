@@ -1,22 +1,43 @@
 import { Box3, Group, Vector3 } from "three";
+import { RIVER_STATION_SPACING, riverBankNormalAt, riverPointAt } from "./riverPath";
 
 export const MODEL_SURFACE_OFFSET = 0.014;
-export const DISPLAY_CASE_BASE_Y = 0.18;
-export const RIVER_STATION_SPACING = 7.2;
+export const PLINTH_TOP_Y = 0.18;
+export { RIVER_STATION_SPACING } from "./riverPath";
 
 export interface StationPlacement {
-  /** Alternating display positions beside the centered particle river. */
+  /** Exhibit position and tangent frame sampled from the same curved river path. */
   x: number;
   z: number;
+  distance: number;
+  side: -1 | 1;
+  centerX: number;
+  centerZ: number;
+  bankX: number;
+  bankZ: number;
   /** World height at the top of the thin pedestal. */
   plinthTop: number;
   top: number;
 }
 
 export function stationPlacement(index: number): StationPlacement {
-  const x = index % 2 === 0 ? -3.35 : 3.35;
-  const z = 2 - index * RIVER_STATION_SPACING;
-  return { x, z, plinthTop: DISPLAY_CASE_BASE_Y, top: DISPLAY_CASE_BASE_Y };
+  const distance = Math.max(0, index) * RIVER_STATION_SPACING;
+  const center = riverPointAt(distance);
+  const bank = riverBankNormalAt(distance);
+  const side: -1 | 1 = index % 2 === 0 ? -1 : 1;
+  const offset = side * 4.1;
+  return {
+    x: center.x + bank.x * offset,
+    z: center.z + bank.z * offset,
+    distance,
+    side,
+    centerX: center.x,
+    centerZ: center.z,
+    bankX: bank.x,
+    bankZ: bank.z,
+    plinthTop: PLINTH_TOP_Y,
+    top: PLINTH_TOP_Y,
+  };
 }
 
 export function nearbyModelIndices(count: number, focused: number, limit = 3): Set<number> {
