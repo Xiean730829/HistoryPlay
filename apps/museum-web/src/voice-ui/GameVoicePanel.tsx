@@ -3,6 +3,7 @@ import type { ActiveSession } from "../application/museumApi";
 import type { CommandReceipt } from "@history-play/contracts";
 import { GameVoiceController } from "../voice/GameVoiceController";
 import type { RenderAcknowledgement } from "../voice/VoiceClient";
+import { claimPortalWelcome } from "../voice/portalWelcomeGate";
 import { VoiceEntry } from "./VoiceEntry";
 
 export function GameVoicePanel({ session, onRefresh, onNewInput, onStoryTransition, onUserTranscript,
@@ -35,7 +36,12 @@ export function GameVoicePanel({ session, onRefresh, onNewInput, onStoryTransiti
       try { await current.initialize(); }
       catch (error) { current.dispose(); throw error; }
     }} afterConnect={async () => {
-      if (welcomeOnConnect) await controller.current?.speakWelcome();
+      if (!welcomeOnConnect || !claimPortalWelcome(session.session_id)) return;
+      try {
+        await controller.current?.speakWelcome();
+      } catch {
+        return "入口欢迎语暂未播出；语音仍可开启并直接说“可以”进入，或提问。";
+      }
     }} onStop={() => { controller.current?.dispose(); controller.current = null; }} callbacks={{
       onSpeechStarted: () => controller.current?.beginTurn(),
       onSpeechEnded: () => controller.current?.endTurn(),

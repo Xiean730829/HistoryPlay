@@ -51,6 +51,12 @@ def main() -> int:
 
     processes: list[subprocess.Popen[bytes]] = []
     environment = os.environ.copy()
+    binding_file = Path(
+        environment.get("MUSEUM_MCP_BINDING_FILE", ".local/voice/game-binding.json")
+    ).expanduser()
+    if not binding_file.is_absolute():
+        binding_file = ROOT / binding_file
+    environment["MUSEUM_MCP_BINDING_FILE"] = str(binding_file.resolve())
     origin = f"http://127.0.0.1:{WEB_PORT}"
     configured_origins = tuple(
         item.strip()

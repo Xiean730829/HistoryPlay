@@ -61,7 +61,7 @@ CW10b/CW11a/b/CW12a/b 已有集成实现和工程验证，但H5/H6真实声音�
 
 ## 当前页面进入正式MCP只读讲解
 
-语音桥与正式MCP服务同时设置同一绝对路径 `MUSEUM_MCP_BINDING_FILE=<root>/.local/voice/game-binding.json`。页面原配对通过/voice/bind验证后，桥原子写入本机当前绑定；正式MCP只读工具每次调用加载此绑定，刷新/更换页面后不需要手抄会话ID。绑定文件不含任何云端动作scope，云端museum_act仍拒绝无来源调用。
+语音桥与正式MCP服务必须设置同一个绝对路径 `MUSEUM_MCP_BINDING_FILE=<当前运行根>/.local/voice/game-binding.json`。本地启动器会把相对配置按当前运行根规范成绝对路径；MCP 与语音桥拒绝自行按各自工作目录猜路径。页面配对通过 `/voice/bind` 验证后，桥原子写入该文件；正式MCP只读工具每次调用重新读取，因此页面重新配对后无需手抄会话ID。绑定文件不含任何云端动作scope，云端 `museum_act` 仍拒绝无来源调用。若两个进程配置的绝对路径不同，必须先统一配置并重新配对，不能绕过401/403或复用旧会话。
 
 先协调停止probe17968，再以 `MUSEUM_MCP_MODE=museum` 重启唯一官方MCP管道；不得同端点开两个进程。正式SDK在页面尚未绑定时也可先发现工具，查询会诚实提示尚未绑定。
 

@@ -3,12 +3,12 @@ from __future__ import annotations
 import json
 import os
 import sys
-from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
 
 from museum_mcp.action_tools import ActionTools
 from museum_mcp.application_client import ApplicationClient, BoundSession, GatewayError
+from museum_mcp.binding_path import require_absolute_binding_path
 from museum_mcp.tools import ReadTools
 
 
@@ -49,7 +49,7 @@ def load_binding() -> BoundSession:
     if not path:
         raise GatewayError("请先由当前展台提供本机私密绑定文件MUSEUM_MCP_BINDING_FILE")
     try:
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        data = json.loads(require_absolute_binding_path(path).read_text(encoding="utf-8"))
         return BoundSession(**data)
     except (OSError, TypeError, ValueError):
         raise GatewayError("本机展台绑定文件缺失或格式无效") from None
@@ -63,9 +63,14 @@ class CurrentBindingClient:
 
 
 def main() -> None:
-    if not os.environ.get("MUSEUM_MCP_BINDING_FILE"):
+    binding_file = os.environ.get("MUSEUM_MCP_BINDING_FILE")
+    if not binding_file:
         print("请设置MUSEUM_MCP_BINDING_FILE，页面开启语音后自动登记当前展台", file=sys.stderr)
         raise SystemExit(2) from None
+    try:
+        os.environ["MUSEUM_MCP_BINDING_FILE"] = str(require_absolute_binding_path(binding_file))
+    except ValueError as error:
+        raise SystemExit(str(error)) from None
     create_server(ReadTools(CurrentBindingClient()), ActionTools()).run(transport="stdio")
 
 
