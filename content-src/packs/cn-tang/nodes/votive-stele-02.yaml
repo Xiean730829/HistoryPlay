@@ -1,7 +1,11 @@
 id: cn.tang.node.votive-stele.02
 story_id: cn.tang.story.votive-stele
 fact_grade: F
-narration: 这件作品提供了一个带有明确年份的参照点。年代来自馆藏记录；展厅中的排列则是策展顺序。现在返回长廊继续参观。
+presentation:
+  capability: comic
+  asset_ids:
+    - cn.tang.asset.votive-stele.story-02
+narration: 这件作品提供了一个带有明确年份的参照点。画面中的家庭是创作情境，不是馆方记录的供养人或主人。年代来自馆藏记录；展厅中的排列则是策展顺序。现在返回长廊继续参观。
 allowed_actions:
   - return_to_exhibit
 exits:

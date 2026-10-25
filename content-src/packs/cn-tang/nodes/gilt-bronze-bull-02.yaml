@@ -1,7 +1,11 @@
 id: cn.tang.node.gilt-bronze-bull.02
 story_id: cn.tang.story.gilt-bronze-bull
 fact_grade: F
-narration: 八世纪是馆方给出的断代精度，我们不把它缩窄成某一年。你已看完这件小型器物的年代与馆方用途说明，可以返回长廊。
+presentation:
+  capability: comic
+  asset_ids:
+    - cn.tang.asset.gilt-bronze-bull.story-02
+narration: 八世纪是馆方给出的断代精度，我们不把它缩窄成某一年。压纸的动作是创作示意，不指认真实主人。你已看完这件小型器物的年代与馆方用途说明，可以返回长廊。
 allowed_actions:
   - return_to_exhibit
 exits:
