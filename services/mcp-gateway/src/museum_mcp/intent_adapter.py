@@ -32,9 +32,13 @@ def interpret(text: str) -> Intent | None:
     text = re.sub(r"\s+", "", text)
     if re.search(r"为什么|为何|怎么会|是不是|是否|什么时候|怎样制作", text):
         return None
+    # Scope negation to the same clause as a movement phrase. A preceding
+    # object-level negation (for example, “不要看铜钱了，再往前走”) must not
+    # cancel a later, affirmative movement request.
+    movement_clause = re.split(r"[，,。！？；;]", text)[-1]
     if re.search(
         r"(?:不要|别|不想|不用|无需).{0,8}(?:往前|前进|往里|往里面|再往里|去里面|后面|后退|往后|往回|回入口|返回入口|下一件|上一件)",
-        text,
+        movement_clause,
     ):
         return None
     candidates = [
