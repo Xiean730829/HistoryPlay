@@ -1,0 +1,22 @@
+id: cn.tang.node.t04.n07
+story_id: cn.tang.story.t04
+fact_grade: C
+narration: >-
+  阿禾把新的安排记了下来：有人先做完承诺，有人找同伴分担，也有人重新商量时间。她仍不一定能当天做完自己的小物件，却知道下一步要和谁确认。讲解员提醒：“这是一个虚构人物的生活选择，不是对唐代所有人的生活方式下结论。”你可以重看三种安排，也可以回到女立俑展台。
+allowed_actions:
+  - ask
+  - observe
+  - choose_route
+  - return_to_exhibit
+exits:
+  - action: choose_route
+    target_node_id: cn.tang.node.t04.n04
+    route_label: 回看先履行承诺的安排
+  - action: choose_route
+    target_node_id: cn.tang.node.t04.n05
+    route_label: 回看商量合作的安排
+  - action: choose_route
+    target_node_id: cn.tang.node.t04.n06
+    route_label: 回看重新约定的安排
+  - action: return_to_exhibit
+    target_node_id: cn.tang.node.t04.n01

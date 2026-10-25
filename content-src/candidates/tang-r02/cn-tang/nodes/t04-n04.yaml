@@ -1,0 +1,12 @@
+id: cn.tang.node.t04.n04
+story_id: cn.tang.story.t04
+fact_grade: C
+narration: >-
+  阿禾先把答应的修补做完，邻人的求助因此等了一会儿，她自己的小物件也仍留在一旁。她说：“先做完承诺让我安心，但我得告诉邻人还要等多久。”你可以陪她把时间说清楚，再看看怎样继续安排。
+allowed_actions:
+  - ask
+  - observe
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.t04.n07
