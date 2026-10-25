@@ -52,8 +52,14 @@ def main() -> int:
     processes: list[subprocess.Popen[bytes]] = []
     environment = os.environ.copy()
     origin = f"http://127.0.0.1:{WEB_PORT}"
-    environment.setdefault("MUSEUM_ALLOWED_ORIGINS", origin)
-    environment.setdefault("MUSEUM_WEB_ORIGIN", origin)
+    configured_origins = tuple(
+        item.strip()
+        for item in environment.get("MUSEUM_WEB_ORIGINS", origin).split(",")
+        if item.strip()
+    ) or (origin,)
+    environment.setdefault("MUSEUM_ALLOWED_ORIGINS", ",".join(configured_origins))
+    environment.setdefault("MUSEUM_WEB_ORIGIN", configured_origins[0])
+    environment.setdefault("MUSEUM_WEB_ORIGINS", ",".join(configured_origins))
     environment.setdefault("VITE_MUSEUM_GAME_URL", f"http://127.0.0.1:{MUSEUM_PORT}")
     environment.setdefault("VITE_MUSEUM_BRIDGE_URL", f"http://127.0.0.1:{VOICE_PORT}")
     try:

@@ -28,8 +28,19 @@ from museum_voice.xiaozhi_client import connection_headers, hello_message
 
 DEVICE = web.AppKey("fixed_device", DeviceConfig)
 ORIGIN = web.AppKey("web_origin", str)
+ORIGINS = web.AppKey("web_origins", frozenset[str])
 HOST = web.AppKey("bridge_host", str)
 ACTIVE = ACTIVE_AUDIO
+SUPPORTED_WEB_ORIGINS = frozenset(
+    {
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174",
+        "http://127.0.0.1:5175",
+        "http://127.0.0.1:5176",
+        "http://127.0.0.1:5190",
+        "http://127.0.0.1:5192",
+    }
+)
 
 
 async def reject_redirect(*args) -> None:
@@ -52,7 +63,12 @@ async def local_only(request: web.Request, handler):
     if request.host != request.app[HOST]:
         raise web.HTTPForbidden(text="请使用本机语音桥地址")
     public_entry = request.path == "/voice/entry" and request.method == "GET"
-    if request.path.startswith("/voice/") and not public_entry and request.headers.get("Origin") != request.app[ORIGIN]:
+    request_origin = request.headers.get("Origin")
+    if (
+        request.path.startswith("/voice/")
+        and not public_entry
+        and request_origin not in request.app[ORIGINS]
+    ):
         raise web.HTTPForbidden(text="语音桥仅接受配置的本机游戏页面")
     if request.method == "OPTIONS":
         response = web.Response()
@@ -60,12 +76,13 @@ async def local_only(request: web.Request, handler):
         response = await handler(request)
     response.headers["Cache-Control"] = "no-store"
     if public_entry:
-        # This read-only endpoint reveals only the configured loopback page origin.
-        # Binding and microphone transports remain restricted to that exact Origin.
-        response.headers["Access-Control-Allow-Origin"] = "*"
-        response.headers["Access-Control-Allow-Methods"] = "GET"
+        # The read-only endpoint is reachable only to configured page origins.
+        if request_origin in request.app[ORIGINS]:
+            response.headers["Access-Control-Allow-Origin"] = request_origin
+            response.headers["Access-Control-Allow-Methods"] = "GET"
     elif request.path.startswith("/voice/"):
-        response.headers["Access-Control-Allow-Origin"] = request.app[ORIGIN]
+        if request_origin in request.app[ORIGINS]:
+            response.headers["Access-Control-Allow-Origin"] = request_origin
         response.headers["Access-Control-Allow-Headers"] = "Content-Type"
         response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
     return response
@@ -294,10 +311,16 @@ async def health(request: web.Request) -> web.Response:
 
 
 async def entry(request: web.Request) -> web.Response:
+    request_origin = request.headers.get("Origin")
     return web.json_response(
         {
             "service": "museum-voice",
-            "web_origin": request.app[ORIGIN],
+            "web_origin": (
+                request_origin
+                if request_origin in request.app[ORIGINS]
+                else request.app[ORIGIN]
+            ),
+            "web_origins": sorted(request.app[ORIGINS]),
             "device_configured": request.app.get(DEVICE) is not None,
         }
     )
@@ -308,16 +331,20 @@ def create_app(
     *,
     port: int = 8782,
     origin: str = "http://127.0.0.1:5173",
+    web_origins: tuple[str, ...] | None = None,
     binding_file: Path | None = None,
 ) -> web.Application:
-    if origin not in {
-        "http://127.0.0.1:5173", "http://127.0.0.1:5174", "http://127.0.0.1:5175",
-        "http://127.0.0.1:5176", "http://127.0.0.1:5190",
-    }:
+    configured_origins = frozenset(web_origins or (origin,))
+    if (
+        origin not in SUPPORTED_WEB_ORIGINS
+        or origin not in configured_origins
+        or not configured_origins.issubset(SUPPORTED_WEB_ORIGINS)
+    ):
         raise ValueError("语音桥只允许指定的本机游戏页面")
     app = web.Application(middlewares=[local_only])
     app[DEVICE] = device
     app[ORIGIN] = origin
+    app[ORIGINS] = configured_origins
     app[HOST] = f"127.0.0.1:{port}"
     app[ACTIVE] = set()
     app[GAME_BINDINGS] = {}
@@ -343,12 +370,18 @@ def main() -> None:
         raise SystemExit(str(error)) from None
     port = int(os.environ.get("MUSEUM_VOICE_PORT", "8782"))
     origin = os.environ.get("MUSEUM_WEB_ORIGIN", "http://127.0.0.1:5173")
+    configured_origins = tuple(
+        item.strip()
+        for item in os.environ.get("MUSEUM_WEB_ORIGINS", origin).split(",")
+        if item.strip()
+    )
     binding_file = os.environ.get("MUSEUM_MCP_BINDING_FILE")
     web.run_app(
         create_app(
             device,
             port=port,
             origin=origin,
+            web_origins=configured_origins,
             binding_file=Path(binding_file) if binding_file else None,
         ),
         host="127.0.0.1",
