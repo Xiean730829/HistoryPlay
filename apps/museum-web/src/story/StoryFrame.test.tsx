@@ -7,7 +7,7 @@ const storyId = "cn.tang.story.votive-stele";
 const nodeId = "cn.tang.node.votive-stele.01";
 const assetId = "cn.tang.asset.votive-stele.story.01";
 
-function renderStory(allowedActions: string[]) {
+function renderStory(allowedActions: string[], contextRevision = 4) {
   const node = {
     story_id: storyId,
     node_id: nodeId,
@@ -21,7 +21,7 @@ function renderStory(allowedActions: string[]) {
     session_token: "session-token-test",
     version: "0.2.2",
     state: { mode: "story", revision: 4, story_id: storyId, node_id: nodeId },
-    context: { revision: 4, story_node: node },
+    context: { revision: contextRevision, story_node: node },
   } as unknown as ActiveSession;
 
   return renderToStaticMarkup(
@@ -42,10 +42,17 @@ describe("StoryFrame scene pages", () => {
     expect(markup).not.toContain("D:/7/History");
   });
 
-  it("shows only actions permitted by the current node", () => {
+  it("keeps the session-level return available when the first node only allows continuation", () => {
     const markup = renderStory(["continue_story"]);
 
     expect(markup).toContain("下一段");
-    expect(markup).not.toContain("返回展廊");
+    expect(markup).toContain("返回展廊");
+  });
+
+  it("keeps the return available while the committed story page is being synchronized", () => {
+    const markup = renderStory(["continue_story"], 3);
+
+    expect(markup).toContain("正在同步已提交的故事段落");
+    expect(markup).toContain("返回展廊");
   });
 });

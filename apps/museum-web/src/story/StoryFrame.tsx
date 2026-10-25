@@ -54,6 +54,13 @@ export function StoryFrame({ session, busy, onContinue, onChooseRoute, onReturn 
       <section className="story-stage story-cinematic" aria-label="故事场景" role="status">
         <div className="story-caption">
           <p className="story-subtitle">正在同步已提交的故事段落…</p>
+          {session.state.mode === "story" && (
+            <div className="story-actions">
+              <button className="button button-quiet" disabled={busy} onClick={onReturn} type="button">
+                返回展廊
+              </button>
+            </div>
+          )}
         </div>
       </section>
     );
@@ -64,7 +71,8 @@ export function StoryFrame({ session, busy, onContinue, onChooseRoute, onReturn 
   const presentation = paragraph?.presentation ?? node.presentation;
   const assetIds = stringIds(presentation?.asset_ids);
   const canContinue = actions.includes("continue_story");
-  const canReturn = actions.includes("return_to_exhibit");
+  // Returning to the saved exhibit anchor is a session-level escape hatch,
+  // validated by the command service rather than the current node's exits.
 
   return (
     <section className="story-stage story-cinematic" aria-label="故事场景" data-story-id={node.story_id} data-node-id={node.node_id}>
@@ -103,7 +111,7 @@ export function StoryFrame({ session, busy, onContinue, onChooseRoute, onReturn 
                 {exit.route_label ?? "选择此方向"}
               </button>
             ))}
-          {canReturn && (
+          {session.state.mode === "story" && (
             <button className="button button-quiet" disabled={busy} onClick={onReturn} type="button">
               返回展廊
             </button>
