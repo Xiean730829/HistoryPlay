@@ -59,6 +59,10 @@ export function MuseumShell() {
   const [busy, setBusy] = React.useState(false);
   const [inspection, setInspection] = React.useState(false);
   const [portalOpen, setPortalOpen] = React.useState(true);
+  const portalOpenRef = React.useRef(portalOpen);
+  portalOpenRef.current = portalOpen;
+  const entryOpeningRef = React.useRef(false);
+  const [entryStatusVisible, setEntryStatusVisible] = React.useState(false);
   const [voiceDrivenStory, setVoiceDrivenStory] = React.useState(false);
   const previousFocus = React.useRef<string | null>(null);
   const [notice, setNotice] = React.useState("正在连接本地游戏服务…");
@@ -84,6 +88,29 @@ export function MuseumShell() {
   }
 
   React.useEffect(() => () => cancelVoiceRenderWaiters(), []);
+
+  React.useEffect(() => {
+    if (portalOpen || !entryOpeningRef.current) return;
+    let secondFrame = 0;
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => {
+        const door = document.querySelector(".museum-entry-door");
+        const canvas = document.querySelector<HTMLCanvasElement>(".museum-space .museum-webgl canvas");
+        const bounds = canvas?.getBoundingClientRect();
+        entryOpeningRef.current = false;
+        if (!door && canvas && bounds && bounds.width > 0 && bounds.height > 0) {
+          setNotice("展厅画面已打开，可以开始参观。");
+          setNoticeTone("success");
+        } else {
+          portalOpenRef.current = true;
+          setPortalOpen(true);
+          setNotice("已听到入馆请求，但展厅画面未能显示；请检查 WebGL 或稍后重试。");
+          setNoticeTone("error");
+        }
+      });
+    });
+    return () => { cancelAnimationFrame(firstFrame); if (secondFrame) cancelAnimationFrame(secondFrame); };
+  }, [portalOpen, session?.session_id]);
 
   React.useEffect(() => {
     const focus = session?.state.focused_entity_id ?? null;
@@ -364,7 +391,7 @@ export function MuseumShell() {
         </div>
       </section>}
 
-      {(noticeTone === "error" || SHOW_DIAGNOSTICS) && <StatusNotice message={notice} tone={noticeTone} />}
+      {(noticeTone === "error" || entryStatusVisible || SHOW_DIAGNOSTICS) && <StatusNotice message={notice} tone={noticeTone} />}
 
       {session && <MuseumSpace
         artifacts={galleryArtifacts.length ? galleryArtifacts : session.context.visible_artifacts}
@@ -421,10 +448,13 @@ export function MuseumShell() {
           gameUrl={import.meta.env.VITE_MUSEUM_GAME_URL?.trim() || "http://127.0.0.1:8781"}
           bridgeUrl={import.meta.env.VITE_MUSEUM_BRIDGE_URL?.trim() || window.location.origin}
           onUserTranscript={(text) => {
-            if (portalOpen && isMuseumEntryConsent(text)) {
+            if (portalOpenRef.current && isMuseumEntryConsent(text)) {
+              entryOpeningRef.current = true;
+              setEntryStatusVisible(true);
+              setNotice("已听到入馆请求，正在打开展厅画面…");
+              setNoticeTone("info");
+              portalOpenRef.current = false;
               setPortalOpen(false);
-              setNotice("欢迎入馆。当前展厅展示三件发布版本中的文物，可沿星河弯道逐件参观。");
-              setNoticeTone("success");
             }
           }}
           onNewInput={cancelVoiceRenderWaiters}

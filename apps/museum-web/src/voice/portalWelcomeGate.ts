@@ -1,33 +1,48 @@
-const STORAGE_PREFIX = "history-play.portal-welcome.attempted.v1:";
-const attemptedInMemory = new Set<string>();
+const STORAGE_PREFIX = "history-play.portal-welcome.completed.v2:";
+const completedInMemory = new Set<string>();
+const inFlight = new Set<string>();
 
 export interface WelcomeAttemptStorage {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
 }
 
-/** Claim the one app-owned welcome attempt for a session, including reconnects. */
+/** Reserve one welcome attempt. Only successful playback is persisted as complete. */
 export function claimPortalWelcome(
   sessionId: string,
   storage?: WelcomeAttemptStorage | null,
 ): boolean {
-  if (!sessionId) return false;
-  if (attemptedInMemory.has(sessionId)) return false;
+  if (!sessionId || completedInMemory.has(sessionId) || inFlight.has(sessionId)) return false;
   const key = `${STORAGE_PREFIX}${encodeURIComponent(sessionId)}`;
   if (storage === undefined && typeof window !== "undefined") {
     try { storage = window.sessionStorage; } catch { storage = null; }
   }
   if (storage) {
     try {
-      if (storage.getItem(key)) {
-        attemptedInMemory.add(sessionId);
+      if (storage.getItem(key) === "completed") {
+        completedInMemory.add(sessionId);
         return false;
       }
-      storage.setItem(key, "attempted");
     } catch {
-      // Keep this tab's reconnects from repeating the greeting if storage is blocked.
+      // Continue with the in-memory guard if browser storage is blocked.
     }
   }
-  attemptedInMemory.add(sessionId);
+  inFlight.add(sessionId);
   return true;
+}
+
+/** Failed or timed-out playback releases the reservation for the next manual reopen. */
+export function finishPortalWelcome(
+  sessionId: string,
+  playedToCompletion: boolean,
+  storage?: WelcomeAttemptStorage | null,
+): void {
+  inFlight.delete(sessionId);
+  if (!sessionId || !playedToCompletion) return;
+  completedInMemory.add(sessionId);
+  const key = `${STORAGE_PREFIX}${encodeURIComponent(sessionId)}`;
+  if (storage === undefined && typeof window !== "undefined") {
+    try { storage = window.sessionStorage; } catch { storage = null; }
+  }
+  try { storage?.setItem(key, "completed"); } catch { /* Current-page deduplication still applies. */ }
 }
