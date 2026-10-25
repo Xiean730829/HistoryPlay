@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 MUSEUM_PORT = os.getenv("MUSEUM_PORT", "8780")
 WEB_PORT = os.getenv("MUSEUM_WEB_PORT", "5173")
-VOICE_PORT = os.getenv("MUSEUM_VOICE_PORT", "8782")
+VOICE_PORT = os.getenv("MUSEUM_VOICE_PORT", "8784")
 
 
 def wait_for_health(url: str, process: subprocess.Popen[bytes], label: str) -> None:
@@ -67,9 +67,13 @@ def main() -> int:
     environment.setdefault("MUSEUM_WEB_ORIGIN", configured_origins[0])
     environment.setdefault("MUSEUM_WEB_ORIGINS", ",".join(configured_origins))
     environment.setdefault("VITE_MUSEUM_GAME_URL", f"http://127.0.0.1:{MUSEUM_PORT}")
+    binding_file = Path(environment.get("MUSEUM_MCP_BINDING_FILE", ".local/voice/game-binding.json"))
+    if not binding_file.is_absolute():
+        binding_file = ROOT / binding_file
+    environment["MUSEUM_MCP_BINDING_FILE"] = str(binding_file.resolve())
     # Connect directly to the fixed local voice bridge. The browser's Origin
     # remains the museum page origin and is checked by the bridge allowlist.
-    environment.setdefault("VITE_MUSEUM_BRIDGE_URL", "http://127.0.0.1:8782")
+    environment.setdefault("VITE_MUSEUM_BRIDGE_URL", f"http://127.0.0.1:{VOICE_PORT}")
     try:
         backend = subprocess.Popen(
             [uv, "run", "--package", "museum-game", "python", "-m", "museum.main"],

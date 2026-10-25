@@ -11,12 +11,12 @@ describe("本机语音桥地址", () => {
 
   it("未配置时使用固定本机语音桥", () => {
     expect(resolveLocalVoiceBridgeUrl(undefined, "http://127.0.0.1:5190"))
-      .toBe("http://127.0.0.1:8782");
+      .toBe("http://127.0.0.1:8784");
   });
 
   it("配置为同源开发代理时改用固定本机语音桥", () => {
     expect(resolveLocalVoiceBridgeUrl("http://127.0.0.1:5190", "http://127.0.0.1:5190"))
-      .toBe("http://127.0.0.1:8782");
+      .toBe("http://127.0.0.1:8784");
   });
 
   it.each([
