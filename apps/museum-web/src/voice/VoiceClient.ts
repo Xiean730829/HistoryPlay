@@ -18,6 +18,19 @@ export interface VoiceCallbacks {
   onControl?(result: VoiceControlResult): void;
 }
 
+interface FixedNarration {
+  expected: string;
+  subtitles: string[];
+  epoch: number;
+  audioFrames: number;
+  started: boolean;
+  onStarted(): void;
+  finish(error?: Error): void;
+  signal: AbortSignal;
+  abort(): void;
+  timer: ReturnType<typeof setTimeout>;
+}
+
 /** Device secrets stay in the local bridge. Every socket has its own local generation. */
 export class VoiceClient {
   private socket: WebSocket | null = null;
@@ -29,6 +42,9 @@ export class VoiceClient {
   private turnRequested = false;
   private turnEnded = false;
   private closing: Promise<void> = Promise.resolve();
+  private fixedNarration: FixedNarration | null = null;
+  private providerSpeaking = false;
+  private readonly providerIdleWaiters = new Set<() => void>();
 
   constructor(
     private readonly playback: PlaybackQueue,
@@ -85,13 +101,44 @@ export class VoiceClient {
             this.callbacks.onControl?.(data.result);
           } else if (data.type === "bridge_error") {
             fail(); this.callbacks.onState("error", "语音连接中止，请检查固定设备配置");
-          } else if (data.type === "stt" || data.type === "tts" || data.type === "llm") {
+          } else if (data.type === "tts") {
+            const fixed = this.fixedNarration;
+            if (fixed && fixed.epoch === epoch) {
+              if (data.state === "start") { fixed.started = true; fixed.onStarted(); }
+              else if (data.state === "stop") {
+                const actual = normalizeNarrationText(fixed.subtitles.join(""));
+                const expected = normalizeNarrationText(fixed.expected);
+                if (!fixed.started || !fixed.audioFrames) {
+                  fixed.finish(new Error("小智未返回完整本段音频，故事不会自动翻页")); this.interrupt();
+                }
+                else if (!actual || actual !== expected) {
+                  fixed.finish(new Error("小智语音字幕与固定正文不一致，故事不会自动翻页")); this.interrupt();
+                }
+                else this.playback.onDrained(epoch, () => fixed.finish());
+              } else if (typeof data.text === "string" && data.text.trim()
+                && data.state !== "sentence_end" && data.state !== "end") {
+                const text = data.text.trim();
+                if (fixed.subtitles.at(-1) !== text) fixed.subtitles.push(text);
+              }
+            } else if (data.state === "start") {
+              this.providerSpeaking = true;
+            } else if (data.state === "stop" && this.providerSpeaking) {
+              this.playback.onDrained(epoch, () => {
+                this.providerSpeaking = false;
+                const waiters = [...this.providerIdleWaiters];
+                this.providerIdleWaiters.clear();
+                waiters.forEach((notify) => notify());
+              });
+            }
+            this.callbacks.onText("tts", data.text ?? "", data.state);
+          } else if (data.type === "stt" || data.type === "llm") {
             this.callbacks.onText(data.type, data.text ?? "", data.state);
           }
         } else if (event.data.byteLength >= 6 && (event.data.byteLength - 4) % 2 === 0) {
           const sampleRate = new DataView(event.data).getUint32(0, false);
           const pcm = new Int16Array(event.data.slice(4));
-          this.playback.enqueue(pcm, sampleRate, epoch);
+          const accepted = this.playback.enqueue(pcm, sampleRate, epoch);
+          if (accepted && this.fixedNarration?.epoch === epoch) this.fixedNarration.audioFrames += 1;
         }
       };
       socket.onclose = () => {
@@ -99,6 +146,7 @@ export class VoiceClient {
         if (connection !== this.connection) return;
         this.ready = false;
         this.listening = false;
+        this.clearProviderSpeechWaiters();
         this.pending = [];
         this.turnRequested = false;
         this.turnEnded = false;
@@ -171,6 +219,68 @@ export class VoiceClient {
     }));
   }
 
+  /** Sends one bounded fixed-text request over the already bound XiaoZhi transport. */
+  async speakFixedText(prompt: string, expectedText: string, signal: AbortSignal, onStarted: () => void): Promise<void> {
+    const value = prompt.trim();
+    const expected = expectedText.trim();
+    if (!this.ready || this.listening || !value || !expected || Array.from(value).length > 80) {
+      throw new Error("小智固定稿通道未就绪，或本段超过单次文本长度限制");
+    }
+    if (signal.aborted) throw new DOMException("讲述已取消", "AbortError");
+    if (this.fixedNarration) throw new Error("小智正在讲述上一段，请稍后重试");
+    await this.waitForProviderSilence(signal);
+    if (signal.aborted || !this.ready) throw new DOMException("讲述已取消", "AbortError");
+    const socket = this.socket;
+    const epoch = this.playback.epoch;
+    await new Promise<void>((resolve, reject) => {
+      let settled = false;
+      const finish = (error?: Error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        signal.removeEventListener("abort", abort);
+        if (this.fixedNarration?.finish === finish) this.fixedNarration = null;
+        if (error) reject(error); else resolve();
+      };
+      const abort = () => {
+        finish(new DOMException("讲述已中断", "AbortError"));
+        this.interrupt();
+      };
+      const timer = setTimeout(() => {
+        finish(new Error("等待小智固定稿语音超时，故事不会自动翻页"));
+        this.interrupt();
+      }, 60000);
+      const pending: FixedNarration = {
+        expected, subtitles: [], epoch, audioFrames: 0, started: false,
+        onStarted, finish, signal, abort, timer,
+      };
+      this.fixedNarration = pending;
+      signal.addEventListener("abort", abort, { once: true });
+      try { socket?.send(JSON.stringify({ op: "text", text: value })); }
+      catch { finish(new Error("无法向当前小智会话发送固定稿")); }
+    });
+  }
+
+  private waitForProviderSilence(signal: AbortSignal): Promise<void> {
+    if (!this.providerSpeaking) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      const finish = (error?: Error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        signal.removeEventListener("abort", abort);
+        this.providerIdleWaiters.delete(notify);
+        if (error) reject(error); else resolve();
+      };
+      const notify = () => finish();
+      const abort = () => finish(new DOMException("讲述已中断", "AbortError"));
+      const timer = setTimeout(() => finish(new Error("上一段小智语音尚未结束")), 30000);
+      signal.addEventListener("abort", abort, { once: true });
+      this.providerIdleWaiters.add(notify);
+    });
+  }
+
   stopListening(): void {
     if (this.ready && this.listening) this.socket?.send(JSON.stringify({ op: "stop" }));
     this.listening = false;
@@ -195,6 +305,8 @@ export class VoiceClient {
     this.preRoll = [];
     this.turnRequested = false;
     this.turnEnded = false;
+    this.clearProviderSpeechWaiters();
+    this.fixedNarration?.finish(new Error("小智语音连接已关闭，固定稿未完成"));
     this.playback.stop();
     const socket = this.socket;
     this.socket = null;
@@ -211,4 +323,15 @@ export class VoiceClient {
       });
     }
   }
+
+  private clearProviderSpeechWaiters(): void {
+    this.providerSpeaking = false;
+    const waiters = [...this.providerIdleWaiters];
+    this.providerIdleWaiters.clear();
+    waiters.forEach((notify) => notify());
+  }
+}
+
+function normalizeNarrationText(text: string): string {
+  return text.normalize("NFC").replace(/[\s，。！？、；：,.!?;:"'“”‘’（）()《》【】…—\-]/gu, "");
 }

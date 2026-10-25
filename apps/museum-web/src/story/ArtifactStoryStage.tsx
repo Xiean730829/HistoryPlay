@@ -40,16 +40,8 @@ export function ArtifactStoryStage(props: ArtifactStoryStageProps) {
       </section>
     );
   }
-  if (props.voiceDriven) {
-    return <>
-      <StoryFrame {...props} />
-      <div className="story-narration-status" role="status" aria-live="polite">
-        <p className="story-assets-note">
-          已显示当前固定正文与对应画面。讲解员使用小智实时语音回答；目前没有可验证的逐字音频完成回执，因此不会用浏览器朗读冒充同步讲述或自动翻页。可说“下一段”继续。
-        </p>
-      </div>
-    </>;
-  }
+  // Both manual entry and XiaoZhi voice navigation use the same live narrator.
+  // Browser speech is available only from the explicit fallback control below.
   return <StoryAutoplayStage {...props} />;
 }
 
@@ -74,6 +66,7 @@ function StoryAutoplayStage(props: ArtifactStoryStageProps) {
   activeKey.current = key;
   const controller = useRef<StoryAutoplayController | null>(null);
   const retryLoad = useRef<(() => Promise<boolean | undefined>) | null>(null);
+  const browserFallback = useRef<(() => void) | null>(null);
   controller.current?.updateIdentity(identity);
   const previousKey = useRef(key);
   const canContinueRef = useRef(false);
@@ -89,6 +82,7 @@ function StoryAutoplayStage(props: ArtifactStoryStageProps) {
 
   useEffect(() => {
     const runtime = acquireSessionNarration(session.session_id);
+    browserFallback.current = runtime.useBrowserFallback;
     const current = new StoryAutoplayController(runtime.player, (completedKey) => {
       if (activeKey.current !== completedKey) return;
       setStatus("advancing");
@@ -150,6 +144,7 @@ function StoryAutoplayStage(props: ArtifactStoryStageProps) {
       abort.abort();
       unsubscribe();
       if (retryLoad.current === loadAndPlay) retryLoad.current = null;
+      if (browserFallback.current === runtime.useBrowserFallback) browserFallback.current = null;
       if (activeKey.current === key) activeKey.current = "";
       current.dispose();
       if (controller.current === current) controller.current = null;
@@ -198,6 +193,10 @@ function StoryAutoplayStage(props: ArtifactStoryStageProps) {
       {canRetry && <button className="button button-quiet" disabled={props.busy} onClick={() => void retryNarration()} type="button">
         {status === "error" ? "播放本段讲述" : "重新播放本段"}
       </button>}
+      {status === "error" && <button className="button button-quiet" disabled={props.busy} onClick={() => {
+        browserFallback.current?.();
+        void retryNarration();
+      }} type="button">改用浏览器语音备选</button>}
     </div>
   </>;
 }

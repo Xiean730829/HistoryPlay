@@ -36,18 +36,35 @@ async def reject_redirect(*args) -> None:
     raise ValueError("不允许携带设备凭据跳转到其他地址")
 
 
+def fixed_text_event(text: object, session_id: str) -> dict[str, str]:
+    if not isinstance(text, str) or not text.strip() or len(text) > 80:
+        raise ValueError("固定文本必须是不超过80字的非空片段")
+    return {
+        "type": "listen",
+        "state": "detect",
+        "text": text.strip(),
+        "session_id": session_id,
+    }
+
+
 @web.middleware
 async def local_only(request: web.Request, handler):
     if request.host != request.app[HOST]:
         raise web.HTTPForbidden(text="请使用本机语音桥地址")
-    if request.path.startswith("/voice/") and request.headers.get("Origin") != request.app[ORIGIN]:
+    public_entry = request.path == "/voice/entry" and request.method == "GET"
+    if request.path.startswith("/voice/") and not public_entry and request.headers.get("Origin") != request.app[ORIGIN]:
         raise web.HTTPForbidden(text="语音桥仅接受配置的本机游戏页面")
     if request.method == "OPTIONS":
         response = web.Response()
     else:
         response = await handler(request)
     response.headers["Cache-Control"] = "no-store"
-    if request.path.startswith("/voice/"):
+    if public_entry:
+        # This read-only endpoint reveals only the configured loopback page origin.
+        # Binding and microphone transports remain restricted to that exact Origin.
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET"
+    elif request.path.startswith("/voice/"):
         response.headers["Access-Control-Allow-Origin"] = request.app[ORIGIN]
         response.headers["Access-Control-Allow-Headers"] = "Content-Type"
         response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
@@ -138,6 +155,13 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
                                     "session_id": session_id,
                                 }
                             )
+                        elif op == "text":
+                            text = command.get("text")
+                            if input_started and not input_stopped:
+                                raise ValueError("固定文本必须是当前会话内不超过80字的完整片段")
+                            # This is an ordinary upstream text input, never a trusted museum action.
+                            # dispatch_local_control remains gated by a real, completed PCM turn.
+                            await upstream.send_json(fixed_text_event(text, session_id))
                         elif op == "stop":
                             input_stopped = True
                             await upstream.send_json(
@@ -269,6 +293,16 @@ async def health(request: web.Request) -> web.Response:
     )
 
 
+async def entry(request: web.Request) -> web.Response:
+    return web.json_response(
+        {
+            "service": "museum-voice",
+            "web_origin": request.app[ORIGIN],
+            "device_configured": request.app.get(DEVICE) is not None,
+        }
+    )
+
+
 def create_app(
     device: DeviceConfig | None,
     *,
@@ -291,6 +325,7 @@ def create_app(
         app[BINDING_FILE] = binding_file
     app.router.add_get("/health", health)
     app.router.add_get("/voice/status", health)
+    app.router.add_get("/voice/entry", entry)
     app.router.add_get("/voice/ws", bridge)
     app.router.add_post("/voice/bind", bind_game)
     app.router.add_options("/voice/bind", bind_game)

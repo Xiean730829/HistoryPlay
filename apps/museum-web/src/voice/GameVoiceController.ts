@@ -2,7 +2,7 @@ import type { ActiveSession } from "../application/museumApi";
 import type { CommandReceipt } from "@history-play/contracts";
 import type { AudioFocus } from "../narration/AudioFocus";
 import type { NarrationPlayer } from "../narration/NarrationPlayer";
-import { acquireSessionNarration } from "../narration/sessionNarration";
+import { acquireSessionNarration, attachSessionNarrationTransport } from "../narration/sessionNarration";
 import { PlaybackQueue } from "./PlaybackQueue";
 import { VoiceClient } from "./VoiceClient";
 import type { VoiceControlResult } from "./VoiceClient";
@@ -22,6 +22,7 @@ export class GameVoiceController {
   private readonly focus: AudioFocus;
   private readonly narration: NarrationPlayer;
   private readonly releaseNarration: () => void;
+  private detachNarration: (() => void) | null = null;
   private disposed = false;
   private inputSequence = 0;
 
@@ -39,16 +40,28 @@ export class GameVoiceController {
     this.audio = new AudioContext();
     await this.audio.resume();
     this.hooks.onStatus("正在连接当前展台语音");
+    const entryResponse = await fetch(`${this.bridgeUrl}/voice/entry`, { signal: AbortSignal.timeout(8000) });
+    if (!entryResponse.ok) throw new Error("无法读取本机展台语音入口配置");
+    const entry = await entryResponse.json() as { service?: string; web_origin?: string; device_configured?: boolean };
+    if (entry.service !== "museum-voice" || !entry.web_origin) throw new Error("本机语音入口配置无效");
+    if (window.location.origin !== entry.web_origin) {
+      throw new Error(`当前页面来源与语音桥不匹配，请改用唯一展台入口：${entry.web_origin}`);
+    }
+    if (entry.device_configured !== true) throw new Error("本机小智设备尚未配置，无法开启语音讲述");
     const response = await fetch(`${this.bridgeUrl}/voice/bind`, {
       method: "POST", headers: { "Content-Type": "application/json" },
       signal: AbortSignal.timeout(8000),
       body: JSON.stringify({ base_url: this.gameUrl, session_id: this.session.session_id,
         session_token: this.session.session_token, connection_id: this.session.connection_id }),
     });
-    if (!response.ok) throw new Error("当前展台语音绑定失败，请确认游戏与语音服务已启动");
+    if (!response.ok) {
+      if (response.status === 403) throw new Error("当前网页来源未获本机语音桥授权，请从配置的唯一展台入口打开");
+      throw new Error("当前展台语音绑定失败，请确认游戏与语音服务已启动");
+    }
     const result = await response.json() as { binding_id: string };
     if (this.disposed) return;
     const healthResponse = await fetch(`${this.bridgeUrl}/voice/status`, { signal: AbortSignal.timeout(8000) });
+    if (!healthResponse.ok) throw new Error("本机语音桥拒绝当前网页来源，请从配置的唯一展台入口打开");
     const health = await healthResponse.json() as { service?: string; device_configured?: boolean };
     if (health.service !== "museum-voice" || health.device_configured !== true) {
       this.hooks.onStatus("展台已绑定，讲解员设备尚未配置；当前可用MCP只读讲解");
@@ -69,7 +82,13 @@ export class GameVoiceController {
         if (!this.disposed) this.hooks.onStatus(error instanceof Error ? error.message : "语音操作失败");
       }); },
     }, `${this.bridgeUrl.replace(/^http/, "ws")}/voice/ws`, result.binding_id);
-    this.hooks.onStatus("展台已绑定，开始说话即可连接讲解员");
+    this.detachNarration = attachSessionNarrationTransport(this.session.session_id, {
+      narrate: (prompt, expected, signal, onStarted) => this.voice
+        ? this.voice.speakFixedText(prompt, expected, signal, onStarted)
+        : Promise.reject(new Error("当前小智语音连接已关闭")),
+    });
+    await this.voice.connect();
+    this.hooks.onStatus("小智讲解员已连接；固定故事讲述以实际字幕和音频完成状态推进");
   }
 
   beginTurn(): void {
@@ -130,6 +149,7 @@ export class GameVoiceController {
     this.disposed = true;
     this.narration.stop();
     this.focus.stop();
+    this.detachNarration?.(); this.detachNarration = null;
     this.voice?.disconnect();
     this.voice = null;
     void this.audio?.close().catch(() => undefined);
