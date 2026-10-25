@@ -69,6 +69,16 @@ export class GameVoiceController {
     });
     if (!response.ok) {
       if (response.status === 403) throw new Error("当前网页来源未获本机语音桥授权，请从配置的唯一展台入口打开");
+      const diagnosis = await response.json().catch(() => null) as {
+        error?: unknown; stage?: unknown; code?: unknown;
+      } | null;
+      const stage = typeof diagnosis?.stage === "string" && /^[a-z_]{1,48}$/.test(diagnosis.stage)
+        ? diagnosis.stage : "unknown";
+      const code = typeof diagnosis?.code === "string" && /^[a-z0-9_]{1,48}$/.test(diagnosis.code)
+        ? diagnosis.code : `http_${response.status}`;
+      if (diagnosis?.error === "voice_bind_failed") {
+        throw new Error(`语音绑定失败，阶段：${stage}，代码：${code}`);
+      }
       throw new Error("当前展台语音绑定失败，请确认游戏与语音服务已启动");
     }
     const result = await response.json() as { binding_id: string };
