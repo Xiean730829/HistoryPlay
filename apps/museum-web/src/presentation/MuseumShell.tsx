@@ -348,7 +348,7 @@ export function MuseumShell() {
           <h2>时空博物馆</h2>
           <p>循着时间长河，走进一座真正的博物馆。</p>
           <span>{session
-            ? "开启语音后，小智讲解员会先向你问候；说“可以”即可进入展厅。"
+            ? "浏览器需要你点击一次并允许麦克风；随后小智会先向你问候，说“可以”即可进入展厅。"
             : noticeTone === "error" ? notice : healthError ? "展厅暂未连接，请重试本地展厅服务。" : "正在准备展厅入口…"}</span>
           {!session && (healthError || noticeTone === "error") && <button className="museum-entry-retry" disabled={busy}
             onClick={() => void startMuseum()} type="button">{busy ? "正在重试…" : "重试连接"}</button>}
