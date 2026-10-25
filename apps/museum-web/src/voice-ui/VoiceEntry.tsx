@@ -3,10 +3,12 @@ import { MicrophoneCapture } from "../voice/MicrophoneCapture";
 import type { CaptureCallbacks } from "../voice/MicrophoneCapture";
 
 /** Explicit microphone permission entry; game orchestration is injected by MuseumShell. */
-export function VoiceEntry({ callbacks, beforeStart, onStop }: {
+export function VoiceEntry({ callbacks, beforeStart, afterConnect, onStop }: {
   callbacks: CaptureCallbacks;
   /** Called from the explicit user gesture: unlock the shared output context here. */
   beforeStart?: () => Promise<void>;
+  /** Speak an app welcome after transport setup, before opening the microphone. */
+  afterConnect?: () => Promise<void>;
   /** Close the voice transport and release AudioFocus on pause/unmount. */
   onStop?: () => void;
 }) {
@@ -31,7 +33,7 @@ export function VoiceEntry({ callbacks, beforeStart, onStop }: {
       return;
     }
     setOpening(true);
-    setStatus("正在请求麦克风权限");
+    setStatus("正在连接讲解员");
     const microphone = new MicrophoneCapture({ ...callbacks, onDisconnected() {
       callbacks.onDisconnected();
       if (alive.current) { setActive(false); setStatus("麦克风已断开，请重新开启"); }
@@ -40,13 +42,19 @@ export function VoiceEntry({ callbacks, beforeStart, onStop }: {
     try {
       await beforeStart?.();
       if (!alive.current) return;
+      await afterConnect?.();
+      if (!alive.current) return;
+      setStatus("请允许使用麦克风，以便回答讲解员");
       const settings = await microphone.start();
       if (!alive.current) return;
       setActive(true);
       setStatus(settings.echoCancellation === true ? "麦克风已开启" : "麦克风已开启，回声抑制未确认");
     } catch (error) {
       onStop?.();
-      if (alive.current) setStatus(error instanceof Error ? error.message : "无法开启麦克风");
+      const networkFailure = error instanceof TypeError && /fetch/i.test(error.message);
+      if (alive.current) setStatus(networkFailure
+        ? "本机语音服务连接失败；请刷新 5190 页面后重试。"
+        : error instanceof Error ? error.message : "无法开启麦克风");
     } finally {
       if (alive.current) setOpening(false);
     }

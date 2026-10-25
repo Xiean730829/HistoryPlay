@@ -1,7 +1,10 @@
-import { RIVER_STATION_SPACING, riverHeightAt, riverPointAt, riverStationDistance } from "./riverPath";
+import {
+  RIVER_FIRST_BEND_DISTANCE, RIVER_STATION_SPACING, riverHeightAt, riverPointAt, riverStationDistance,
+} from "./riverPath";
 import { stationPlacement } from "./layout";
 
 export const VISITOR_EYE_HEIGHT = 1.72;
+const ENTRY_LOOKAHEAD_DISTANCE = RIVER_FIRST_BEND_DISTANCE + RIVER_STATION_SPACING * 1.5;
 type Point = [number, number, number];
 export interface RouteCameraPose { position: Point; lookAt: Point }
 
@@ -21,6 +24,14 @@ export function routeCameraPose(index: number, inspection: boolean, zoom = 1): R
       position: [p.x - p.bankX * p.side * cameraDistance, p.walkY + VISITOR_EYE_HEIGHT,
         p.z - p.bankZ * p.side * cameraDistance],
       lookAt: [p.x, p.plinthTop + 1.25, p.z],
+    };
+  }
+  if (index === 0) {
+    const entrance = riverPointAt(0);
+    const overview = riverPointAt(ENTRY_LOOKAHEAD_DISTANCE);
+    return {
+      position: [entrance.x, entrance.y + VISITOR_EYE_HEIGHT, entrance.z],
+      lookAt: [overview.x, overview.y + 1.42, overview.z],
     };
   }
   const here = routePointAt(index);

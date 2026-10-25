@@ -96,6 +96,20 @@ describe("语音控制与画面刷新竞态", () => {
     controller.dispose();
   });
 
+  it("入馆欢迎语通过同一小智实时语音通道播放", async () => {
+    const play = vi.spyOn(NarrationPlayer.prototype, "play").mockResolvedValue(true);
+    const controller = new GameVoiceController({
+      session_id: "test-session", pack_id: "cn.tang.core", version: "0.2.4",
+    } as ActiveSession, { onStatus: vi.fn(), onTranscript: vi.fn(), onRefresh: async () => "pending" });
+    (controller as unknown as { voice: unknown }).voice = { disconnect: vi.fn() };
+    await controller.speakWelcome();
+    expect(play).toHaveBeenCalledWith({
+      packId: "cn.tang.core", version: "0.2.4", contentId: "museum.portal.welcome", role: "answer",
+      text: "欢迎来到时空博物馆，要我带你进去沿着时间长河欣赏文物的发展吗？",
+    });
+    controller.dispose();
+  });
+
   it("展品固定正文尚在播放时用户插话，不再播放进入故事的邀请", async () => {
     let finishIntro!: (completed: boolean) => void;
     const play = vi.spyOn(NarrationPlayer.prototype, "play")
