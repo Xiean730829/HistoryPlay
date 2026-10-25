@@ -8,10 +8,11 @@ class FakeSocket {
   static sockets: FakeSocket[] = [];
   binaryType = "";
   onmessage: ((event: { data: unknown }) => void) | null = null;
-  onclose: (() => void) | null = null;
-  onerror: (() => void) | null = null;
+  onopen: (() => void) | null = null;
+  onclose: ((event?: { code?: number }) => void) | null = null;
+  onerror: ((event?: unknown) => void) | null = null;
   send = vi.fn();
-  close = vi.fn(() => this.onclose?.());
+  close = vi.fn(() => this.onclose?.({ code: 1000 }));
   constructor() { FakeSocket.sockets.push(this); }
 }
 
@@ -24,11 +25,65 @@ function fixture() {
 }
 
 describe("受控语音客户端", () => {
+  it("显示本机WebSocket代理和脱敏桥接阶段，不泄露绑定信息", async () => {
+    const { playback, callbacks } = fixture();
+    const client = new VoiceClient(
+      playback as unknown as PlaybackQueue,
+      callbacks,
+      "ws://127.0.0.1:5190/voice/ws",
+      "private-binding-id",
+    );
+    const opening = client.connect();
+    const socket = FakeSocket.sockets[0];
+    socket.onopen?.();
+
+    expect(socket.send).toHaveBeenCalledOnce();
+    expect(callbacks.onState).toHaveBeenLastCalledWith(
+      "connecting", "展台绑定已发送，正在等待讲解员就绪",
+    );
+    expect(callbacks.onState.mock.calls.flat().join(" ")).toContain("ws://127.0.0.1:5190/voice/ws");
+    expect(callbacks.onState.mock.calls.flat().join(" ")).not.toContain("private-binding-id");
+
+    socket.onmessage?.({ data: JSON.stringify({
+      type: "bridge_error", stage: "upstream_websocket_connect", code: "upstream_http_401",
+    }) });
+    await expect(opening).rejects.toThrow("讲解员服务连接（upstream_http_401）");
+    expect(callbacks.onState).toHaveBeenLastCalledWith(
+      "error", "语音连接失败：讲解员服务连接（upstream_http_401）",
+    );
+    client.disconnect();
+  });
+
+  it("区分升级超时与桥接就绪超时并报告标准关闭码", async () => {
+    vi.useFakeTimers();
+    const { playback, callbacks } = fixture();
+    const client = new VoiceClient(
+      playback as unknown as PlaybackQueue,
+      callbacks,
+      "ws://127.0.0.1:8782/voice/ws",
+      "local-binding",
+    );
+    const opening = client.connect();
+    const socket = FakeSocket.sockets[0];
+    const rejected = expect(opening).rejects.toThrow("浏览器WebSocket代理（closed_1006）");
+    socket.onclose?.({ code: 1006 });
+    await rejected;
+
+    const secondOpening = client.connect();
+    const secondSocket = FakeSocket.sockets[1];
+    secondSocket.onopen?.();
+    const timeout = expect(secondOpening).rejects.toThrow("本机语音桥就绪（ready_timeout）");
+    await vi.advanceTimersByTimeAsync(30000);
+    await timeout;
+  });
+
   it("只有ready才表示已连接，发送20ms音频且不发送设备凭据", async () => {
     const { client, callbacks } = fixture();
     const opening = client.connect();
     const socket = FakeSocket.sockets[0];
-    expect(callbacks.onState).toHaveBeenLastCalledWith("connecting");
+    expect(callbacks.onState).toHaveBeenLastCalledWith(
+      "connecting", "正在连接本机语音桥：ws://127.0.0.1:8782/voice/ws",
+    );
     socket.onmessage?.({ data: JSON.stringify({ type: "ready" }) });
     await opening;
     client.startListening();

@@ -31,6 +31,29 @@ interface FixedNarration {
   timer: ReturnType<typeof setTimeout>;
 }
 
+const BRIDGE_STAGE_LABELS: Record<string, string> = {
+  browser_websocket_upgrade: "浏览器到本机语音桥",
+  browser_bind_message: "展台语音绑定",
+  game_begin: "展厅语音授权",
+  audio_codec_initialize: "音频编解码初始化",
+  upstream_websocket_connect: "讲解员服务连接",
+  upstream_hello_send: "讲解员设备握手发送",
+  upstream_hello_wait: "讲解员设备握手响应",
+  browser_ready: "通知网页语音已就绪",
+  active_voice_session: "语音会话",
+};
+
+function bridgeFailureMessage(stage: unknown, code: unknown): string {
+  const safeStage = typeof stage === "string"
+    && Object.prototype.hasOwnProperty.call(BRIDGE_STAGE_LABELS, stage)
+    ? BRIDGE_STAGE_LABELS[stage]
+    : "本机语音桥";
+  const safeCode = typeof code === "string" && /^[a-z0-9_]{1,48}$/.test(code)
+    ? code
+    : "bridge_error";
+  return `语音连接失败：${safeStage}（${safeCode}）`;
+}
+
 /** Device secrets stay in the local bridge. Every socket has its own local generation. */
 export class VoiceClient {
   private socket: WebSocket | null = null;
@@ -71,25 +94,54 @@ export class VoiceClient {
     this.turnEnded = turnEnded;
     const connection = this.connection;
     const epoch = this.playback.epoch;
-    this.callbacks.onState("connecting");
+    const endpointUrl = new URL(this.endpoint);
+    const safeEndpoint = `${endpointUrl.protocol}//127.0.0.1${endpointUrl.port ? `:${endpointUrl.port}` : ""}${endpointUrl.pathname}`;
+    this.callbacks.onState("connecting", `正在连接本机语音桥：${safeEndpoint}`);
     const socket = new WebSocket(this.endpoint);
     socket.binaryType = "arraybuffer";
     this.socket = socket;
+    let upgraded = false;
+    let stage: "websocket_upgrade" | "browser_bind_message" | "bridge_ready" = "websocket_upgrade";
     socket.onopen = () => {
+      if (connection !== this.connection) return;
+      upgraded = true;
+      stage = "browser_bind_message";
+      this.callbacks.onState("connecting", "本机WebSocket已升级，正在发送展台绑定");
       if (this.bindingId && connection === this.connection) {
         socket.send(JSON.stringify({ op: "bind", binding_id: this.bindingId }));
+        stage = "bridge_ready";
+        this.callbacks.onState("connecting", "展台绑定已发送，正在等待讲解员就绪");
       }
     };
     return new Promise((resolve, reject) => {
       let settled = false;
-      const fail = () => {
-        if (!settled) { settled = true; reject(new Error("本机语音连接未完成")); }
+      const fail = (error: Error) => {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timer);
+          reject(error);
+        }
       };
-      const timer = setTimeout(() => { fail(); this.disconnect(); }, 30000);
+      const timer = setTimeout(() => {
+        const message = stage === "websocket_upgrade"
+          ? "语音连接失败：浏览器WebSocket代理（upgrade_timeout）"
+          : stage === "browser_bind_message"
+            ? "语音连接失败：展台绑定消息（bind_send_timeout）"
+            : "语音连接失败：本机语音桥就绪（ready_timeout）";
+        fail(new Error(message));
+        this.disconnect();
+      }, 30000);
       socket.onmessage = (event: MessageEvent<string | ArrayBuffer>) => {
         if (connection !== this.connection) return;
         if (typeof event.data === "string") {
-          let data: { type?: string; state?: string; text?: string; result?: VoiceControlResult };
+          let data: {
+            type?: string;
+            state?: string;
+            text?: string;
+            result?: VoiceControlResult;
+            stage?: unknown;
+            code?: unknown;
+          };
           try { data = JSON.parse(event.data); } catch { return; }
           if (data.type === "ready") {
             this.ready = true;
@@ -100,7 +152,9 @@ export class VoiceClient {
           } else if (data.type === "control" && data.result) {
             this.callbacks.onControl?.(data.result);
           } else if (data.type === "bridge_error") {
-            fail(); this.callbacks.onState("error", "语音连接中止，请检查固定设备配置");
+            const message = bridgeFailureMessage(data.stage, data.code);
+            fail(new Error(message));
+            this.callbacks.onState("error", message);
           } else if (data.type === "tts") {
             const fixed = this.fixedNarration;
             if (fixed && fixed.epoch === epoch) {
@@ -141,9 +195,12 @@ export class VoiceClient {
           if (accepted && this.fixedNarration?.epoch === epoch) this.fixedNarration.audioFrames += 1;
         }
       };
-      socket.onclose = () => {
-        clearTimeout(timer); fail();
+      socket.onclose = (event) => {
+        fail(new Error(upgraded
+          ? `语音连接失败：本机语音桥（closed_${event?.code ?? 1006}）`
+          : `语音连接失败：浏览器WebSocket代理（closed_${event?.code ?? 1006}）`));
         if (connection !== this.connection) return;
+        this.socket = null;
         this.ready = false;
         this.listening = false;
         this.clearProviderSpeechWaiters();
@@ -153,7 +210,11 @@ export class VoiceClient {
         this.playback.stop();
         this.callbacks.onState("disconnected");
       };
-      socket.onerror = () => { clearTimeout(timer); fail(); };
+      socket.onerror = () => {
+        fail(new Error(upgraded
+          ? "语音连接失败：本机语音桥（socket_error）"
+          : "语音连接失败：浏览器WebSocket代理（upgrade_error）"));
+      };
     });
   }
 
