@@ -7,6 +7,7 @@ import { acquireSessionNarration, attachSessionNarrationTransport } from "../nar
 import { PlaybackQueue } from "./PlaybackQueue";
 import { VoiceClient } from "./VoiceClient";
 import type { VoiceControlResult } from "./VoiceClient";
+import { resolveLocalVoiceBridgeUrl } from "./localVoiceBridgeUrl";
 
 export interface GameVoiceHooks {
   onStatus(message: string): void;
@@ -40,10 +41,11 @@ export class GameVoiceController {
 
   async initialize(): Promise<void> {
     this.disposed = false;
+    const bridgeUrl = resolveLocalVoiceBridgeUrl(this.bridgeUrl, window.location.origin);
     this.audio = new AudioContext();
     await this.audio.resume();
     this.hooks.onStatus("正在连接当前展台语音");
-    const entryResponse = await fetch(`${this.bridgeUrl}/voice/entry`, { signal: AbortSignal.timeout(8000) });
+    const entryResponse = await fetch(`${bridgeUrl}/voice/entry`, { signal: AbortSignal.timeout(8000) });
     if (!entryResponse.ok) throw new Error("无法读取本机展台语音入口配置");
     const entry = await entryResponse.json() as {
       service?: string;
@@ -61,7 +63,7 @@ export class GameVoiceController {
       throw new Error(`当前页面来源与语音桥不匹配，可用展台入口：${allowedOrigins.join("、")}`);
     }
     if (entry.device_configured !== true) throw new Error("本机小智设备尚未配置，无法开启语音讲述");
-    const response = await fetch(`${this.bridgeUrl}/voice/bind`, {
+    const response = await fetch(`${bridgeUrl}/voice/bind`, {
       method: "POST", headers: { "Content-Type": "application/json" },
       signal: AbortSignal.timeout(8000),
       body: JSON.stringify({ base_url: this.gameUrl, session_id: this.session.session_id,
@@ -83,7 +85,7 @@ export class GameVoiceController {
     }
     const result = await response.json() as { binding_id: string };
     if (this.disposed) return;
-    const healthResponse = await fetch(`${this.bridgeUrl}/voice/status`, { signal: AbortSignal.timeout(8000) });
+    const healthResponse = await fetch(`${bridgeUrl}/voice/status`, { signal: AbortSignal.timeout(8000) });
     if (!healthResponse.ok) throw new Error("本机语音桥拒绝当前网页来源，请从配置的唯一展台入口打开");
     const health = await healthResponse.json() as { service?: string; device_configured?: boolean };
     if (health.service !== "museum-voice" || health.device_configured !== true) {
@@ -107,7 +109,7 @@ export class GameVoiceController {
       onControl: (control) => { void this.control(control).catch((error: unknown) => {
         if (!this.disposed) this.hooks.onStatus(error instanceof Error ? error.message : "语音操作失败");
       }); },
-    }, `${this.bridgeUrl.replace(/^http/, "ws")}/voice/ws`, result.binding_id);
+    }, `${bridgeUrl.replace(/^http/, "ws")}/voice/ws`, result.binding_id);
     this.detachNarration = attachSessionNarrationTransport(this.session.session_id, {
       narrate: (prompt, expected, signal, onStarted) => this.voice
         ? this.voice.speakFixedText(prompt, expected, signal, onStarted)
