@@ -1,5 +1,5 @@
 import {
-  CanvasTexture, Color, DoubleSide, MeshPhysicalMaterial, MeshStandardMaterial,
+  CanvasTexture, Color, MeshPhysicalMaterial, MeshStandardMaterial,
   SRGBColorSpace,
 } from "three";
 
@@ -26,17 +26,18 @@ function stoneTexture(): CanvasTexture {
   return texture;
 }
 
-/** Only the low plinth and fine case edges use these materials; no structural hall is built. */
+/** Warm carved stone, aged bronze and low-tint museum glass. */
 export function createGalleryMaterials() {
   const stoneMap = stoneTexture();
   const stone = new MeshStandardMaterial({
-    color: new Color("#c3b49a"), map: stoneMap, roughness: 0.84,
+    color: new Color("#776a58"), map: stoneMap, roughness: 0.88,
   });
-  const bronze = new MeshStandardMaterial({ color: "#c4a06b", metalness: 0.58, roughness: 0.4 });
+  const bronze = new MeshStandardMaterial({ color: "#c58d46", metalness: 0.66, roughness: 0.34 });
   const glass = new MeshPhysicalMaterial({
-    color: "#e1e8ef", metalness: 0, roughness: 0.12,
-    transparent: true, opacity: 0.035, depthWrite: false, side: DoubleSide,
-    envMapIntensity: 0.28, clearcoat: 0.5, clearcoatRoughness: 0.18,
+    color: "#c3d7d4", metalness: 0.04, roughness: 0.1,
+    transmission: 0.82, thickness: 0.018, ior: 1.42,
+    transparent: true, opacity: 0.2, depthWrite: false,
+    envMapIntensity: 0.95,
   });
   return { stone, bronze, glass };
 }

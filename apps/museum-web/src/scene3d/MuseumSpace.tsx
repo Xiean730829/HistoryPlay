@@ -16,7 +16,7 @@ export function MuseumSpace({ artifacts, session, onSelect, onObserve, onRender,
   const world = useRef<MuseumWorld | null>(null);
   const callbacks = useRef({ onSelect, onObserve, onRender }); callbacks.current = { onSelect, onObserve, onRender };
   const [loaded, setLoaded] = useState(0);
-  const [environment, setEnvironment] = useState<GalleryEnvironment>("ruins");
+  const environment: GalleryEnvironment = "stars";
   const [error, setError] = useState("");
   const [picked, setPicked] = useState<string | null>(null);
   const [pickNotice, setPickNotice] = useState("");
@@ -45,12 +45,7 @@ export function MuseumSpace({ artifacts, session, onSelect, onObserve, onRender,
   return <section className={`museum-space museum-space--${environment}`} aria-label="大唐三维文物展廊" data-renderer="three-webgl" data-models-loaded={loaded} data-last-picked={picked ?? ""}>
     <div className="museum-space-background" aria-hidden="true" />
     <div className="museum-webgl" ref={host} />
-    <div className="museum-space-brand"><span>时空博物馆</span><h2>大唐 · 星河寻珍</h2><p>618 — 907</p></div>
-    <nav className="museum-environment-switch" aria-label="展厅远景氛围">
-      <span>远景</span>
-      <button type="button" aria-pressed={environment === "ruins"} onClick={() => setEnvironment("ruins")}>遗迹</button>
-      <button type="button" aria-pressed={environment === "stars"} onClick={() => setEnvironment("stars")}>星空</button>
-    </nav>
+    <div className="museum-space-brand"><span>时空博物馆</span><h2>大唐 · 星河寻珍</h2><p>沿阶拾级 · 618 — 907</p></div>
     {focused && !inspection && <div className="museum-focused-artifact" aria-live="polite" aria-label="当前文物">
       <span>当前展品</span><strong>{focused.title}</strong><span>{focusedEra}</span>
     </div>}

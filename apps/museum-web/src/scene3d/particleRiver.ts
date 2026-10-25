@@ -1,91 +1,124 @@
 import {
-  AdditiveBlending, BufferAttribute, BufferGeometry, Color, Group, Points,
-  PointsMaterial,
+  AdditiveBlending, BufferAttribute, BufferGeometry, DoubleSide, Group, Mesh, MeshBasicMaterial,
+  Points, PointsMaterial, Texture, TextureLoader, Vector3,
+  RepeatWrapping, SRGBColorSpace,
 } from "three";
+import { riverBankNormalAt, riverPointAt } from "./riverPath";
 
-export type GalleryEnvironment = "ruins" | "stars";
+export type GalleryEnvironment = "stars";
+const STAR_RIVER_TEXTURE = "/gallery-environments/stars-deep-indigo-v1.png";
+const RIVER_START = -12;
+const RIVER_END = 145;
+const RIVER_SAMPLES = 240;
 
-const PALETTES: Record<GalleryEnvironment, readonly string[]> = {
-  stars: ["#f2f5ff", "#c9d1ff", "#a9a3ee", "#dcb4ee", "#f5d5ae", "#788bbd"],
-  ruins: ["#ffe5ab", "#f4c36f", "#df9b54", "#f6d782", "#ca805c", "#fff0c9"],
-};
+export function createRibbonGeometry(width: number, samples = RIVER_SAMPLES): BufferGeometry {
+  const geometry = new BufferGeometry();
+  const positions = new Float32Array((samples + 1) * 2 * 3);
+  const uvs = new Float32Array((samples + 1) * 2 * 2);
+  const indices: number[] = [];
+  for (let row = 0; row <= samples; row += 1) {
+    const t = row / samples;
+    const distance = RIVER_START + t * (RIVER_END - RIVER_START);
+    const center = riverPointAt(distance);
+    const bank = riverBankNormalAt(distance);
+    const taper = 0.42 + 0.58 * (1 - t);
+    for (let edge = 0; edge < 2; edge += 1) {
+      const side = edge === 0 ? -1 : 1;
+      const offset = side * width * taper / 2;
+      const vertex = row * 2 + edge;
+      positions[vertex * 3] = center.x + bank.x * offset;
+      positions[vertex * 3 + 1] = 0.025;
+      positions[vertex * 3 + 2] = center.z + bank.z * offset;
+      uvs[vertex * 2] = t * (RIVER_END - RIVER_START) / 15;
+      uvs[vertex * 2 + 1] = edge;
+    }
+    if (row < samples) {
+      const a = row * 2;
+      indices.push(a, a + 2, a + 1, a + 1, a + 2, a + 3);
+    }
+  }
+  geometry.setAttribute("position", new BufferAttribute(positions, 3));
+  geometry.setAttribute("uv", new BufferAttribute(uvs, 2));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
+}
 
-/** Stable 3D particles form a near-wide, far-narrow route. Only their light gently breathes. */
+function ribbon(geometry: BufferGeometry, color: string, opacity: number, map?: Texture): Mesh {
+  const material = new MeshBasicMaterial({
+    color, map, transparent: true, opacity, depthWrite: false,
+    blending: AdditiveBlending, toneMapped: false, side: DoubleSide,
+  });
+  const mesh = new Mesh(geometry, material);
+  mesh.name = map ? "clean-galaxy-photo-ribbon" : `galaxy-light-layer-${color.slice(1)}`;
+  mesh.raycast = () => undefined;
+  return mesh;
+}
+
+/** Image-textured light ribbon follows the same S-curve as exhibit placement and the visitor camera. */
 export class ParticleRiver {
   readonly group = new Group();
-  private readonly geometry = new BufferGeometry();
-  private readonly material = new PointsMaterial({
-    color: "#ffffff", size: 0.055, sizeAttenuation: true, vertexColors: true,
-    transparent: true, opacity: 0.66, depthWrite: false, depthTest: true,
-    blending: AdditiveBlending, toneMapped: false,
+  private readonly texture: Texture;
+  private readonly baseGeometry: BufferGeometry;
+  private readonly garnishGeometry = new BufferGeometry();
+  private readonly garnishMaterial = new PointsMaterial({
+    color: "#d7d9ff", size: 0.036, sizeAttenuation: true, transparent: true,
+    opacity: 0.52, depthWrite: false, blending: AdditiveBlending, toneMapped: false,
   });
   private readonly points: Points<BufferGeometry, PointsMaterial>;
-  private readonly hues: number[] = [];
-  private mode: GalleryEnvironment;
   private disposed = false;
 
-  constructor(mode: GalleryEnvironment = "ruins") {
-    this.mode = mode;
-    const count = 4200;
-    const positions = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-    let seed = 735021;
-    const random = () => {
-      seed = (seed * 1664525 + 1013904223) >>> 0;
-      return seed / 0x1_0000_0000;
-    };
-
-    for (let index = 0; index < count; index += 1) {
-      const depth = random();
-      const z = 14 - depth * 108;
-      const width = 0.12 + 6.1 * Math.pow(1 - depth, 1.22);
-      // A triangular distribution gives the river a bright core and feathered banks.
-      const cross = random() + random() - 1;
-      const x = cross * width;
-      const y = 0.035 + Math.pow(random(), 3) * (0.12 + width * 0.04);
-      positions[index * 3] = x;
-      positions[index * 3 + 1] = y;
-      positions[index * 3 + 2] = z;
-      this.hues.push(random());
-    }
-
-    this.geometry.setAttribute("position", new BufferAttribute(positions, 3));
-    this.geometry.setAttribute("color", new BufferAttribute(colors, 3));
-    this.recolor();
-    this.points = new Points(this.geometry, this.material);
-    this.points.name = "stable-galaxy-river-particles";
-    this.points.renderOrder = 1;
+  constructor() {
+    this.group.name = "textured-galaxy-river";
+    this.texture = new TextureLoader().load(STAR_RIVER_TEXTURE);
+    this.texture.colorSpace = SRGBColorSpace;
+    this.texture.wrapS = this.texture.wrapT = RepeatWrapping;
+    this.texture.repeat.set(1, 1);
+    this.texture.needsUpdate = true;
+    this.baseGeometry = createRibbonGeometry(4.8);
+    this.group.add(ribbon(this.baseGeometry, "#d7c6ff", 0.8, this.texture));
+    this.group.add(ribbon(createRibbonGeometry(2.15), "#7d82ff", 0.13));
+    this.group.add(ribbon(createRibbonGeometry(0.72), "#ffd58b", 0.12));
+    this.buildSparseTwinkles();
+    this.points = new Points(this.garnishGeometry, this.garnishMaterial);
+    this.points.name = "sparse-stable-galaxy-twinkles";
     this.points.raycast = () => undefined;
     this.group.add(this.points);
   }
 
-  setMode(mode: GalleryEnvironment): void {
-    if (this.disposed || this.mode === mode) return;
-    this.mode = mode;
-    this.recolor();
-  }
+  setMode(_mode: GalleryEnvironment): void {}
 
   update(timeMs: number): void {
-    if (!this.disposed) this.material.opacity = 0.64 + Math.sin(timeMs * 0.00045) * 0.025;
+    if (!this.disposed) this.garnishMaterial.opacity = 0.5 + Math.sin(timeMs * 0.00045) * 0.025;
   }
 
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
-    this.geometry.dispose();
-    this.material.dispose();
+    this.texture.dispose();
+    this.baseGeometry.dispose();
+    this.garnishGeometry.dispose();
+    this.group.traverse((object) => {
+      if (object instanceof Mesh && object.geometry !== this.baseGeometry) object.geometry.dispose();
+      if ((object as Mesh).material instanceof MeshBasicMaterial) ((object as Mesh).material as MeshBasicMaterial).dispose();
+    });
+    this.garnishMaterial.dispose();
     this.group.clear();
   }
 
-  private recolor(): void {
-    const attribute = this.geometry.getAttribute("color");
-    if (!(attribute instanceof BufferAttribute)) return;
-    const palette = PALETTES[this.mode].map((value) => new Color(value));
-    for (let index = 0; index < this.hues.length; index += 1) {
-      const hue = this.hues[index] ?? 0;
-      const color = palette[Math.min(palette.length - 1, Math.floor(hue * palette.length))]!;
-      attribute.setXYZ(index, color.r, color.g, color.b);
+  private buildSparseTwinkles(): void {
+    const count = 720;
+    const positions = new Float32Array(count * 3);
+    let seed = 735021;
+    const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 0x1_0000_0000; };
+    for (let index = 0; index < count; index += 1) {
+      const distance = RIVER_START + random() * (RIVER_END - RIVER_START);
+      const point = riverPointAt(distance);
+      const bank = riverBankNormalAt(distance);
+      const offset = (random() - 0.5) * 7.2;
+      const p = new Vector3(point.x + bank.x * offset, 0.08 + random() * 0.36, point.z + bank.z * offset);
+      positions.set(p.toArray(), index * 3);
     }
-    attribute.needsUpdate = true;
+    this.garnishGeometry.setAttribute("position", new BufferAttribute(positions, 3));
   }
 }

@@ -1,9 +1,23 @@
 import { describe, expect, it, vi } from "vitest";
 import { Box3, BoxGeometry, BufferGeometry, Group, Mesh, MeshStandardMaterial, Points, PointsMaterial, Texture, Vector3 } from "three";
-import { DISPLAY_CASE_BASE_Y, maintainSurfaceContact, nearbyModelIndices, RIVER_STATION_SPACING, seatModel, stationPlacement } from "./layout";
+import { LANDING_RISE, maintainSurfaceContact, nearbyModelIndices, RIVER_STATION_SPACING, seatModel,
+  STAIR_STEP_RISE, STAIR_STEPS_PER_FLIGHT, stairStepPlacement, stationPlacement } from "./layout";
+import { riverPointAt } from "./riverPath";
+import { createRibbonGeometry } from "./particleRiver";
 import { disposeTree } from "./resources";
 
-describe("particle-river exhibit placement", () => {
+describe("ascending stair exhibit placement", () => {
+  it("builds a textured center ribbon aligned with the curved central staircase", () => {
+    const geometry = createRibbonGeometry(4.8, 20);
+    const position = geometry.getAttribute("position");
+    expect(position.count).toBe(42);
+    const firstX = (position.getX(0) + position.getX(1)) / 2;
+    const middleX = (position.getX(20) + position.getX(21)) / 2;
+    const lastX = (position.getX(40) + position.getX(41)) / 2;
+    expect(firstX).not.toBeCloseTo(middleX);
+    expect(lastX).not.toBeCloseTo(middleX);
+    geometry.dispose();
+  });
   it("releases the particle geometry and material when the scene is disposed", () => {
     const geometry = new BufferGeometry(); const material = new PointsMaterial();
     const a = vi.spyOn(geometry, "dispose"); const b = vi.spyOn(material, "dispose");
@@ -12,16 +26,30 @@ describe("particle-river exhibit placement", () => {
     expect(a).toHaveBeenCalledTimes(1); expect(b).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps every exhibit at one world height and alternating beside the river", () => {
+  it("raises world-space walk, landing and plinth heights with alternating artifact stations", () => {
     for (let index = 0; index < 6; index += 1) {
       const current = stationPlacement(index);
-      expect(current.plinthTop).toBe(DISPLAY_CASE_BASE_Y);
+      expect(current.walkY).toBeCloseTo(index * LANDING_RISE);
+      expect(current.landingY).toBeCloseTo(current.walkY);
+      expect(current.plinthTop).toBeCloseTo(current.landingY + 0.18);
       if (index > 0) {
         const previous = stationPlacement(index - 1);
-        expect(previous.x * current.x).toBeLessThan(0);
-        expect(previous.z - current.z).toBeCloseTo(RIVER_STATION_SPACING);
+        expect(previous.side).toBe(-current.side);
+        expect(current.distance - previous.distance).toBeCloseTo(RIVER_STATION_SPACING);
+        expect(current.landingY - previous.landingY).toBeCloseTo(LANDING_RISE);
       }
+      const center = riverPointAt(current.distance);
+      expect(Math.hypot(current.x - center.x, current.z - center.z)).toBeCloseTo(4.1);
     }
+  });
+
+  it("uses one tread placement contract for the built stair and the rising visitor path", () => {
+    const first = stairStepPlacement(0, 0);
+    const last = stairStepPlacement(0, STAIR_STEPS_PER_FLIGHT - 1);
+    expect(first.height).toBeCloseTo(STAIR_STEP_RISE);
+    expect(first.topY).toBeCloseTo(STAIR_STEP_RISE);
+    expect(last.topY).toBeCloseTo(LANDING_RISE);
+    expect(last.distance + last.treadDepth).toBeCloseTo(RIVER_STATION_SPACING);
   });
 
   it("keeps tilted true models resting on the thin pedestal", () => {
