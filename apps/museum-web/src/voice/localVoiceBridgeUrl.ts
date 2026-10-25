@@ -1,4 +1,4 @@
-const DEFAULT_LOCAL_VOICE_BRIDGE = "http://127.0.0.1:8782";
+const DEFAULT_LOCAL_VOICE_BRIDGE = "http://127.0.0.1:8784";
 
 export function resolveLocalVoiceBridgeUrl(
   configuredUrl: string | undefined,
