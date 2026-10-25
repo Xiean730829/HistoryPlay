@@ -20,10 +20,11 @@ export function MuseumSpace({ artifacts, session, onSelect, onObserve, onRender,
   const [error, setError] = useState("");
   const [picked, setPicked] = useState<string | null>(null);
   const [pickNotice, setPickNotice] = useState("");
+  const [previewArtifacts, setPreviewArtifacts] = useState<Set<string>>(() => new Set());
   const key = artifacts.map((item) => `${item.id}:${item.presentation?.display?.asset_id}`).join("|");
   useEffect(() => {
     if (!host.current || !artifacts.length) return;
-    setLoaded(0); setError("");
+    setLoaded(0); setError(""); setPreviewArtifacts(new Set());
     try {
       const current = new MuseumWorld(host.current, artifacts, session, {
         onSelect: (id) => callbacks.current.onSelect(id),
@@ -31,6 +32,11 @@ export function MuseumSpace({ artifacts, session, onSelect, onObserve, onRender,
         onPick: (id) => { setPicked(id); setPickNotice(id ? `正在走近${artifacts.find((item) => item.id === id)?.title ?? "文物"}…` : "请点击河畔展台或文物"); },
         onRender: (status, reason) => callbacks.current.onRender(status, reason),
         onLoaded: setLoaded,
+        onPreview: (id, visible) => setPreviewArtifacts((current) => {
+          const next = new Set(current);
+          if (visible) next.add(id); else next.delete(id);
+          return next;
+        }),
       });
       world.current = current; current.update(session, inspection);
       return () => { current.dispose(); if (world.current === current) world.current = null; };
@@ -49,8 +55,10 @@ export function MuseumSpace({ artifacts, session, onSelect, onObserve, onRender,
     {focused && !inspection && <div className="museum-focused-artifact" aria-live="polite" aria-label="当前文物">
       <span>当前展品</span><strong>{focused.title}</strong><span>{focusedEra}</span>
     </div>}
-    <div className="museum-space-guide">{error || pickNotice || (loaded < Math.min(3, artifacts.length)
-      ? `真实文物正在入馆 ${loaded} / ${Math.min(3, artifacts.length)}`
-      : inspection ? "拖动旋转文物 · 选择路线继续故事" : "点击河畔文物，走近它的时代")}</div>
+    <div className="museum-space-guide">{error || pickNotice || (previewArtifacts.size > 0
+      ? `当前 ${previewArtifacts.size} 件显示馆藏真实预览；三维模型仍在载入或暂不可用`
+      : loaded < Math.min(3, artifacts.length)
+        ? `真实文物正在入馆 ${loaded} / ${Math.min(3, artifacts.length)}`
+        : inspection ? "拖动旋转文物 · 选择路线继续故事" : "点击河畔文物，走近它的时代")}</div>
   </section>;
 }

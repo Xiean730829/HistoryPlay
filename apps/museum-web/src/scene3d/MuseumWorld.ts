@@ -1,7 +1,7 @@
 import {
-  ACESFilmicToneMapping, Box3, Group, Mesh, MeshStandardMaterial,
+  ACESFilmicToneMapping, Box3, DoubleSide, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry,
   PCFShadowMap, PerspectiveCamera, Raycaster, Scene, Vector2, Vector3, WebGLRenderer,
-  PMREMGenerator, BoxGeometry, MeshBasicMaterial, type WebGLRenderTarget,
+  PMREMGenerator, BoxGeometry, SRGBColorSpace, Texture, type WebGLRenderTarget,
 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
@@ -15,13 +15,18 @@ import { disposeTree } from "./resources";
 import { pickArtifact } from "./picking";
 import { galleryVisualTheme } from "./visualTheme";
 import { ParticleRiver, type GalleryEnvironment } from "./particleRiver";
+import { loadPreviewTexture } from "./previewTexture";
 
-interface Exhibit { root: Group; spin: Group; loaded: boolean; loading: boolean; controller: AbortController; lease?: AssetLease }
+interface Exhibit {
+  root: Group; spin: Group; loaded: boolean; loading: boolean; controller: AbortController;
+  lease?: AssetLease; preview?: Group; previewLease?: AssetLease; previewVisible: boolean;
+}
 interface WorldHooks {
   onSelect(id: string): void;
   onObserve(yaw: number, pitch: number, zoom: number): void;
   onPick(id: string | null): void;
   onLoaded(count: number): void;
+  onPreview(artifactId: string, visible: boolean): void;
   onRender(status: "rendered" | "degraded", reason?: string): void;
 }
 
@@ -103,7 +108,9 @@ export class MuseumWorld {
     root.rotation.y = stationFacingYaw(index);
     root.userData.artifactId = artifact.id;
     const spin = new Group(); root.add(spin); this.scene.add(root);
-    const entry: Exhibit = { root, spin, loaded: false, loading: false, controller: new AbortController() };
+    const entry: Exhibit = {
+      root, spin, loaded: false, loading: false, controller: new AbortController(), previewVisible: false,
+    };
     this.exhibits.set(artifact.id, entry);
     // A case-sized target catches the coin hole and the supporting plinth as one exhibit.
     const pickVolume = new Mesh(new BoxGeometry(2.5, 2.5, 2.15), new MeshBasicMaterial({ visible: false }));
@@ -116,6 +123,11 @@ export class MuseumWorld {
     if (!assetId || artifact.presentation?.display?.kind !== "model3d") return;
     const controller = entry.controller; entry.loading = true;
     try {
+      // Keep an authored, true-object preview in the glass case while the 3D
+      // display model downloads and decodes. If GLTF fails, the exhibit never
+      // becomes an empty case and the UI explicitly identifies it as a preview.
+      await this.showPreview(artifact, entry, controller);
+      if (this.disposed || controller.signal.aborted || entry.controller !== controller) return;
       const lease = await galleryAssets.acquire(this.latest, assetId, "model", controller.signal);
       if (this.disposed || controller.signal.aborted || entry.controller !== controller) { lease.release(); return; }
       entry.lease = lease;
@@ -134,13 +146,59 @@ export class MuseumWorld {
       });
       const seated = seatModel(model, preset === "inscription-face" ? 1.3 : 1.75, 1.9);
       entry.spin.add(seated); entry.loaded = true;
+      this.removePreview(artifact.id, entry);
       this.hooks.onLoaded([...this.exhibits.values()].filter((item) => item.loaded).length);
-    } catch {
+    } catch (cause) {
       if (!this.disposed && !controller.signal.aborted && entry.controller === controller) {
-        this.hooks.onRender("degraded", "三维文物加载失败，当前展台为空，未用图片冒充模型");
+        this.hooks.onRender("degraded", `展品 ${artifact.id} 的三维资产 ${assetId} 载入失败（${safeModelFailure(cause)}）；`
+          + (entry.previewVisible ? "展位当前显示馆藏真实预览图" : "馆藏预览也未能载入"));
       }
     } finally {
       if (entry.controller === controller) entry.loading = false;
+    }
+  }
+
+  private async showPreview(artifact: ArtifactProjection, entry: Exhibit, controller: AbortController): Promise<void> {
+    const assetId = artifact.presentation?.preview_asset_id;
+    if (!assetId) return;
+    let lease: AssetLease | null = null;
+    let texture: Texture | null = null;
+    try {
+      lease = await galleryAssets.acquire(this.latest, assetId, "preview", controller.signal);
+      texture = await loadPreviewTexture(lease.url, controller.signal);
+      if (this.disposed || controller.signal.aborted || entry.controller !== controller) {
+        texture.dispose(); lease.release(); return;
+      }
+      texture.colorSpace = SRGBColorSpace;
+      const material = new MeshBasicMaterial({
+        map: texture, transparent: true, depthWrite: false, side: DoubleSide, toneMapped: false,
+      });
+      const image = new Mesh(new PlaneGeometry(1.8, 1.8), material);
+      image.name = `authored-preview:${artifact.id}`;
+      image.position.z = 0.04;
+      image.renderOrder = 2;
+      image.raycast = () => undefined;
+      const preview = new Group(); preview.name = `authored-preview:${artifact.id}`; preview.add(image);
+      entry.spin.add(preview);
+      entry.preview = preview;
+      entry.previewLease = lease;
+      entry.previewVisible = true;
+      this.hooks.onPreview(artifact.id, true);
+      lease = null;
+      texture = null;
+    } catch {
+      texture?.dispose();
+      lease?.release();
+      // Preview failure must not prevent the real GLB from loading.
+    }
+  }
+
+  private removePreview(artifactId: string, entry: Exhibit): void {
+    if (entry.preview) { entry.spin.remove(entry.preview); disposeTree(entry.preview); entry.preview = undefined; }
+    entry.previewLease?.release(); entry.previewLease = undefined;
+    if (entry.previewVisible) {
+      entry.previewVisible = false;
+      this.hooks.onPreview(artifactId, false);
     }
   }
 
@@ -156,8 +214,9 @@ export class MuseumWorld {
       const entry = this.exhibits.get(artifact.id)!;
       if (near.has(itemIndex)) {
         if (!entry.loaded && !entry.loading) void this.loadModel(artifact, entry);
-      } else if (entry.loaded || entry.loading) {
+      } else if (entry.loaded || entry.loading || entry.preview) {
         entry.controller.abort(); entry.lease?.release(); entry.lease = undefined;
+        this.removePreview(artifact.id, entry);
         disposeTree(entry.spin); entry.loaded = false; entry.loading = false;
         entry.controller = new AbortController();
       }
@@ -262,8 +321,18 @@ export class MuseumWorld {
     this.renderer.domElement.removeEventListener("pointercancel", this.pointerCancel);
     this.renderer.domElement.removeEventListener("wheel", this.wheel);
     if (this.wheelTimer) clearTimeout(this.wheelTimer);
-    this.exhibits.forEach((entry) => { entry.controller.abort(); entry.lease?.release(); });
+    this.exhibits.forEach((entry) => { entry.controller.abort(); entry.lease?.release(); entry.previewLease?.release(); });
     this.river.dispose(); disposeTree(this.scene); this.environment.dispose(); this.renderer.dispose(); this.renderer.forceContextLoss();
     this.renderer.domElement.remove();
   }
+}
+
+function safeModelFailure(cause: unknown): string {
+  if (!(cause instanceof Error)) return "未知错误";
+  const status = /展示资产返回 (\d{3})/.exec(cause.message)?.[1];
+  if (status) return `HTTP ${status}`;
+  return `${cause.name}: ${cause.message
+    .replace(/blob:[^\s)]+/gi, "[object-url]")
+    .replace(/https?:\/\/[^\s)]+/gi, "[url]")
+    .slice(0, 100)}`;
 }
