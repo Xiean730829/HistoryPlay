@@ -4,7 +4,7 @@ import { isMuseumEntryConsent } from "./entryConsent";
 describe("museum entrance consent", () => {
   it.each([
     "可以", "好啊！", "带我进去吧", "开始参观。", "嗯，可以带我进去",
-    "带我进入博物馆", "带我去博物馆", "我想进去", "进去吧", "我想去展厅", "请带我走进展馆",
+    "带我进入博物馆", "带我去博物馆", "我想进去", "进去吧", "我想去展厅", "请带我走进展馆", "请带我进入博物馆",
   ])("accepts %s", (text) => {
     expect(isMuseumEntryConsent(text)).toBe(true);
   });

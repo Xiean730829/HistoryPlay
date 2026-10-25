@@ -3,7 +3,7 @@ const AFFIRMATIVE_ENTRY_RESPONSES = new Set([
 ]);
 
 const NEGATED_ENTRY_INTENT = /(?:不|别|先别|暂时不)(?:要|想|愿意|需要|准备|打算|可以)?(?:我|带我|带你|让我)?(?:走进|进入|进去|进馆|参观|进|去)/u;
-const CLEAR_ENTRY_INTENT = /(?:带我(?:走进|进入|进去|进|去)(?:博物馆|展厅|展馆|大厅|里面)?|(?:我)?(?:想|要|愿意)?(?:走进|进入|进去|进馆|去博物馆|去展厅|去展馆|参观)(?:吧|呀)?|进馆吧|进去吧)/u;
+const CLEAR_ENTRY_INTENT = /(?:(?:请)?带我(?:走进|进入|进去|进|去)(?:博物馆|展厅|展馆|大厅|里面)?|(?:我)?(?:想|要|愿意)?(?:走进|进入|进去|进馆|去博物馆|去展厅|去展馆|参观)(?:吧|呀)?|进馆吧|进去吧)/u;
 
 /** Only clear, affirmative visitor replies open the entrance; negations stay at the door. */
 export function isMuseumEntryConsent(transcript: string): boolean {
