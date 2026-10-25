@@ -23,6 +23,7 @@ import {
   type SessionCredentials,
   type SearchHit,
 } from "../application/museumApi";
+import { restoreOrDiscardExpiredSession } from "../application/sessionRecovery";
 import { EventChannel } from "../api/eventChannel";
 import { SessionProjectionStore } from "../state/sessionProjection";
 import { ExhibitList } from "./ExhibitList";
@@ -41,7 +42,11 @@ const DEFAULT_GALLERY_ID =
   import.meta.env.VITE_MUSEUM_GALLERY_ID?.trim() || "cn.tang.gallery.main";
 const SHOW_DIAGNOSTICS = new URLSearchParams(window.location.search).get("debug") === "1";
 type Health = { status: "ok"; service: string };
-type OpenedMuseum = { active: ActiveSession; receipt?: CommandReceipt };
+type OpenedMuseum = {
+  active: ActiveSession;
+  receipt?: CommandReceipt;
+  recoveredExpiredSession?: boolean;
+};
 
 export function MuseumShell() {
   const [health, setHealth] = React.useState<Health | null>(null);
@@ -166,11 +171,13 @@ export function MuseumShell() {
         setHealth(value);
         restoreTask.current ??= openDefaultSession();
         restoreTask.current
-          .then(({ active, receipt }) => {
+          .then(({ active, receipt, recoveredExpiredSession }) => {
             if (!current) return;
             setSession(active);
             setRenderCommand(receipt ?? null);
-            setNotice("已进入唐朝长廊。文物顺序与年代由当前发布版本和服务端状态决定。");
+            setNotice(recoveredExpiredSession
+              ? "检测到旧展厅会话已失效，已自动重新进入博物馆。"
+              : "已进入唐朝长廊。文物顺序与年代由当前发布版本和服务端状态决定。");
             setNoticeTone("success");
           })
           .catch((error: unknown) => {
@@ -196,7 +203,9 @@ export function MuseumShell() {
       setRenderCommand(receipt ?? null);
       setResults([]);
       setQuery("");
-      setNotice("已进入唐朝长廊。文物顺序与年代由当前发布版本和服务端状态决定。");
+      setNotice(opened.recoveredExpiredSession
+        ? "检测到旧展厅会话已失效，已自动重新进入博物馆。"
+        : "已进入唐朝长廊。文物顺序与年代由当前发布版本和服务端状态决定。");
       setNoticeTone("success");
     } catch (error) {
       showError(error, setNotice, setNoticeTone);
@@ -514,27 +523,42 @@ export function MuseumShell() {
   );
 }
 
-async function restoreSavedSession(): Promise<ActiveSession | null> {
+async function restoreSavedSession(): Promise<{
+  session: ActiveSession | null;
+  discardedExpiredCredential: boolean;
+}> {
   const saved = sessionStorage.getItem(SESSION_KEY);
-  if (!saved) return null;
+  if (!saved) return { session: null, discardedExpiredCredential: false };
   let credentials: SessionCredentials;
   try {
     credentials = JSON.parse(saved) as SessionCredentials;
     if (!credentials.session_id || !credentials.session_token) throw new Error("本地会话数据无效");
   } catch {
     sessionStorage.removeItem(SESSION_KEY);
-    return null;
+    return { session: null, discardedExpiredCredential: true };
   }
-  return restoreSession(credentials);
+  return restoreOrDiscardExpiredSession(
+    () => restoreSession(credentials),
+    () => sessionStorage.removeItem(SESSION_KEY),
+  );
 }
 
 async function openDefaultSession(): Promise<OpenedMuseum> {
   const restored = await restoreSavedSession();
-  if (restored) return ensureTangGallery(restored);
+  if (restored.session) {
+    return {
+      ...await ensureTangGallery(restored.session),
+      recoveredExpiredSession: restored.discardedExpiredCredential,
+    };
+  }
 
   const credentials = await createSession(DEFAULT_PACK_ID, DEFAULT_VERSION);
+  const active = await restoreSession(credentials);
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(credentials));
-  return ensureTangGallery(await restoreSession(credentials));
+  return {
+    ...await ensureTangGallery(active),
+    recoveredExpiredSession: restored.discardedExpiredCredential,
+  };
 }
 
 async function ensureTangGallery(session: ActiveSession): Promise<OpenedMuseum> {

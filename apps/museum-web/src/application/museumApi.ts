@@ -9,6 +9,23 @@ import { CommandDispatcher } from "../state/commandDispatcher";
 
 const commandDispatcher = new CommandDispatcher();
 
+export class ApiRequestError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "ApiRequestError";
+  }
+}
+
+export function isExpiredSessionCredentialError(error: unknown): error is ApiRequestError {
+  // The museum API reports invalid or revoked session bearer credentials as 401.
+  // A 403 can instead mean an origin or connection-binding failure and must not
+  // silently discard a still-valid browser session.
+  return error instanceof ApiRequestError && error.status === 401;
+}
+
 export interface SessionContext {
   session_id: string;
   revision: number;
@@ -447,7 +464,7 @@ async function request<T>(
     const detail = typeof body === "object" && body !== null && "message" in body
       ? String(body.message)
       : text || `服务返回 ${response.status}`;
-    throw new Error(detail);
+    throw new ApiRequestError(response.status, detail);
   }
   return body as T;
 }
