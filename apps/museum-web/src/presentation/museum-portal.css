@@ -6,7 +6,7 @@
   place-items: center;
   overflow: auto;
   color: #f5ead6;
-  background: #090807 url("/portal/museum-entrance.jpg") center / cover no-repeat;
+  background: #090807 url("/portal/museum-entrance.png") center / cover no-repeat;
 }
 
 .museum-entry-door::before {

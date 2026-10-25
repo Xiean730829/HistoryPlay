@@ -20,26 +20,64 @@ export class MicrophoneCapture {
   private worklet: AudioWorkletNode | null = null;
   private source: MediaStreamAudioSourceNode | null = null;
   private mute: GainNode | null = null;
+  private permissionStream: MediaStream | null = null;
   private readonly vad = new VadController();
   private lifecycle = 0;
 
   constructor(private readonly callbacks: CaptureCallbacks) {}
 
-  async start(): Promise<{ echoCancellation: boolean | null }> {
-    this.stop();
+  /** Request permission directly from the visitor's click, but don't capture
+   * audio until the voice bridge and welcome message are ready. */
+  async requestPermission(): Promise<void> {
     const lifecycle = this.lifecycle;
     if (!navigator.mediaDevices?.getUserMedia) throw new Error("当前浏览器不支持麦克风采集");
-    const context = new AudioContext();
+    if (this.permissionStream) return;
+    const context = this.context ?? new AudioContext();
+    this.context = context;
+    // Invoke getUserMedia before the first await so the browser sees the
+    // permission request as a direct result of the visitor's button click.
+    const permissionRequest = navigator.mediaDevices.getUserMedia({
+      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
+    });
+    try {
+      await context.resume();
+      const stream = await permissionRequest;
+      if (lifecycle !== this.lifecycle) {
+        stream.getTracks().forEach((track) => track.stop());
+        throw new Error("麦克风开启已取消");
+      }
+      stream.getAudioTracks().forEach((track) => { track.enabled = false; });
+      this.permissionStream = stream;
+    } catch (error) {
+      // If resume failed before the permission prompt settled, stop any stream
+      // that the browser may still return later.
+      void permissionRequest.then((stream) => {
+        if (this.permissionStream !== stream && this.stream !== stream) {
+          stream.getTracks().forEach((track) => track.stop());
+        }
+      }).catch(() => undefined);
+      if (lifecycle === this.lifecycle) await this.context?.close().catch(() => undefined);
+      if (lifecycle === this.lifecycle) this.context = null;
+      throw error;
+    }
+  }
+
+  async start(): Promise<{ echoCancellation: boolean | null }> {
+    const lifecycle = this.lifecycle;
+    if (!navigator.mediaDevices?.getUserMedia) throw new Error("当前浏览器不支持麦克风采集");
+    const context = this.context ?? new AudioContext();
     this.context = context;
     try {
       await context.resume();
-      const stream = await navigator.mediaDevices.getUserMedia({
+      const stream = this.permissionStream ?? await navigator.mediaDevices.getUserMedia({
         audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
       });
       if (lifecycle !== this.lifecycle) {
         stream.getTracks().forEach((track) => track.stop());
         throw new Error("麦克风开启已取消");
       }
+      this.permissionStream = null;
+      stream.getAudioTracks().forEach((track) => { track.enabled = true; });
       this.stream = stream;
       await context.audioWorklet.addModule(new URL("./capture-worklet.js", import.meta.url));
       if (lifecycle !== this.lifecycle) throw new Error("麦克风开启已取消");
@@ -79,11 +117,16 @@ export class MicrophoneCapture {
       track.onended = null;
       track.stop();
     }
+    for (const track of this.permissionStream?.getTracks() ?? []) {
+      track.onended = null;
+      track.stop();
+    }
     void this.context?.close().catch(() => undefined);
     this.worklet = null;
     this.source = null;
     this.mute = null;
     this.stream = null;
+    this.permissionStream = null;
     this.context = null;
     this.vad.reset();
   }
