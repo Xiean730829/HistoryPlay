@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "purpose": "10:50验收内容接入：独立本机路径映射，供集成者构建新联调包。不覆盖已有 published 版本，不进入运行时目录。",
+  "created_on": "2026-10-25",
+  "author_pack": "cn.tang.core@0.2.0",
+  "publication_status": "draft",
+  "do_not_overwrite_published": true,
+  "sources": {
+    "cn.tang.asset.votive-stele.story-01": "D:\\7\\History\\story-backgrounds\\v1\\votive-stele-01.png",
+    "cn.tang.asset.votive-stele.story-02": "D:\\7\\History\\story-backgrounds\\v1\\votive-stele-02.png",
+    "cn.tang.asset.kaiyuan-coin.story-01": "D:\\7\\History\\story-backgrounds\\v1\\kaiyuan-coin-01.png",
+    "cn.tang.asset.kaiyuan-coin.story-02": "D:\\7\\History\\story-backgrounds\\v1\\kaiyuan-coin-02.png",
+    "cn.tang.asset.gilt-bronze-bull.story-01": "D:\\7\\History\\story-backgrounds\\v1\\gilt-bronze-bull-01.png",
+    "cn.tang.asset.gilt-bronze-bull.story-02": "D:\\7\\History\\story-backgrounds\\v1\\gilt-bronze-bull-02.png",
+    "cn.tang.asset.votive-stele.preview": "D:\\7\\History\\previews\\votive-stele.png",
+    "cn.tang.asset.votive-stele.display": "D:\\7\\History\\display\\votive-stele\\display.glb",
+    "cn.tang.asset.kaiyuan-coin.preview": "D:\\7\\History\\previews\\kaiyuan-coin.png",
+    "cn.tang.asset.kaiyuan-coin.display": "D:\\7\\History\\display\\kaiyuan-coin\\display.glb",
+    "cn.tang.asset.gilt-bronze-bull.preview": "D:\\7\\History\\previews\\gilt-bronze-bull.png",
+    "cn.tang.asset.gilt-bronze-bull.display": "D:\\7\\History\\display\\gilt-bronze-bull\\display.glb"
+  }
+}

@@ -1,7 +1,11 @@
 id: cn.tang.node.gilt-bronze-bull.01
 story_id: cn.tang.story.gilt-bronze-bull
 fact_grade: F
-narration: 这件鎏金卧牛由克利夫兰艺术博物馆断代为八世纪。馆方还介绍它可能用作书案镇纸；这是馆方对用途的解释，并没有指明某一位具体使用者。
+presentation:
+  capability: comic
+  asset_ids:
+    - cn.tang.asset.gilt-bronze-bull.story-01
+narration: 这件鎏金卧牛由克利夫兰艺术博物馆断代为八世纪。馆方还介绍它可能用作书案镇纸；这是馆方对用途的解释，并没有指明某一位具体使用者。画面是创作的书案情境，书案上的卧牛是示意，不是馆藏1985.74的复制。
 allowed_actions:
   - continue_story
 exits:

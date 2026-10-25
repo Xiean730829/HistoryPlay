@@ -1,7 +1,11 @@
 id: cn.tang.node.kaiyuan-coin.02
 story_id: cn.tang.story.kaiyuan-coin
 fact_grade: F
-narration: 记住这两个时间指向不同对象：一个是馆藏实物的年代范围，一个是钱币类型开始铸造的时间。现在返回长廊。
+presentation:
+  capability: comic
+  asset_ids:
+    - cn.tang.asset.kaiyuan-coin.story-02
+narration: 记住这两个时间指向不同对象：一个是馆藏实物的年代范围，一个是钱币类型开始铸造的时间。铺面里穿钱的画面是创作情境，不证明这枚馆藏钱曾经这样被使用。现在返回长廊。
 allowed_actions:
   - return_to_exhibit
 exits:

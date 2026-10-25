@@ -132,6 +132,72 @@ def test_three_display_models_are_derived_and_not_source_lod() -> None:
         assert artifact["presentation"]["display"]["kind"] == "model3d"
 
 
+def test_three_stories_bind_dedicated_comic_frames_without_audio() -> None:
+    frames = (
+        (
+            "votive-stele",
+            "cn.tang.node.votive-stele.01",
+            "cn.tang.asset.votive-stele.story-01",
+            "4604992c82fb97ea9fff5ea2000bd2c1df9993192609a3158343889637ff3307",
+            5216895,
+            "创作的石作场景",
+        ),
+        (
+            "votive-stele",
+            "cn.tang.node.votive-stele.02",
+            "cn.tang.asset.votive-stele.story-02",
+            "299b7e0c751b4c15be41db486b7fdde7a41e9d9776932040a1ebea01ead8be23",
+            4770618,
+            "家庭是创作情境",
+        ),
+        (
+            "kaiyuan-coin",
+            "cn.tang.node.kaiyuan-coin.01",
+            "cn.tang.asset.kaiyuan-coin.story-01",
+            "921f92c9c29e1a6fcc92ca6cc7f920bdc56ba26b7f937af7dfe6c505e308d7cb",
+            5443891,
+            "创作的市集用钱场景",
+        ),
+        (
+            "kaiyuan-coin",
+            "cn.tang.node.kaiyuan-coin.02",
+            "cn.tang.asset.kaiyuan-coin.story-02",
+            "4687843f3bd491d0c1279ebe8856ce4cf36b4dd9cac32880070020de577c830d",
+            4884082,
+            "铺面里穿钱的画面是创作情境",
+        ),
+        (
+            "gilt-bronze-bull",
+            "cn.tang.node.gilt-bronze-bull.01",
+            "cn.tang.asset.gilt-bronze-bull.story-01",
+            "2c153f14bab08ccbad706535b5579b243fb6542c86e0e10d0215e506d0a99fd2",
+            4857083,
+            "创作的书案情境",
+        ),
+        (
+            "gilt-bronze-bull",
+            "cn.tang.node.gilt-bronze-bull.02",
+            "cn.tang.asset.gilt-bronze-bull.story-02",
+            "e24641d2af5e1834ca5524a49d9910dcae109b11c70e815521c84b226d5f3250",
+            4936100,
+            "压纸的动作是创作示意",
+        ),
+    )
+    for slug, node_id, asset_id, digest, size, invented in frames:
+        node = load_yaml(f"nodes/{slug}-{node_id.rsplit('.', 1)[-1]}.yaml")
+        asset = load_yaml(f"assets/{slug}.story-{node_id.rsplit('.', 1)[-1]}.yaml")
+        assert node["id"] == node_id
+        assert node["presentation"]["capability"] == "comic"
+        assert node["presentation"]["asset_ids"] == [asset_id]
+        assert "audio_asset_id" not in node["presentation"]
+        assert invented in node["narration"]
+        assert asset["id"] == asset_id
+        assert asset["kind"] == "comic"
+        assert asset["format"] == "png"
+        assert asset["sha256"] == digest
+        assert asset["byte_size"] == size
+
+
 def test_bull_keeps_century_dating_and_does_not_name_an_owner() -> None:
     bull = load_yaml("artifacts/gilt-bronze-bull.yaml")
     dated = load_yaml("facts/gilt-bronze-bull-date.yaml")
