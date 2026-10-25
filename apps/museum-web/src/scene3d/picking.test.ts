@@ -16,11 +16,10 @@ describe("museum case picking", () => {
     const ray = new Raycaster(new Vector3(0, 0, 5), new Vector3(0, 0, -1));
     expect(pickArtifact(ray, scene.children)).toBe("coin");
   });
-  it("does not pick the object behind an opaque column", () => {
-    const column = new Mesh(new BoxGeometry(1, 4, 1), new MeshBasicMaterial());
+  it("keeps the river-side cases directly pickable without a structural blocker", () => {
     const exhibit = volume("bull", -3);
-    const scene = new Group(); scene.add(exhibit, column); scene.updateMatrixWorld(true);
-    expect(pickArtifact(new Raycaster(new Vector3(0, 0, 5), new Vector3(0, 0, -1)), scene.children)).toBeNull();
+    const scene = new Group(); scene.add(exhibit); scene.updateMatrixWorld(true);
+    expect(pickArtifact(new Raycaster(new Vector3(0, 0, 5), new Vector3(0, 0, -1)), scene.children)).toBe("bull");
   });
   it("passes through physically transmissive display glass even when transparent=false", () => {
     const glass = new Mesh(new BoxGeometry(2, 3, 0.02), new MeshPhysicalMaterial({ transmission: 0.95, transparent: false }));

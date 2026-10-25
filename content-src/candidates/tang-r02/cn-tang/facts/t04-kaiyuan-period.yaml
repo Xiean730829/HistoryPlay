@@ -1,0 +1,12 @@
+id: cn.tang.fact.t04.kaiyuan-period
+claim: 《资治通鉴》卷210纪年标出开元元年为713年，卷214覆盖开元二十二年至二十九年（734—741年）；本章以713—741年作为开元纪年的时间范围。
+grade: F
+applicable_time:
+  start_year: 713
+  end_year: 741
+  precision: range
+  display_label: 开元元年713—开元二十九年741
+source_ids:
+  - cn.tang.source.history-h05
+  - cn.tang.source.history-h05a
+evidence_note: 依据卷首纪年范围确定本章时间框架；736年仅为创作场景的设定，不表示卷中记载了阿禾或她的一天。

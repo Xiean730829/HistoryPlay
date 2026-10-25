@@ -18,7 +18,7 @@ class FakeSocket {
 function fixture() {
   FakeSocket.sockets = [];
   vi.stubGlobal("WebSocket", FakeSocket);
-  const playback = { epoch: 0, stop: vi.fn(() => { playback.epoch += 1; }), enqueue: vi.fn() };
+  const playback = { epoch: 0, stop: vi.fn(() => { playback.epoch += 1; }), enqueue: vi.fn(() => true), onDrained: vi.fn((_epoch: number, callback: () => void) => callback()) };
   const callbacks = { onState: vi.fn(), onText: vi.fn() };
   return { client: new VoiceClient(playback as unknown as PlaybackQueue, callbacks), playback, callbacks };
 }
@@ -37,6 +37,56 @@ describe("受控语音客户端", () => {
     expect(socket.send.mock.calls.map(([item]) => typeof item)).toEqual(["string", "object", "string"]);
     expect(JSON.stringify(socket.send.mock.calls)).not.toContain("token");
     client.disconnect();
+  });
+  it("固定稿只有收到匹配字幕、真实音频帧和播放停止后才完成", async () => {
+    const { client, playback } = fixture();
+    const opening = client.connect();
+    const socket = FakeSocket.sockets[0];
+    socket.onmessage?.({ data: JSON.stringify({ type: "ready" }) }); await opening;
+    const started = vi.fn();
+    const signal = new AbortController().signal;
+    const narration = client.speakFixedText("请逐字朗读：唐代鎏金铜牛。", "唐代鎏金铜牛。", signal, started);
+    await Promise.resolve();
+    expect(JSON.parse(socket.send.mock.calls.at(-1)?.[0] as string)).toEqual({
+      op: "text", text: "请逐字朗读：唐代鎏金铜牛。",
+    });
+    let settled = false; void narration.then(() => { settled = true; });
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "start" }) });
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "sentence_start", text: "唐代鎏金铜牛。" }) });
+    socket.onmessage?.({ data: new ArrayBuffer(644) });
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "stop" }) });
+    await narration;
+    expect(started).toHaveBeenCalledOnce();
+    expect(playback.onDrained).toHaveBeenCalledOnce();
+    expect(settled).toBe(true);
+    client.disconnect();
+  });
+  it("小智改写固定字幕时拒绝完成，不能授权故事自动翻页", async () => {
+    const { client } = fixture();
+    const opening = client.connect();
+    const socket = FakeSocket.sockets[0];
+    socket.onmessage?.({ data: JSON.stringify({ type: "ready" }) }); await opening;
+    const narration = client.speakFixedText("请逐字朗读：固定正文", "固定正文", new AbortController().signal, vi.fn());
+    await Promise.resolve();
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "start" }) });
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "sentence_start", text: "小智改写了正文" }) });
+    socket.onmessage?.({ data: new ArrayBuffer(644) });
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "stop" }) });
+    await expect(narration).rejects.toThrow("字幕与固定正文不一致");
+  });
+  it("无效音频帧不计为真实播放完成", async () => {
+    const { client, playback } = fixture();
+    const opening = client.connect();
+    const socket = FakeSocket.sockets[0];
+    socket.onmessage?.({ data: JSON.stringify({ type: "ready" }) }); await opening;
+    playback.enqueue.mockReturnValue(false);
+    const narration = client.speakFixedText("请逐字朗读：固定正文", "固定正文", new AbortController().signal, vi.fn());
+    await Promise.resolve();
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "start" }) });
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "sentence_start", text: "固定正文" }) });
+    socket.onmessage?.({ data: new ArrayBuffer(644) });
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "stop" }) });
+    await expect(narration).rejects.toThrow("未返回完整本段音频");
   });
   it("插话先本地stop，旧连接晚到音频与文本不进入新连接", async () => {
     const { client, playback, callbacks } = fixture();

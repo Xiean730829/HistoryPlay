@@ -1,0 +1,17 @@
+id: cn.tang.node.t04.n02
+story_id: cn.tang.story.t04
+fact_grade: F
+narration: >-
+  《资治通鉴》卷210以713年为开元元年，卷214记到开元二十九年741年。本章借这段纪年观察“热闹”之外的日常；一尊宽年代的女俑不能证明736年某个具体人的生活。你想先查时间依据，还是进入阿禾的创作故事？
+allowed_actions:
+  - ask
+  - observe
+  - choose_route
+  - return_to_exhibit
+exits:
+  - action: choose_route
+    target_node_id: cn.tang.node.t04.n03
+    route_label: 进入736年的创作场景
+  - action: choose_route
+    target_node_id: cn.tang.node.t04.n07
+    route_label: 先把史实与创作的边界记下来

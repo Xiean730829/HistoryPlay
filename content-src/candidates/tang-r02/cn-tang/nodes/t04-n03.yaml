@@ -1,0 +1,19 @@
+id: cn.tang.node.t04.n03
+story_id: cn.tang.story.t04
+fact_grade: C
+narration: >-
+  【创作场景：736年】阿禾答应替人修补一件日用品，邻人又来求助，而她一直想做的小物件还没有动手。街上很热闹，她的时间却只有这么多。阿禾问：“你愿意先听听每件事有多急，再帮我排一排吗？”
+allowed_actions:
+  - ask
+  - observe
+  - choose_route
+exits:
+  - action: choose_route
+    target_node_id: cn.tang.node.t04.n04
+    route_label: 先完成已经答应的修补
+  - action: choose_route
+    target_node_id: cn.tang.node.t04.n05
+    route_label: 先问邻人是否愿意交换一段帮忙
+  - action: choose_route
+    target_node_id: cn.tang.node.t04.n06
+    route_label: 先重新商量不紧急的约定

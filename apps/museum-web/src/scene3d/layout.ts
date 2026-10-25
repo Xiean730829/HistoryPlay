@@ -1,33 +1,85 @@
 import { Box3, Group, Vector3 } from "three";
+import { RIVER_STATION_SPACING, riverBankNormalAt, riverPointAt } from "./riverPath";
 
-export const STAIR_RISER = 0.16;
-export const STAIR_TREAD = 0.48;
-export const STAIR_START_Z = 3;
-export const STAIR_WIDTH = 4.2;
-export const STEPS_PER_STATION = 10;
-export const PLINTH_HEIGHT = 1.08;
-export const MODEL_SURFACE_OFFSET = 0.012;
+export const MODEL_SURFACE_OFFSET = 0.014;
+export const PEDESTAL_HEIGHT = 0.18;
+export const STAIR_STEPS_PER_FLIGHT = 10;
+export const STAIR_STEP_RISE = 0.14;
+export const STAIR_TREAD_DEPTH = RIVER_STATION_SPACING / STAIR_STEPS_PER_FLIGHT;
+export const STAIR_WIDTH = 2.75;
+export const LANDING_RISE = STAIR_STEPS_PER_FLIGHT * STAIR_STEP_RISE;
+export const LANDING_DEPTH = 1.25;
+export { RIVER_STATION_SPACING } from "./riverPath";
 
 export interface StationPlacement {
-  /** Cabinet center in world X/Z; higher station indices ascend into negative Z. */
-  x: number; z: number; stepIndex: number;
-  /** Absolute world Y of the central walkway and side landing surfaces. */
-  walkY: number; landingY: number;
-  /** Absolute world Y of the actual load-bearing cabinet deck; top is its alias. */
-  plinthTop: number; top: number;
+  /** World-space artifact center and the side of the stair it occupies. */
+  x: number;
+  z: number;
+  distance: number;
+  side: -1 | 1;
+  centerX: number;
+  centerZ: number;
+  bankX: number;
+  bankZ: number;
+  /** World heights: visitor floor, landing surface, and top of the model support. */
+  walkY: number;
+  landingY: number;
+  plinthTop: number;
+  top: number;
 }
 
-/** Step n is centered here, has STAIR_TREAD depth and top surface walkY. */
-export function stairStepPlacement(stepIndex: number): { z: number; walkY: number } {
-  return { z: STAIR_START_Z - stepIndex * STAIR_TREAD, walkY: stepIndex * STAIR_RISER };
+export interface StairStepPlacement {
+  x: number;
+  z: number;
+  distance: number;
+  walkY: number;
+  topY: number;
+  height: number;
+  treadDepth: number;
 }
 
 export function stationPlacement(index: number): StationPlacement {
-  const stepIndex = 4 + index * STEPS_PER_STATION;
-  const step = stairStepPlacement(stepIndex);
-  const plinthTop = step.walkY + PLINTH_HEIGHT;
-  return { x: index % 2 ? 3.25 : -3.25, z: step.z, stepIndex,
-    walkY: step.walkY, landingY: step.walkY, plinthTop, top: plinthTop };
+  const station = Math.max(0, Math.floor(index));
+  const distance = station * RIVER_STATION_SPACING;
+  const center = riverPointAt(distance);
+  const bank = riverBankNormalAt(distance);
+  const side: -1 | 1 = station % 2 === 0 ? -1 : 1;
+  const walkY = station * LANDING_RISE;
+  const landingY = walkY;
+  return {
+    x: center.x + bank.x * side * 4.1,
+    z: center.z + bank.z * side * 4.1,
+    distance,
+    side,
+    centerX: center.x,
+    centerZ: center.z,
+    bankX: bank.x,
+    bankZ: bank.z,
+    walkY,
+    landingY,
+    plinthTop: landingY + PEDESTAL_HEIGHT,
+    top: landingY + PEDESTAL_HEIGHT,
+  };
+}
+
+/** Shared geometry/camera placement for one tread in the flight after `flightIndex`. */
+export function stairStepPlacement(flightIndex: number, stepIndex: number, fraction = 0): StairStepPlacement {
+  const flight = Math.max(0, Math.floor(flightIndex));
+  const step = Math.max(0, Math.min(STAIR_STEPS_PER_FLIGHT - 1, Math.floor(stepIndex)));
+  const part = Math.max(0, Math.min(1, fraction));
+  const stepOffset = step + part;
+  const distance = flight * RIVER_STATION_SPACING + stepOffset * STAIR_TREAD_DEPTH;
+  const point = riverPointAt(distance);
+  const walkY = flight * LANDING_RISE + stepOffset * STAIR_STEP_RISE;
+  return {
+    x: point.x,
+    z: point.z,
+    distance,
+    walkY,
+    topY: flight * LANDING_RISE + (step + 1) * STAIR_STEP_RISE,
+    height: (step + 1) * STAIR_STEP_RISE,
+    treadDepth: STAIR_TREAD_DEPTH,
+  };
 }
 
 export function nearbyModelIndices(count: number, focused: number, limit = 3): Set<number> {
@@ -41,7 +93,7 @@ export function maintainSurfaceContact(model: Group, worldSurfaceY: number): voi
   if (Number.isFinite(bottom)) model.position.y += worldSurfaceY - bottom;
 }
 
-/** Fit the true mesh above the plinth; the object keeps its original proportions. */
+/** Fit the true mesh above its own landing without changing proportions. */
 export function seatModel(model: Group, width = 1.65, height = 1.9): Group {
   const bounds = new Box3().setFromObject(model);
   const size = bounds.getSize(new Vector3());

@@ -12,16 +12,26 @@ from museum.adapters.content.published_catalog import (
 )
 
 
-def stage_pack(root: Path, version: str, status: str = "published") -> Path:
-    pack_dir = root / "cn.tang.core" / version
+def stage_pack(
+    root: Path,
+    version: str,
+    status: str = "published",
+    *,
+    pack_id: str = "cn.tang.core",
+    dependencies: list[dict[str, str]] | None = None,
+    index_dependencies: list[dict[str, str]] | None = None,
+) -> Path:
+    pack_dir = root / pack_id / version
     pack_dir.mkdir(parents=True)
+    declared = dependencies or []
     manifest = {
-        "id": "cn.tang.core",
+        "id": pack_id,
         "version": version,
         "schema_version": "1",
         "publication_status": status,
+        "dependencies": declared,
     }
-    artifact = {"id": f"cn.tang.core.artifact-a04-{version}", "title": version}
+    artifact = {"id": f"{pack_id}.artifact-a04-{version}", "title": version}
     documents = {
         "manifest.json": manifest,
         "artifacts/a04.json": artifact,
@@ -39,6 +49,7 @@ def stage_pack(root: Path, version: str, status: str = "published") -> Path:
         "schema_version": manifest["schema_version"],
         "publication_status": status,
         "files": hashes,
+        "dependencies": index_dependencies if index_dependencies is not None else declared,
     }
     (pack_dir / "pack-index.json").write_text(
         json.dumps(index, ensure_ascii=False), encoding="utf-8"
@@ -89,3 +100,25 @@ def test_catalog_rejects_tampered_content(tmp_path: Path) -> None:
 def test_catalog_rejects_path_like_identifiers(tmp_path: Path, pack_id: str, version: str) -> None:
     with pytest.raises(PackNotFound):
         PublishedCatalog(tmp_path).get_published(pack_id, version)
+
+
+def test_catalog_exposes_declared_dependency_versions(tmp_path: Path) -> None:
+    declared = [{"pack_id": "iq.abbasid.core", "version": "0.1.0", "sha256": "a" * 64}]
+    stage_pack(tmp_path, "1.0.0", dependencies=declared)
+    pack = PublishedCatalog(tmp_path).get_published("cn.tang.core", "1.0.0")
+
+    assert len(pack.dependencies) == 1
+    assert pack.dependencies[0].pack_id == "iq.abbasid.core"
+    assert pack.dependencies[0].version == "0.1.0"
+    assert pack.dependencies[0].sha256 == "a" * 64
+
+
+def test_catalog_rejects_mismatched_dependency_lists(tmp_path: Path) -> None:
+    stage_pack(
+        tmp_path,
+        "1.0.0",
+        dependencies=[{"pack_id": "iq.abbasid.core", "version": "0.1.0"}],
+        index_dependencies=[{"pack_id": "iq.abbasid.core", "version": "2.0.0"}],
+    )
+    with pytest.raises(CatalogIntegrityError, match="依赖清单与索引不匹配"):
+        PublishedCatalog(tmp_path).get_published("cn.tang.core", "1.0.0")

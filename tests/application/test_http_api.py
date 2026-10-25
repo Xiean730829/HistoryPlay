@@ -5,7 +5,7 @@ import asyncio
 from aiohttp.test_utils import TestClient, TestServer
 from museum.adapters.sqlite.database import SQLiteDatabase
 from museum.main import create_app
-from museum.ports.content_catalog import PublishedPack
+from museum.ports.content_catalog import PackReference, PublishedPack
 
 ORIGIN = "http://localhost:5173"
 PACK_ID = "cn.tang.core"
@@ -17,7 +17,7 @@ SOURCE_ID = "cn.tang.source.museum.stele"
 
 
 class MemoryCatalog:
-    def __init__(self) -> None:
+    def __init__(self, *packs: PublishedPack) -> None:
         self.pack = PublishedPack(
             PACK_ID,
             VERSION,
@@ -127,20 +127,27 @@ class MemoryCatalog:
                 },
             },
         )
+        extras = {(item.pack_id, item.version): item for item in packs}
+        extras[(PACK_ID, VERSION)] = self.pack
+        self.packs = extras
 
     def list_published(self):
         return ()
 
     def get_published(self, pack_id: str, version: str) -> PublishedPack:
-        if (pack_id, version) != (PACK_ID, VERSION):
-            raise LookupError("content version not found")
-        return self.pack
+        try:
+            return self.packs[(pack_id, version)]
+        except KeyError as error:
+            raise LookupError("content version not found") from error
 
 
-def make_app(tmp_path):
+def make_app(tmp_path, catalog=None):
     database = SQLiteDatabase(tmp_path / "http.sqlite3")
-    catalog = MemoryCatalog()
-    return create_app(database=database, catalog=catalog, allowed_origins=frozenset({ORIGIN}))
+    return create_app(
+        database=database,
+        catalog=catalog or MemoryCatalog(),
+        allowed_origins=frozenset({ORIGIN}),
+    )
 
 
 def test_http_session_pairing_context_and_command_flow(tmp_path) -> None:
@@ -318,6 +325,83 @@ def test_create_session_rejects_unpublished_pack_and_untrusted_origin(tmp_path) 
             headers={"Origin": "https://attacker.test"},
         )
         assert bad_origin.status == 403
+        await client.close()
+
+    asyncio.run(scenario())
+
+
+def test_create_session_pins_declared_dependency_versions(tmp_path) -> None:
+    async def scenario() -> None:
+        dependency = PublishedPack(
+            "iq.abbasid.core",
+            "0.1.0",
+            "1",
+            {
+                "manifest.json": {
+                    "id": "iq.abbasid.core",
+                    "version": "0.1.0",
+                    "publication_status": "published",
+                }
+            },
+        )
+        root = MemoryCatalog(dependency).pack
+        root = PublishedPack(
+            root.pack_id,
+            root.version,
+            root.schema_version,
+            {
+                **root.documents,
+                "manifest.json": {
+                    "id": PACK_ID,
+                    "version": VERSION,
+                    "dependencies": [{"pack_id": "iq.abbasid.core", "version": "0.1.0"}],
+                },
+            },
+            (PackReference("iq.abbasid.core", "0.1.0"),),
+        )
+        catalog = MemoryCatalog(dependency)
+        catalog.packs[(PACK_ID, VERSION)] = root
+        client = TestClient(TestServer(make_app(tmp_path, catalog)))
+        await client.start_server()
+        created_response = await client.post(
+            "/api/sessions",
+            json={"pack_id": PACK_ID, "version": VERSION},
+            headers={"Origin": ORIGIN},
+        )
+        assert created_response.status == 201
+        state = (await created_response.json())["state"]
+        assert state["pack_versions"] == {PACK_ID: VERSION, "iq.abbasid.core": "0.1.0"}
+        await client.close()
+
+    asyncio.run(scenario())
+
+
+def test_create_session_rejects_missing_declared_dependency(tmp_path) -> None:
+    async def scenario() -> None:
+        root = MemoryCatalog().pack
+        catalog = MemoryCatalog()
+        catalog.packs[(PACK_ID, VERSION)] = PublishedPack(
+            root.pack_id,
+            root.version,
+            root.schema_version,
+            {
+                **root.documents,
+                "manifest.json": {
+                    "id": PACK_ID,
+                    "version": VERSION,
+                    "dependencies": [{"pack_id": "iq.abbasid.core", "version": "0.1.0"}],
+                },
+            },
+            (PackReference("iq.abbasid.core", "0.1.0"),),
+        )
+        client = TestClient(TestServer(make_app(tmp_path, catalog)))
+        await client.start_server()
+        missing = await client.post(
+            "/api/sessions",
+            json={"pack_id": PACK_ID, "version": VERSION},
+            headers={"Origin": ORIGIN},
+        )
+        assert missing.status == 409
         await client.close()
 
     asyncio.run(scenario())
