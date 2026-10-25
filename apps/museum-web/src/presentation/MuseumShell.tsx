@@ -419,7 +419,7 @@ export function MuseumShell() {
           portalActive={portalOpen}
           welcomeOnConnect={portalOpen}
           gameUrl={import.meta.env.VITE_MUSEUM_GAME_URL?.trim() || "http://127.0.0.1:8781"}
-          bridgeUrl={window.location.origin}
+          bridgeUrl={import.meta.env.VITE_MUSEUM_BRIDGE_URL?.trim() || window.location.origin}
           onUserTranscript={(text) => {
             if (portalOpen && isMuseumEntryConsent(text)) {
               setPortalOpen(false);
