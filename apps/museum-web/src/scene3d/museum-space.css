@@ -31,8 +31,9 @@
 .museum-walk-controls button { border: 0; color: #ebcf9e; background: transparent; padding: 4px; cursor: pointer; }
 .museum-walk-controls span { font-size: 12px; max-width: 170px; }
 .museum-page-spatial aside[aria-label="语音讲解"] { position: absolute; left: 24px; bottom: 24px; z-index: 9; max-width: 340px; padding: 12px 16px; color: #eddfcb; background: #201a14e6; border: 1px solid #b1935d77; font-size: 11px; }
+.museum-page-spatial[data-story-mode="true"] aside[aria-label="语音讲解"] { position: fixed; top: 24px; right: 24px; bottom: auto; left: auto; }
 .museum-page-spatial .voice-entry { display: flex; align-items: center; gap: 12px; }
 .museum-page-spatial .voice-entry button { color: #f8e2b9; border: 1px solid #b1935d; background: #75432b; padding: 7px 12px; cursor: pointer; }
 .museum-page-spatial .voice-caption { max-height: 4em; overflow: hidden; line-height: 1.7; }
 .museum-page-spatial .story-stage { position: absolute; inset: 0; z-index: 7; min-height: 100svh; margin: 0; }
-@media (max-width: 700px) { .museum-page-spatial .story-entry-row { bottom: 72px; right: 14px; } .museum-page-spatial aside[aria-label="语音讲解"] { left: 14px; bottom: 70px; max-width: 270px; } .museum-walk-controls { bottom: 12px; right: 14px; left: 14px; justify-content: space-between; } .museum-space-guide { bottom: 180px; } }
+@media (max-width: 700px) { .museum-page-spatial .story-entry-row { bottom: 72px; right: 14px; } .museum-page-spatial aside[aria-label="语音讲解"] { left: 14px; bottom: 70px; max-width: 270px; } .museum-page-spatial[data-story-mode="true"] aside[aria-label="语音讲解"] { position: fixed; top: 14px; right: 14px; bottom: auto; left: auto; max-width: min(270px, 42vw); } .museum-walk-controls { bottom: 12px; right: 14px; left: 14px; justify-content: space-between; } .museum-space-guide { bottom: 180px; } }
