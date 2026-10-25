@@ -45,6 +45,7 @@ export function VoiceEntry({ callbacks, beforeStart, onStop }: {
       setActive(true);
       setStatus(settings.echoCancellation === true ? "麦克风已开启" : "麦克风已开启，回声抑制未确认");
     } catch (error) {
+      onStop?.();
       if (alive.current) setStatus(error instanceof Error ? error.message : "无法开启麦克风");
     } finally {
       if (alive.current) setOpening(false);
