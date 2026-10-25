@@ -5,7 +5,7 @@ import { NarrationPlayer } from "../narration/NarrationPlayer";
 import { GameVoiceController } from "./GameVoiceController";
 import type { VoiceControlResult } from "./VoiceClient";
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe("语音控制与画面刷新竞态", () => {
   it("进入故事后释放一次性问答焦点，不会因自动讲述关闭当前小智连接", async () => {
@@ -52,20 +52,91 @@ describe("语音控制与画面刷新竞态", () => {
     controller.dispose();
   });
 
-  it("固定正文只作为小智上下文，不把浏览器语音冒充实时讲解员", async () => {
+  it("定位并实际呈现展品后由小智朗读固定正文，再邀请进入可用故事", async () => {
     const play = vi.spyOn(NarrationPlayer.prototype, "play").mockResolvedValue(true);
-    const onTranscript = vi.fn();
     const onStatus = vi.fn();
-    const controller = new GameVoiceController({ session_id: "test-session" } as ActiveSession, {
-      onStatus, onTranscript, onRefresh: async () => "pending",
+    const artifact = {
+      id: "cn.tang.artifact.stele", title: "造像碑", museum: "唐代馆", time_range: { start: 618, end: 907 },
+      material: "石", category: "造像", asset_ids: [], fact_card_ids: [],
+      story_entry_ids: ["cn.tang.story.stele"],
+    };
+    const session = {
+      session_id: "test-session", session_token: "local-test-token", connection_id: "local-test-connection",
+      control_ticket: "unused", pack_id: "cn.tang.core", version: "0.2.4",
+      state: { revision: 7, view_revision: 4, interaction_epoch: 2, focused_entity_id: artifact.id },
+      context: { session_id: "test-session", revision: 7, event_seq: 10, mode: "explore",
+        focused_artifact: artifact, visible_artifacts: [artifact], story_node: null },
+    } as unknown as ActiveSession;
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith("/context")) return new Response(JSON.stringify(session.context), { status: 200 });
+      if (url.includes("/content?")) return new Response(JSON.stringify({
+        content_id: artifact.id, content_kind: "artifact", pack_id: "cn.tang.core", version: "0.2.4",
+        title: "造像碑", artifact_id: artifact.id, paragraphs: [{ content_id: artifact.id, version: "0.2.4",
+          paragraph_number: 1, text: "这是一段经过校订的造像碑讲解。",
+          authorship: { node_id: artifact.id, story_id: null, fact_grade: "established" },
+          presentation: null, allowed_actions: [] }], next_cursor: null,
+      }), { status: 200 });
+      return new Response(JSON.stringify(session.state), { status: 200 });
+    }));
+    const controller = new GameVoiceController(session, {
+      onStatus, onTranscript: vi.fn(), onRefresh: async () => "rendered",
     });
     const handler = controller as unknown as { control(result: VoiceControlResult): Promise<void> };
-    await handler.control({ kind: "narration", narration: {
-      packId: "cn.tang.core", version: "1", contentId: "artifact-1", text: "固定正文",
-    } });
-    expect(play).not.toHaveBeenCalled();
-    expect(onTranscript).not.toHaveBeenCalled();
-    expect(onStatus).toHaveBeenLastCalledWith("已读取当前文物的固定讲解稿，等待讲解员实时讲解");
+    await handler.control({ kind: "action", receipt: {
+      action: "locate_artifact", status: "committed", request_id: "locate-1", revision: 7,
+    } as CommandReceipt });
+    expect(play).toHaveBeenCalledTimes(2);
+    expect(play.mock.calls[0][0]).toMatchObject({
+      role: "answer", contentId: artifact.id, text: "这是一段经过校订的造像碑讲解。",
+    });
+    expect(play.mock.calls[1][0].text).toContain("进入故事");
+    expect(onStatus).toHaveBeenCalledWith("展品已就位，小智正在讲解固定正文");
+    expect(onStatus).toHaveBeenCalledWith("展品介绍完成，小智正在邀请你进入故事");
+    controller.dispose();
+  });
+
+  it("展品固定正文尚在播放时用户插话，不再播放进入故事的邀请", async () => {
+    let finishIntro!: (completed: boolean) => void;
+    const play = vi.spyOn(NarrationPlayer.prototype, "play")
+      .mockImplementationOnce(() => new Promise((resolve) => { finishIntro = resolve; }))
+      .mockResolvedValue(true);
+    const artifact = {
+      id: "cn.tang.artifact.stele", title: "造像碑", museum: "唐代馆", time_range: { start: 618, end: 907 },
+      material: "石", category: "造像", asset_ids: [], fact_card_ids: [],
+      story_entry_ids: ["cn.tang.story.stele"],
+    };
+    const session = {
+      session_id: "test-session", session_token: "local-test-token", connection_id: "local-test-connection",
+      pack_id: "cn.tang.core", version: "0.2.4",
+      state: { revision: 7, view_revision: 4, interaction_epoch: 2, focused_entity_id: artifact.id },
+      context: { session_id: "test-session", revision: 7, event_seq: 10, mode: "explore",
+        focused_artifact: artifact, visible_artifacts: [artifact], story_node: null },
+    } as unknown as ActiveSession;
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith("/context")) return new Response(JSON.stringify(session.context), { status: 200 });
+      if (url.includes("/content?")) return new Response(JSON.stringify({
+        content_id: artifact.id, content_kind: "artifact", pack_id: "cn.tang.core", version: "0.2.4",
+        title: "造像碑", artifact_id: artifact.id, paragraphs: [{ content_id: artifact.id, version: "0.2.4",
+          paragraph_number: 1, text: "这是一段经过校订的造像碑讲解。",
+          authorship: { node_id: artifact.id, story_id: null, fact_grade: "established" },
+          presentation: null, allowed_actions: [] }], next_cursor: null,
+      }), { status: 200 });
+      return new Response(JSON.stringify(session.state), { status: 200 });
+    }));
+    const controller = new GameVoiceController(session, {
+      onStatus: vi.fn(), onTranscript: vi.fn(), onRefresh: async () => "rendered",
+    });
+    const handler = controller as unknown as { control(result: VoiceControlResult): Promise<void> };
+    const intro = handler.control({ kind: "action", receipt: {
+      action: "locate_artifact", status: "committed", request_id: "locate-interrupt", revision: 7,
+    } as CommandReceipt });
+    await vi.waitFor(() => expect(play).toHaveBeenCalledTimes(1));
+    controller.beginTurn();
+    finishIntro(true);
+    await intro;
+    expect(play).toHaveBeenCalledTimes(1);
     controller.dispose();
   });
 
