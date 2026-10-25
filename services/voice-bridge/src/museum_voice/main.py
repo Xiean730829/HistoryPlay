@@ -17,12 +17,13 @@ from aiohttp import (
 from av.error import FFmpegError
 from museum_mcp.action_tools import TrustedInput
 from museum_mcp.application_client import GatewayError
-from museum_mcp.intent_adapter import interpret
 
 from museum_voice.codec import AudioCodec, pack_audio, unpack_audio
 from museum_voice.config import DeviceConfig
+from museum_voice.control_flow import dispatch_local_control, render_request_id
 from museum_voice.control_orchestrator import InputOrchestrator
 from museum_voice.game_binding import ACTIVE_AUDIO, BINDING_FILE, GAME_BINDINGS, bind_game
+from museum_voice.render_gate import RenderReplyGate
 from museum_voice.xiaozhi_client import connection_headers, hello_message
 
 DEVICE = web.AppKey("fixed_device", DeviceConfig)
@@ -79,7 +80,8 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
         input_started = False
         input_stopped = False
         pcm_frames = 0
-        mute_reply = False
+        render_gate_timer: asyncio.TimerHandle | None = None
+        render_gate = RenderReplyGate()
         device = request.app[DEVICE]
         codec = AudioCodec()
         trace = TraceConfig()
@@ -108,6 +110,7 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
 
             async def send_microphone() -> None:
                 nonlocal input_started, input_stopped, pcm_frames
+                nonlocal render_gate_timer
                 async for message in browser:
                     if message.type == WSMsgType.BINARY:
                         if not input_started or input_stopped:
@@ -150,17 +153,37 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
                             # a late tts.start on it cannot be promoted to the next local turn.
                             await upstream.close()
                             return
+                        elif op == "render_receipt":
+                            request_id = command.get("request_id")
+                            status = command.get("status")
+                            if isinstance(request_id, str):
+                                released = render_gate.resolve(request_id, status)
+                            else:
+                                released = None
+                            if released is not None:
+                                if render_gate_timer is not None:
+                                    render_gate_timer.cancel()
+                                    render_gate_timer = None
+                                if status == "rendered":
+                                    for kind, payload in released:
+                                        if kind == "audio":
+                                            await browser.send_bytes(payload)  # type: ignore[arg-type]
+                                        else:
+                                            await browser.send_json(payload)  # type: ignore[arg-type]
                         else:
                             raise ValueError("不支持的语音操作")
 
             async def receive_reply() -> None:
-                nonlocal mute_reply
+                nonlocal render_gate_timer
                 async for message in upstream:
                     if message.type == WSMsgType.BINARY:
-                        if mute_reply:
+                        if render_gate.drop:
                             continue
                         for pcm in codec.decode(unpack_audio(message.data, device.version)):
-                            await browser.send_bytes(pcm)
+                            if not render_gate.hold("audio", pcm, len(pcm)):
+                                await browser.send_bytes(pcm)
+                            else:
+                                continue
                     elif message.type == WSMsgType.TEXT:
                         event = json.loads(message.data)
                         if not isinstance(event, dict):
@@ -174,15 +197,14 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
                         ):
                             text = event.get("text", "")
                             await browser.send_json({"type": "stt", "text": text})
-                            if interpret(text) is not None:
-                                mute_reply = True
-                                await upstream.send_json(
-                                    {"type": "abort", "session_id": session_id}
-                                )
                             try:
-                                control = await orchestrator.handle(text)
-                                if control is not None:
-                                    await browser.send_json({"type": "control", "result": control})
+                                control = await dispatch_local_control(orchestrator, browser, text)
+                                request_id = render_request_id(control)
+                                if request_id is not None:
+                                    render_gate.begin(request_id)
+                                    render_gate_timer = asyncio.get_running_loop().call_later(
+                                        10, render_gate.expire, request_id
+                                    )
                             except GatewayError as error:
                                 await browser.send_json(
                                     {
@@ -199,7 +221,14 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
                             safe = {
                                 key: event[key] for key in ("type", "state", "text") if key in event
                             }
-                            await browser.send_json(safe)
+                            if render_gate.drop and safe["type"] in {"tts", "llm"}:
+                                continue
+                            if safe["type"] in {"tts", "llm"} and render_gate.hold(
+                                "text", safe, len(json.dumps(safe, ensure_ascii=False))
+                            ):
+                                continue
+                            else:
+                                await browser.send_json(safe)
 
             tasks = [asyncio.create_task(send_microphone()), asyncio.create_task(receive_reply())]
             done, _ = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
@@ -212,6 +241,8 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
                 {"type": "bridge_error", "message": "语音连接中止，请恢复固定设备连接配置后重试"}
             )
     finally:
+        if "render_gate_timer" in locals() and render_gate_timer is not None:
+            render_gate_timer.cancel()
         for task in tasks:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)

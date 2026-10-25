@@ -10,6 +10,8 @@ export interface VoiceControlResult {
   render_status?: "pending";
 }
 
+export type RenderAcknowledgement = "rendered" | "degraded" | "pending";
+
 export interface VoiceCallbacks {
   onState(state: "connecting" | "connected" | "disconnected" | "error", message?: string): void;
   onText(type: "stt" | "tts" | "llm", text: string, state?: string): void;
@@ -158,6 +160,15 @@ export class VoiceClient {
       this.stopListening();
       this.turnRequested = false;
     }
+  }
+
+  acknowledgeRender(requestId: string, status: RenderAcknowledgement): void {
+    if (!this.ready || !requestId) return;
+    this.socket?.send(JSON.stringify({
+      op: "render_receipt",
+      request_id: requestId,
+      status: status === "rendered" ? "rendered" : "degraded",
+    }));
   }
 
   stopListening(): void {

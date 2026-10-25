@@ -1,12 +1,15 @@
 import asyncio
 
+import pytest
 from museum_mcp.action_tools import TrustedInput
+from museum_mcp.application_client import GatewayError
 from museum_voice.control_orchestrator import InputOrchestrator
 
 
 class Client:
     def __init__(self):
         self.actions = []
+        self.context_calls = 0
 
     async def state(self):
         return {
@@ -18,8 +21,11 @@ class Client:
         if route == "search":
             return {"items": [{"id": "cn.tang.artifact.bull"}]}
         if route == "content":
-            return {"paragraphs": [{"content_id": "cn.tang.node.bull.01", "text": "准备的正文"}]}
+            return {"artifact_id": "cn.tang.artifact.bull",
+                    "paragraphs": [{"content_id": params["content_id"], "text": "准备的正文"}]}
+        self.context_calls += 1
         return {
+            "revision": 3,
             "focused_artifact": {
                 "id": "cn.tang.artifact.bull",
                 "story_entry_ids": ["cn.tang.story.bull"],
@@ -52,8 +58,33 @@ def test_background_reads_fixed_text_continue_does_not_advance_and_unknown_is_qa
         scope = TrustedInput("bridge", "input")
         result = await InputOrchestrator(client, scope).handle("介绍这个文物")
         assert result["narration"]["text"] == "准备的正文"
+        assert result["narration"]["contentId"] == "cn.tang.artifact.bull"
+        assert client.context_calls == 2
         assert (await InputOrchestrator(client, scope).handle("继续"))["kind"] == "resume"
         assert await InputOrchestrator(client, scope).handle("古人为什么喜欢它") is None
         assert client.actions == []
+
+    asyncio.run(run())
+
+
+def test_content_from_previous_focus_is_rejected_when_focus_changes_during_read():
+    class ChangingClient(Client):
+        def __init__(self):
+            super().__init__()
+            self.changed = False
+
+        async def get(self, route, params=None):
+            if route == "content":
+                self.changed = True
+                return await super().get(route, params)
+            value = await super().get(route, params)
+            if self.changed:
+                value["focused_artifact"] = {"id": "cn.tang.artifact.coin", "title": "铜钱"}
+            return value
+
+    async def run():
+        client = ChangingClient()
+        with pytest.raises(GatewayError, match="展台已变化"):
+            await InputOrchestrator(client, TrustedInput("bridge", "input")).handle("介绍这个文物")
 
     asyncio.run(run())

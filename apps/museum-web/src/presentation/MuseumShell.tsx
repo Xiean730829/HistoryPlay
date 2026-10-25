@@ -51,12 +51,31 @@ export function MuseumShell() {
   const [results, setResults] = React.useState<SearchHit[]>([]);
   const [busy, setBusy] = React.useState(false);
   const [inspection, setInspection] = React.useState(false);
+  const [voiceDrivenStory, setVoiceDrivenStory] = React.useState(false);
   const previousFocus = React.useRef<string | null>(null);
   const [notice, setNotice] = React.useState("正在连接本地游戏服务…");
   const [noticeTone, setNoticeTone] = React.useState<"info" | "error" | "success">("info");
   const restoreTask = React.useRef<Promise<OpenedMuseum> | null>(null);
   const projectionStore = React.useRef<SessionProjectionStore | null>(null);
   const renderReporter = React.useRef(new RenderReceiptReporter(reportRenderReceipt));
+  const voiceRenderWaiters = React.useRef(new Map<string, {
+    resolve: (status: "rendered" | "degraded" | "pending") => void;
+    timeout: ReturnType<typeof setTimeout>;
+  }>());
+
+  function settleVoiceRender(requestId: string, status: "rendered" | "degraded" | "pending") {
+    const waiter = voiceRenderWaiters.current.get(requestId);
+    if (!waiter) return;
+    clearTimeout(waiter.timeout);
+    voiceRenderWaiters.current.delete(requestId);
+    waiter.resolve(status);
+  }
+
+  function cancelVoiceRenderWaiters() {
+    for (const requestId of voiceRenderWaiters.current.keys()) settleVoiceRender(requestId, "pending");
+  }
+
+  React.useEffect(() => () => cancelVoiceRenderWaiters(), []);
 
   React.useEffect(() => {
     const focus = session?.state.focused_entity_id ?? null;
@@ -66,6 +85,7 @@ export function MuseumShell() {
 
   async function selectExhibit(id: string) {
     if (!session || busy || session.state.mode !== "explore") return;
+    cancelVoiceRenderWaiters();
     const current = projectionStore.current?.snapshot ?? session;
     setBusy(true);
     try {
@@ -81,6 +101,7 @@ export function MuseumShell() {
 
   async function observeExhibit(deltaYaw: number, deltaPitch: number, zoomFactor: number) {
     if (!session || busy || session.state.mode !== "explore") return;
+    cancelVoiceRenderWaiters();
     const pose = session.state.camera_pose ?? { yaw: 0, pitch: 0, zoom: 1 };
     setBusy(true);
     try {
@@ -222,6 +243,7 @@ export function MuseumShell() {
 
   async function moveStation(direction: "next" | "previous") {
     if (!session) return;
+    cancelVoiceRenderWaiters();
     setRenderCommand(null);
     setBusy(true);
     try {
@@ -246,7 +268,9 @@ export function MuseumShell() {
 
   async function runStoryAction(action: "enter" | "continue" | "choose_route" | "return", targetNodeId?: string) {
     if (!session) return;
+    cancelVoiceRenderWaiters();
     const focused = session.context.focused_artifact;
+    setVoiceDrivenStory(false);
     const storyId = focused?.story_entry_ids?.[0];
     if (action === "enter" && !storyId) return;
     if (action === "choose_route" && !targetNodeId) return;
@@ -282,6 +306,7 @@ export function MuseumShell() {
   }
 
   async function leaveMuseum() {
+    cancelVoiceRenderWaiters();
     let unpairFailed = false;
     if (session) {
       try {
@@ -323,13 +348,19 @@ export function MuseumShell() {
         onSelect={(id) => void selectExhibit(id)}
         onObserve={(yaw, pitch, zoom) => void observeExhibit(yaw, pitch, zoom)}
         onRender={(status, reason) => {
-          if (session.state.mode === "explore") void renderReporter.current.report(session, renderCommand, status, reason).catch(() => undefined);
+          if (session.state.mode === "explore") {
+            void renderReporter.current.report(session, renderCommand, status, reason)
+              .then((reported) => {
+                if (reported && renderCommand) settleVoiceRender(renderCommand.request_id, status);
+              }).catch(() => undefined);
+          }
         }}
       />}
       {session?.state.mode === "story" && (
         <ArtifactStoryStage
           session={session}
           busy={busy}
+          voiceDriven={voiceDrivenStory}
           onContinue={() => void runStoryAction("continue")}
           onChooseRoute={(targetNodeId) => void runStoryAction("choose_route", targetNodeId)}
           onReturn={() => void runStoryAction("return")}
@@ -363,13 +394,33 @@ export function MuseumShell() {
           session={session}
           gameUrl={import.meta.env.VITE_MUSEUM_GAME_URL?.trim() || "http://127.0.0.1:8781"}
           bridgeUrl={import.meta.env.VITE_MUSEUM_BRIDGE_URL?.trim() || "http://127.0.0.1:8782"}
+          onNewInput={cancelVoiceRenderWaiters}
+          onStoryTransition={(action) => setVoiceDrivenStory(action !== "return_to_exhibit")}
           onRefresh={async (receipt) => {
-            const active = await refreshSession(session);
-            const store = projectionStore.current;
-            if (store) await store.acceptQuery(active);
-            else setSession(active);
-            setRenderCommand(receipt?.status === "committed" ? receipt : null);
-            if (receipt?.status === "committed" && ["locate_artifact", "move_next", "move_previous", "set_view"].includes(receipt.action ?? "")) setInspection(true);
+            if (receipt?.status === "committed" && ["enter_story", "continue_story"].includes(receipt.action ?? "")) setVoiceDrivenStory(true);
+            if (receipt?.status === "committed" && receipt.action === "return_to_exhibit") setVoiceDrivenStory(false);
+            const expectsRenderedFrame = receipt?.status === "committed"
+              && ["locate_artifact", "move_next", "move_previous", "return_to_exhibit", "set_view"]
+                .includes(receipt.action ?? "");
+            let rendered: Promise<"rendered" | "degraded" | "pending"> | null = null;
+            if (expectsRenderedFrame && receipt) {
+              rendered = new Promise((resolve) => {
+                const timeout = setTimeout(() => settleVoiceRender(receipt.request_id, "pending"), 8000);
+                voiceRenderWaiters.current.set(receipt.request_id, { resolve, timeout });
+              });
+            }
+            try {
+              const active = await refreshSession(session);
+              const store = projectionStore.current;
+              if (store) await store.acceptQuery(active);
+              else setSession(active);
+              setRenderCommand(receipt?.status === "committed" ? receipt : null);
+              if (receipt?.status === "committed" && ["locate_artifact", "move_next", "move_previous", "set_view"].includes(receipt.action ?? "")) setInspection(true);
+              return rendered ? await rendered : "pending";
+            } catch (error) {
+              if (receipt) settleVoiceRender(receipt.request_id, "degraded");
+              throw error;
+            }
           }}
         />
       )}
