@@ -8,6 +8,31 @@ import type { VoiceControlResult } from "./VoiceClient";
 afterEach(() => vi.restoreAllMocks());
 
 describe("语音控制与画面刷新竞态", () => {
+  it("进入故事后释放一次性问答焦点，不会因自动讲述关闭当前小智连接", async () => {
+    const interrupt = vi.fn();
+    const disconnect = vi.fn();
+    const controller = new GameVoiceController({ session_id: "test-session" } as ActiveSession, {
+      onStatus: vi.fn(), onTranscript: vi.fn(), onRefresh: async () => "pending",
+      onStoryTransition: vi.fn(),
+    });
+    (controller as unknown as { voice: unknown }).voice = {
+      beginTurn: vi.fn().mockResolvedValue(undefined), interrupt, disconnect,
+    };
+    const handler = controller as unknown as { control(result: VoiceControlResult): Promise<void> };
+    controller.beginTurn();
+    await handler.control({ kind: "action", receipt: {
+      action: "enter_story", status: "committed",
+    } as CommandReceipt });
+
+    const stopStory = vi.fn();
+    const lease = (controller as unknown as { focus: { claim(owner: string, stop: () => void): { release(): void } } })
+      .focus.claim("narration", stopStory);
+    expect(interrupt).not.toHaveBeenCalled();
+    expect(disconnect).not.toHaveBeenCalled();
+    lease.release();
+    controller.dispose();
+  });
+
   it("刷新等待期间出现新问题，旧动作完成不能迟到开始朗读", async () => {
     const play = vi.spyOn(NarrationPlayer.prototype, "play").mockResolvedValue(true);
     let release!: () => void;

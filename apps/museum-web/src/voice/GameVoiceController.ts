@@ -1,6 +1,6 @@
 import type { ActiveSession } from "../application/museumApi";
 import type { CommandReceipt } from "@history-play/contracts";
-import type { AudioFocus } from "../narration/AudioFocus";
+import type { AudioFocus, AudioLease } from "../narration/AudioFocus";
 import type { NarrationPlayer } from "../narration/NarrationPlayer";
 import { acquireSessionNarration, attachSessionNarrationTransport } from "../narration/sessionNarration";
 import { PlaybackQueue } from "./PlaybackQueue";
@@ -23,6 +23,7 @@ export class GameVoiceController {
   private readonly narration: NarrationPlayer;
   private readonly releaseNarration: () => void;
   private detachNarration: (() => void) | null = null;
+  private qaLease: { sequence: number; lease: AudioLease } | null = null;
   private disposed = false;
   private inputSequence = 0;
 
@@ -104,7 +105,9 @@ export class GameVoiceController {
   beginTurn(): void {
     this.inputSequence += 1;
     this.hooks.onNewInput?.();
-    this.focus.claim("qa", () => this.voice?.interrupt());
+    this.releaseQaLease();
+    const sequence = this.inputSequence;
+    this.qaLease = { sequence, lease: this.focus.claim("qa", () => this.voice?.interrupt()) };
     void this.voice?.beginTurn().catch((error: unknown) => {
       if (!this.disposed) this.hooks.onStatus(error instanceof Error ? error.message : "语音连接失败");
     });
@@ -115,6 +118,11 @@ export class GameVoiceController {
   private async control(result: VoiceControlResult): Promise<void> {
     if (this.disposed) return;
     const sequence = this.inputSequence;
+    // The one-shot microphone turn has yielded a result. Releasing its focus
+    // before mounting story autoplay keeps the already-bound XiaoZhi socket
+    // alive; otherwise the narrator's focus claim called interrupt(), closed
+    // that socket, and made automatic fixed-story playback fail immediately.
+    if (this.qaLease?.sequence === sequence) this.releaseQaLease();
     if (result.kind === "error" || result.kind === "clarification") {
       this.hooks.onStatus(result.message ?? "请再说具体一些"); return;
     }
@@ -154,9 +162,15 @@ export class GameVoiceController {
     }
   }
 
+  private releaseQaLease(): void {
+    this.qaLease?.lease.release();
+    this.qaLease = null;
+  }
+
   dispose(): void {
     this.inputSequence += 1;
     this.disposed = true;
+    this.releaseQaLease();
     this.narration.stop();
     this.focus.stop();
     this.detachNarration?.(); this.detachNarration = null;
