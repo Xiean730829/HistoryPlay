@@ -1,0 +1,91 @@
+.story-cinematic.story-stage {
+  display: block;
+  width: 100%;
+  min-height: min(78svh, 860px);
+  overflow: hidden;
+  border: 0;
+  background: #101416;
+}
+
+.story-cinematic .story-bleed {
+  position: absolute;
+  inset: 0;
+}
+
+.story-cinematic .story-bleed img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+}
+
+.story-cinematic .story-bleed::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgb(8 10 11 / 8%) 0%,
+    rgb(8 10 11 / 0%) 38%,
+    rgb(8 10 11 / 55%) 68%,
+    rgb(8 10 11 / 92%) 100%
+  );
+  content: "";
+}
+
+.story-cinematic .story-visual-empty,
+.story-cinematic .story-visual-error {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 24px;
+  background: rgb(13 16 17 / 72%);
+  color: var(--hall-muted, #c0b39e);
+  text-align: center;
+}
+
+.story-cinematic .story-caption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  display: grid;
+  gap: 8px;
+  padding: clamp(18px, 3vw, 32px) clamp(18px, 4vw, 40px) 24px;
+  text-align: left;
+}
+
+.story-cinematic .story-kicker,
+.story-cinematic .story-fact-grade {
+  margin: 0;
+  color: var(--hall-muted, #c0b39e);
+  font-size: 12px;
+  letter-spacing: .08em;
+}
+
+.story-cinematic .story-caption h2 {
+  margin: 0;
+  color: var(--hall-ink, #f2eadb);
+  font: 500 clamp(20px, 3vw, 28px)/1.25 var(--serif);
+}
+
+.story-cinematic .story-subtitle {
+  max-width: 46em;
+  margin: 0;
+  color: #fff1d6;
+  font: 500 clamp(16px, 2.2vw, 20px)/1.7 var(--serif);
+}
+
+.story-cinematic .story-load-error { margin: 0; color: #ffb8a8; }
+.story-cinematic .story-actions { justify-content: flex-start; }
+
+.museum-page-spatial .story-cinematic.story-stage { min-height: 100svh; }
+
+@media (max-width: 760px) {
+  .story-cinematic.story-stage { min-height: min(86svh, 720px); }
+  .museum-page-spatial .story-cinematic.story-stage { min-height: 100svh; }
+  .story-cinematic .story-caption { padding: 16px 16px 20px; }
+  .story-cinematic .story-subtitle { line-height: 1.65; }
+}
