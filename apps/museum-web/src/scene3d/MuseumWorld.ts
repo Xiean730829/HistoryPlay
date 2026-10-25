@@ -8,12 +8,13 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import type { ActiveSession, ArtifactProjection } from "../application/museumApi";
 import { galleryAssets } from "../capabilities/galleryAssets";
 import type { AssetLease } from "../capabilities/assetLoader";
-import { buildHall, inscription } from "./architecture";
+import { artifactPlaque, buildHall } from "./architecture";
 import { MODEL_SURFACE_OFFSET, maintainSurfaceContact, nearbyModelIndices, seatModel, stationPlacement } from "./layout";
 import { stairCameraPose, stationFacingYaw } from "./stairCamera";
 import { disposeTree } from "./resources";
 import { pickArtifact } from "./picking";
 import { galleryVisualTheme } from "./visualTheme";
+import { EnvironmentBackdrop, type GalleryEnvironment } from "./environmentBackdrop";
 
 interface Exhibit { root: Group; spin: Group; loaded: boolean; loading: boolean; controller: AbortController; lease?: AssetLease }
 interface WorldHooks {
@@ -42,6 +43,7 @@ export class MuseumWorld {
   private acknowledgedAt = 0;
   private readonly resize: ResizeObserver;
   private readonly environment: WebGLRenderTarget;
+  private readonly backdrop: EnvironmentBackdrop;
   private lastTime = 0;
   private inspection = false;
   private drag: { x: number; y: number; yaw: number; pitch: number } | null = null;
@@ -62,13 +64,15 @@ export class MuseumWorld {
     this.renderer.domElement.setAttribute("aria-label", "可点击文物的三维宫殿展廊");
     this.renderer.domElement.style.touchAction = "none";
     host.appendChild(this.renderer.domElement);
-    this.scene.background = new Color(galleryVisualTheme.renderer.backgroundColor);
+    this.scene.background = new Color("#17130f");
     this.scene.fog = new FogExp2(galleryVisualTheme.renderer.fogColor, galleryVisualTheme.renderer.fogDensity);
     const environment = new RoomEnvironment();
     const generator = new PMREMGenerator(this.renderer);
     this.environment = generator.fromScene(environment, 0.04);
     this.scene.environment = this.environment.texture;
     environment.dispose(); generator.dispose();
+    this.backdrop = new EnvironmentBackdrop();
+    this.scene.add(this.backdrop.group);
     this.scene.add(buildHall(artifacts.length));
     this.camera.position.copy(this.targetPosition);
     this.camera.lookAt(this.currentLook);
@@ -103,10 +107,10 @@ export class MuseumWorld {
     const pickVolume = new Mesh(new BoxGeometry(2.5, 3.3, 2.28), new MeshBasicMaterial({ visible: false }));
     pickVolume.position.set(p.x, p.landingY + 1.65, p.z); pickVolume.userData.artifactId = artifact.id;
     this.scene.add(pickVolume);
-    const label = inscription(artifact.title, 2.1, 0.4);
-    label.position.set(p.x, p.plinthTop - 0.28, p.z + 0.895); this.scene.add(label);
-    const date = inscription(artifact.time_range.display_label ?? `${artifact.time_range.start_year}年`, 2.3, 0.6, true);
-    date.position.set(p.x, p.landingY + 0.017, p.z + 1.3); this.scene.add(date);
+    const era = artifact.time_range.display_label
+      ?? `${artifact.time_range.start_year}—${artifact.time_range.end_year}年`;
+    const plaque = artifactPlaque(artifact.title, era);
+    plaque.position.set(p.x, p.landingY + 0.37, p.z + 1.055); this.scene.add(plaque);
   }
 
   private async loadModel(artifact: ArtifactProjection, entry: Exhibit): Promise<void> {
@@ -164,6 +168,8 @@ export class MuseumWorld {
     this.targetLook.fromArray(cameraPose.lookAt);
   }
 
+  setEnvironment(mode: GalleryEnvironment): void { this.backdrop.setMode(mode); }
+
   private click = (event: MouseEvent): void => {
     if (this.suppressClick) { this.suppressClick = false; return; }
     const bounds = this.renderer.domElement.getBoundingClientRect();
@@ -216,6 +222,7 @@ export class MuseumWorld {
     const easing = 1 - Math.exp(-dt * 5.5);
     this.camera.position.lerp(this.targetPosition, easing);
     this.currentLook.lerp(this.targetLook, easing); this.camera.lookAt(this.currentLook);
+    this.backdrop.update(this.currentLook);
     const state = this.latest.state;
     const entry = state.focused_entity_id ? this.exhibits.get(state.focused_entity_id) : null;
     if (entry) {
@@ -251,7 +258,7 @@ export class MuseumWorld {
     this.renderer.domElement.removeEventListener("wheel", this.wheel);
     if (this.wheelTimer) clearTimeout(this.wheelTimer);
     this.exhibits.forEach((entry) => { entry.controller.abort(); entry.lease?.release(); });
-    disposeTree(this.scene); this.environment.dispose(); this.renderer.dispose(); this.renderer.forceContextLoss();
+    this.backdrop.dispose(); disposeTree(this.scene); this.environment.dispose(); this.renderer.dispose(); this.renderer.forceContextLoss();
     this.renderer.domElement.remove();
   }
 }
