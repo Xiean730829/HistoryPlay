@@ -67,6 +67,26 @@ def test_background_reads_fixed_text_continue_does_not_advance_and_unknown_is_qa
     asyncio.run(run())
 
 
+@pytest.mark.parametrize(
+    ("utterance", "expected_action"),
+    [
+        ("往博物馆后面走走", "move_next"),
+        ("去里面", "move_next"),
+        ("再往里", "move_next"),
+        ("回入口", "move_previous"),
+    ],
+)
+def test_spatial_directions_commit_one_station_and_wait_for_real_render(utterance, expected_action):
+    async def run():
+        client = Client()
+        result = await InputOrchestrator(client, TrustedInput("bridge", "input")).handle(utterance)
+        assert result["kind"] == "action"
+        assert result["render_status"] == "pending"
+        assert client.actions[0][1]["action"] == expected_action
+
+    asyncio.run(run())
+
+
 def test_content_from_previous_focus_is_rejected_when_focus_changes_during_read():
     class ChangingClient(Client):
         def __init__(self):
