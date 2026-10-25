@@ -5,12 +5,37 @@ import sys
 from pathlib import Path
 
 import pytest
-from aiohttp import ClientSession, web
+from aiohttp import ClientResponseError, ClientSession, web
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "services/voice-bridge/src"))
 
 from museum_voice.config import DeviceConfig
-from museum_voice.main import create_app, fixed_text_event, reject_redirect
+from museum_voice.main import bridge_failure, create_app, fixed_text_event, reject_redirect
+
+
+def test_bridge_failure_exposes_only_stage_and_bounded_upstream_http_status():
+    error = ClientResponseError(None, (), status=401, message="token=private-value")
+
+    result = bridge_failure("upstream_websocket_connect", error)
+
+    assert result == {
+        "type": "bridge_error",
+        "stage": "upstream_websocket_connect",
+        "code": "upstream_http_401",
+    }
+    assert "private-value" not in str(result)
+    assert "message" not in result
+
+
+def test_bridge_failure_classifies_timeout_without_exception_details():
+    result = bridge_failure("upstream_hello_wait", TimeoutError("credential=private-value"))
+
+    assert result == {
+        "type": "bridge_error",
+        "stage": "upstream_hello_wait",
+        "code": "timeout",
+    }
+    assert "private-value" not in str(result)
 
 
 def test_loopback_host_and_origin_protect_bridge_before_any_upstream_connection():

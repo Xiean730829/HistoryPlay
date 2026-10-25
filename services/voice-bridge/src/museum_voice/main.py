@@ -7,6 +7,7 @@ from pathlib import Path
 
 from aiohttp import (
     ClientError,
+    ClientResponseError,
     ClientSession,
     ClientTimeout,
     ClientWSTimeout,
@@ -58,6 +59,28 @@ def fixed_text_event(text: object, session_id: str) -> dict[str, str]:
     }
 
 
+def bridge_failure(stage: str, error: Exception) -> dict[str, str]:
+    """Return bounded diagnostics without exposing exception text or request data."""
+    if stage == "upstream_websocket_connect" and isinstance(error, ClientResponseError):
+        status = error.status
+        code = f"upstream_http_{status}" if 100 <= status <= 599 else "upstream_http_error"
+    elif isinstance(error, TimeoutError):
+        code = "timeout"
+    elif isinstance(error, GatewayError):
+        code = "game_service_error"
+    elif isinstance(error, FFmpegError):
+        code = "codec_error"
+    elif isinstance(error, ClientError):
+        code = "network_error"
+    elif isinstance(error, OSError):
+        code = "io_error"
+    elif isinstance(error, ValueError):
+        code = "protocol_error"
+    else:
+        code = "operation_error"
+    return {"type": "bridge_error", "stage": stage, "code": code}
+
+
 @web.middleware
 async def local_only(request: web.Request, handler):
     if request.host != request.app[HOST]:
@@ -96,16 +119,19 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
     tasks: list[asyncio.Task] = []
     upstream = None
     orchestrator = None
+    stage = "browser_websocket_upgrade"
     try:
         await browser.prepare(request)
         if request.app.get(DEVICE) is None:
             raise ValueError("固定设备尚未配置，只读展台绑定可用")
+        stage = "browser_bind_message"
         first = await asyncio.wait_for(browser.receive_json(), 5)
         if not isinstance(first, dict) or first.get("op") != "bind":
             raise ValueError("音频连接必须先绑定当前展台")
         bound = request.app[GAME_BINDINGS].get(first.get("binding_id"))
         if bound is None:
             raise ValueError("当前展台语音绑定已失效")
+        stage = "game_begin"
         granted = await bound.client.voice("begin", bridge_token=bound.bridge_token)
         orchestrator = InputOrchestrator(
             bound.client, TrustedInput(bound.bridge_token, granted["input_token"])
@@ -117,12 +143,14 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
         render_gate_timer: asyncio.TimerHandle | None = None
         render_gate = RenderReplyGate()
         device = request.app[DEVICE]
+        stage = "audio_codec_initialize"
         codec = AudioCodec()
         trace = TraceConfig()
         trace.on_request_redirect.append(reject_redirect)
         async with ClientSession(
             timeout=ClientTimeout(total=None, sock_connect=15), trace_configs=[trace]
         ) as client:
+            stage = "upstream_websocket_connect"
             upstream = await client.ws_connect(
                 device.websocket_url,
                 headers=connection_headers(device),
@@ -131,7 +159,9 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
                 autoping=True,
                 timeout=ClientWSTimeout(ws_close=1),
             )
+            stage = "upstream_hello_send"
             await upstream.send_json(hello_message(device))
+            stage = "upstream_hello_wait"
             hello = await asyncio.wait_for(upstream.receive_json(), 12)
             if (
                 not isinstance(hello, dict)
@@ -140,7 +170,9 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
             ):
                 raise ValueError("官方未接受设备握手")
             session_id = hello.get("session_id", "")
+            stage = "browser_ready"
             await browser.send_json({"type": "ready", "sample_rate": 24000})
+            stage = "active_voice_session"
 
             async def send_microphone() -> None:
                 nonlocal input_started, input_stopped, pcm_frames
@@ -275,12 +307,10 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
             done, _ = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
             for task in done:
                 task.result()
-    except (ClientError, OSError, ValueError, TimeoutError, FFmpegError, GatewayError):
+    except (ClientError, OSError, ValueError, TimeoutError, FFmpegError, GatewayError) as error:
         # Network exception repr, URL and headers can contain device credentials.
         if browser.prepared and not browser.closed:
-            await browser.send_json(
-                {"type": "bridge_error", "message": "语音连接中止，请恢复固定设备连接配置后重试"}
-            )
+            await browser.send_json(bridge_failure(stage, error))
     finally:
         if "render_gate_timer" in locals() and render_gate_timer is not None:
             render_gate_timer.cancel()
