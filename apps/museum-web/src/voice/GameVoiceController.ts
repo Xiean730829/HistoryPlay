@@ -10,7 +10,9 @@ import type { VoiceControlResult } from "./VoiceClient";
 export interface GameVoiceHooks {
   onStatus(message: string): void;
   onTranscript(text: string): void;
-  onRefresh(receipt?: CommandReceipt): Promise<void>;
+  onNewInput?(): void;
+  onStoryTransition?(action: string): void;
+  onRefresh(receipt?: CommandReceipt): Promise<"rendered" | "degraded" | "pending">;
 }
 
 /** One current game session; never creates or pairs another session. */
@@ -57,7 +59,12 @@ export class GameVoiceController {
         if (!this.disposed) this.hooks.onStatus(message ?? ({ connecting: "正在连接讲解员",
           connected: "语音已连接，可以说话", disconnected: "语音已断开", error: "语音连接出错" }[state]));
       },
-      onText: (type, text) => { if (type === "stt" && !this.disposed) this.hooks.onTranscript(text); },
+      onText: (type, text, state) => {
+        if (this.disposed || !text.trim()) return;
+        if (type === "stt") this.hooks.onTranscript(text);
+        else if (type === "tts" && state !== "start") this.hooks.onTranscript(text);
+        else if (type === "tts" && state === "start") this.hooks.onStatus("讲解员正在结合当前展台内容回答");
+      },
       onControl: (control) => { void this.control(control).catch((error: unknown) => {
         if (!this.disposed) this.hooks.onStatus(error instanceof Error ? error.message : "语音操作失败");
       }); },
@@ -67,6 +74,7 @@ export class GameVoiceController {
 
   beginTurn(): void {
     this.inputSequence += 1;
+    this.hooks.onNewInput?.();
     this.focus.claim("qa", () => this.voice?.interrupt());
     void this.voice?.beginTurn().catch((error: unknown) => {
       if (!this.disposed) this.hooks.onStatus(error instanceof Error ? error.message : "语音连接失败");
@@ -86,17 +94,34 @@ export class GameVoiceController {
       return;
     }
     if (result.receipt) {
-      if (["locate_artifact", "move_next", "move_previous", "return_to_exhibit"].includes(result.receipt.action ?? "")) {
+      const expectsRenderedFrame = result.receipt.status === "committed"
+        && ["locate_artifact", "move_next", "move_previous", "return_to_exhibit", "set_view"]
+          .includes(result.receipt.action ?? "");
+      if (expectsRenderedFrame) {
         this.narration.leave();
       }
       this.hooks.onStatus(result.message ?? "动作已提交，正在更新画面");
-      await this.hooks.onRefresh(result.receipt);
+      const renderStatus = await this.hooks.onRefresh(result.receipt);
+      if (expectsRenderedFrame) {
+        if (sequence !== this.inputSequence || this.disposed) return;
+        this.voice?.acknowledgeRender(result.receipt.request_id, renderStatus);
+        if (renderStatus !== "rendered") {
+          this.hooks.onStatus("展品画面尚未得到真实呈现回执，本轮讲解已取消；可以稍后再问");
+          return;
+        }
+        this.hooks.onStatus("展品已呈现，讲解员正在介绍它并提供后续选择");
+      }
     }
-    const storyTransition = ["enter_story", "continue_story"].includes(result.receipt?.action ?? "");
+    const committedAction = result.receipt?.status === "committed" ? result.receipt.action ?? "" : "";
+    const storyTransition = ["enter_story", "continue_story"].includes(committedAction);
+    if ((storyTransition || committedAction === "return_to_exhibit")
+      && sequence === this.inputSequence && !this.disposed) {
+      this.hooks.onStoryTransition?.(committedAction);
+    }
     if (result.narration && !storyTransition && !this.disposed && sequence === this.inputSequence) {
-      this.hooks.onTranscript(result.narration.text);
-      this.hooks.onStatus("正在朗读已准备的正文");
-      await this.narration.play({ ...result.narration, role: "answer" });
+      // The fixed paragraph is context for XiaoZhi's live response. Never label
+      // browser speech as XiaoZhi audio or silently replace the device voice.
+      this.hooks.onStatus("已读取当前文物的固定讲解稿，等待讲解员实时讲解");
     }
   }
 

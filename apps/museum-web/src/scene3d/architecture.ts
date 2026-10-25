@@ -24,6 +24,29 @@ export function inscription(text: string, width = 2, height = 0.5, floor = false
   return plane;
 }
 
+export function artifactPlaque(title: string, era: string): Mesh {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1024; canvas.height = 320;
+  const ctx = canvas.getContext("2d")!;
+  ctx.fillStyle = "#17130ff0";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = "#c69b5d"; ctx.lineWidth = 8;
+  ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillStyle = "#fff0d2";
+  ctx.font = 'bold 66px "Songti SC", "SimSun", serif';
+  ctx.fillText(title, 512, 105, 930);
+  ctx.fillStyle = "#dbb978";
+  ctx.font = '46px "Songti SC", "SimSun", serif';
+  ctx.fillText(era, 512, 235, 930);
+  const texture = new CanvasTexture(canvas); texture.colorSpace = SRGBColorSpace;
+  const plaque = new Mesh(new PlaneGeometry(2.65, 0.83), new MeshBasicMaterial({
+    map: texture, toneMapped: false, depthWrite: false,
+  }));
+  plaque.raycast = () => undefined;
+  return plaque;
+}
+
 function box(hall: Group, w: number, h: number, d: number, x: number, y: number, z: number, material: Material): Mesh {
   const mesh = new Mesh(new BoxGeometry(w, h, d), material);
   mesh.position.set(x, y, z); mesh.castShadow = true; mesh.receiveShadow = true;

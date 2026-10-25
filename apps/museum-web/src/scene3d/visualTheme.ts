@@ -1,11 +1,11 @@
 /** Shared art direction for the Tang palace-inspired gallery, not a historical reconstruction. */
 export const galleryVisualTheme = {
   renderer: {
-    toneMappingExposure: 0.78,
+    toneMappingExposure: 0.62,
     pixelRatioLimit: 1.5,
     backgroundColor: "#786c5b",
-    fogColor: "#746754",
-    fogDensity: 0.009,
+    fogColor: "#292018",
+    fogDensity: 0.012,
   },
   colors: {
     lacquer: "#35281e",
@@ -19,11 +19,11 @@ export const galleryVisualTheme = {
   lighting: {
     ambientSky: "#887458",
     ambientGround: "#211a14",
-    ambientIntensity: 0.5,
+    ambientIntensity: 0.38,
     daylight: "#e6a95a",
-    daylightIntensity: 1.8,
+    daylightIntensity: 1.2,
     exhibit: "#ffd08b",
-    exhibitIntensity: 9,
+    exhibitIntensity: 5.8,
     backlight: "#e6a655",
   },
 } as const;
