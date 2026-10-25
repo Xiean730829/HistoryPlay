@@ -1,5 +1,5 @@
 import {
-  ACESFilmicToneMapping, Box3, Color, FogExp2, Group, Mesh, MeshStandardMaterial,
+  ACESFilmicToneMapping, Box3, Group, Mesh, MeshStandardMaterial,
   PCFShadowMap, PerspectiveCamera, Raycaster, Scene, Vector2, Vector3, WebGLRenderer,
   PMREMGenerator, BoxGeometry, MeshBasicMaterial, type WebGLRenderTarget,
 } from "three";
@@ -8,13 +8,13 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import type { ActiveSession, ArtifactProjection } from "../application/museumApi";
 import { galleryAssets } from "../capabilities/galleryAssets";
 import type { AssetLease } from "../capabilities/assetLoader";
-import { artifactPlaque, buildHall } from "./architecture";
+import { buildGallery } from "./architecture";
 import { MODEL_SURFACE_OFFSET, maintainSurfaceContact, nearbyModelIndices, seatModel, stationPlacement } from "./layout";
-import { stairCameraPose, stationFacingYaw } from "./stairCamera";
+import { routeCameraPose, stationFacingYaw } from "./routeCamera";
 import { disposeTree } from "./resources";
 import { pickArtifact } from "./picking";
 import { galleryVisualTheme } from "./visualTheme";
-import { EnvironmentBackdrop, type GalleryEnvironment } from "./environmentBackdrop";
+import { ParticleRiver, type GalleryEnvironment } from "./particleRiver";
 
 interface Exhibit { root: Group; spin: Group; loaded: boolean; loading: boolean; controller: AbortController; lease?: AssetLease }
 interface WorldHooks {
@@ -31,8 +31,8 @@ export class MuseumWorld {
   readonly camera = new PerspectiveCamera(47, 1, 0.08, 100);
   readonly renderer: WebGLRenderer;
   private readonly exhibits = new Map<string, Exhibit>();
-  private readonly targetPosition = new Vector3().fromArray(stairCameraPose(0, false).position);
-  private readonly targetLook = new Vector3().fromArray(stairCameraPose(0, false).lookAt);
+  private readonly targetPosition = new Vector3().fromArray(routeCameraPose(0, false).position);
+  private readonly targetLook = new Vector3().fromArray(routeCameraPose(0, false).lookAt);
   private readonly currentLook = this.targetLook.clone();
   private readonly raycaster = new Raycaster();
   private readonly pointer = new Vector2();
@@ -43,7 +43,7 @@ export class MuseumWorld {
   private acknowledgedAt = 0;
   private readonly resize: ResizeObserver;
   private readonly environment: WebGLRenderTarget;
-  private readonly backdrop: EnvironmentBackdrop;
+  private readonly river: ParticleRiver;
   private lastTime = 0;
   private inspection = false;
   private drag: { x: number; y: number; yaw: number; pitch: number } | null = null;
@@ -55,25 +55,25 @@ export class MuseumWorld {
   constructor(private readonly host: HTMLElement, private readonly artifacts: readonly ArtifactProjection[],
     session: ActiveSession, private readonly hooks: WorldHooks) {
     this.latest = session;
-    this.renderer = new WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
+    this.renderer = new WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, galleryVisualTheme.renderer.pixelRatioLimit));
     this.renderer.toneMapping = ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = galleryVisualTheme.renderer.toneMappingExposure;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = PCFShadowMap;
-    this.renderer.domElement.setAttribute("aria-label", "可点击文物的三维宫殿展廊");
+    this.renderer.setClearColor(0x000000, 0);
+    this.renderer.domElement.setAttribute("aria-label", "沿星尘路线陈列的三维文物展廊");
     this.renderer.domElement.style.touchAction = "none";
     host.appendChild(this.renderer.domElement);
-    this.scene.background = new Color("#17130f");
-    this.scene.fog = new FogExp2(galleryVisualTheme.renderer.fogColor, galleryVisualTheme.renderer.fogDensity);
+    this.scene.background = null;
     const environment = new RoomEnvironment();
     const generator = new PMREMGenerator(this.renderer);
     this.environment = generator.fromScene(environment, 0.04);
     this.scene.environment = this.environment.texture;
     environment.dispose(); generator.dispose();
-    this.backdrop = new EnvironmentBackdrop();
-    this.scene.add(this.backdrop.group);
-    this.scene.add(buildHall(artifacts.length));
+    this.river = new ParticleRiver();
+    this.scene.add(this.river.group);
+    this.scene.add(buildGallery(artifacts.length));
     this.camera.position.copy(this.targetPosition);
     this.camera.lookAt(this.currentLook);
     artifacts.forEach((artifact, index) => this.createExhibit(artifact, index));
@@ -104,13 +104,9 @@ export class MuseumWorld {
     const entry: Exhibit = { root, spin, loaded: false, loading: false, controller: new AbortController() };
     this.exhibits.set(artifact.id, entry);
     // A case-sized target catches the coin hole and the supporting plinth as one exhibit.
-    const pickVolume = new Mesh(new BoxGeometry(2.5, 3.3, 2.28), new MeshBasicMaterial({ visible: false }));
-    pickVolume.position.set(p.x, p.landingY + 1.65, p.z); pickVolume.userData.artifactId = artifact.id;
+    const pickVolume = new Mesh(new BoxGeometry(2.5, 2.5, 2.15), new MeshBasicMaterial({ visible: false }));
+    pickVolume.position.set(p.x, p.plinthTop + 1.24, p.z); pickVolume.userData.artifactId = artifact.id;
     this.scene.add(pickVolume);
-    const era = artifact.time_range.display_label
-      ?? `${artifact.time_range.start_year}—${artifact.time_range.end_year}年`;
-    const plaque = artifactPlaque(artifact.title, era);
-    plaque.position.set(p.x, p.landingY + 0.37, p.z + 1.055); this.scene.add(plaque);
   }
 
   private async loadModel(artifact: ArtifactProjection, entry: Exhibit): Promise<void> {
@@ -163,12 +159,12 @@ export class MuseumWorld {
         entry.controller = new AbortController();
       }
     });
-    const cameraPose = stairCameraPose(index, inspection, session.state.camera_pose?.zoom ?? 1);
+    const cameraPose = routeCameraPose(index, inspection, session.state.camera_pose?.zoom ?? 1);
     this.targetPosition.fromArray(cameraPose.position);
     this.targetLook.fromArray(cameraPose.lookAt);
   }
 
-  setEnvironment(mode: GalleryEnvironment): void { this.backdrop.setMode(mode); }
+  setEnvironment(mode: GalleryEnvironment): void { this.river.setMode(mode); }
 
   private click = (event: MouseEvent): void => {
     if (this.suppressClick) { this.suppressClick = false; return; }
@@ -222,7 +218,7 @@ export class MuseumWorld {
     const easing = 1 - Math.exp(-dt * 5.5);
     this.camera.position.lerp(this.targetPosition, easing);
     this.currentLook.lerp(this.targetLook, easing); this.camera.lookAt(this.currentLook);
-    this.backdrop.update(this.currentLook);
+    this.river.update(time);
     const state = this.latest.state;
     const entry = state.focused_entity_id ? this.exhibits.get(state.focused_entity_id) : null;
     if (entry) {
@@ -258,7 +254,7 @@ export class MuseumWorld {
     this.renderer.domElement.removeEventListener("wheel", this.wheel);
     if (this.wheelTimer) clearTimeout(this.wheelTimer);
     this.exhibits.forEach((entry) => { entry.controller.abort(); entry.lease?.release(); });
-    this.backdrop.dispose(); disposeTree(this.scene); this.environment.dispose(); this.renderer.dispose(); this.renderer.forceContextLoss();
+    this.river.dispose(); disposeTree(this.scene); this.environment.dispose(); this.renderer.dispose(); this.renderer.forceContextLoss();
     this.renderer.domElement.remove();
   }
 }

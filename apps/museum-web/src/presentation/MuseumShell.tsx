@@ -368,8 +368,7 @@ export function MuseumShell() {
       )}
 
       {session?.state.mode === "explore" && inspection && session.context.focused_artifact?.story_entry_ids?.length ? (
-        <div className="story-entry-row">
-          <span>{session.context.focused_artifact.title} · 它经历了怎样的时代？</span>
+        <div className="story-entry-row" aria-label={`${session.context.focused_artifact.title}的故事入口`}>
           <button
             className="button"
             disabled={busy}

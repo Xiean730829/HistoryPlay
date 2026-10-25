@@ -1,31 +1,18 @@
-import { DirectionalLight, Group, HemisphereLight, PointLight, SpotLight } from "three";
-import { PLINTH_HEIGHT, stationPlacement } from "./layout";
-import { galleryVisualTheme } from "./visualTheme";
+import { AmbientLight, Group, HemisphereLight, PointLight } from "three";
+import { stationPlacement } from "./layout";
 
-/** Warm cabinet accents and a soft shaft of amber light at the far end of the ascent. */
+/** Small colored pools keep the real exhibits legible without building a lit architectural shell. */
 export function buildGalleryLighting(count: number): Group {
-  const rig = new Group(); rig.name = "gallery-lighting-rig";
-  const { lighting } = galleryVisualTheme;
-  rig.add(new HemisphereLight(lighting.ambientSky, lighting.ambientGround, lighting.ambientIntensity));
-  for (let index = 0; index < count; index++) {
+  const rig = new Group();
+  rig.name = "gallery-exhibit-lights";
+  rig.add(new HemisphereLight("#c7d4ff", "#634c38", 1.15));
+  rig.add(new AmbientLight("#fff0dc", 0.34));
+  const accents = ["#ffd899", "#c4c8ff", "#e4b9d1", "#9dd8d2"];
+  for (let index = 0; index < count; index += 1) {
     const p = stationPlacement(index);
-    const target = new Group();
-    target.position.set(p.x, p.landingY + PLINTH_HEIGHT + 1.1, p.z);
-    const accent = new SpotLight(lighting.exhibit, lighting.exhibitIntensity, 8.5, 0.48, 0.78, 1.6);
-    accent.position.set(p.x - Math.sign(p.x) * 0.45, target.position.y + 3.4, p.z + 0.75);
-    accent.castShadow = index < 6;
-    rig.add(accent, target); accent.target = target;
+    const light = new PointLight(accents[index % accents.length], 17, 7.5, 2);
+    light.position.set(p.x - Math.sign(p.x) * 0.45, 3.7, p.z + 0.45);
+    rig.add(light);
   }
-  const last = stationPlacement(Math.max(0, count - 1));
-  const daylight = new DirectionalLight(lighting.daylight, lighting.daylightIntensity);
-  daylight.position.set(-6, last.landingY + 11, 7); daylight.target.position.set(0, last.landingY + 2, last.z - 3);
-  daylight.castShadow = true;
-  daylight.shadow.mapSize.set(1536, 1536);
-  Object.assign(daylight.shadow.camera, { left: -12, right: 12, top: 16, bottom: -16, near: 0.5, far: 60 });
-  daylight.shadow.bias = -0.00015; daylight.shadow.normalBias = 0.03;
-  rig.add(daylight, daylight.target);
-  const backlight = new PointLight(lighting.backlight, 42, 18, 1.8);
-  backlight.position.set(0, last.landingY + 7.5, last.z - 5.6);
-  rig.add(backlight);
   return rig;
 }

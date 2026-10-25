@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ActiveSession, ArtifactProjection } from "../application/museumApi";
 import { MuseumWorld } from "./MuseumWorld";
-import type { GalleryEnvironment } from "./environmentBackdrop";
+import type { GalleryEnvironment } from "./particleRiver";
 import "./museum-space.css";
 
 export function MuseumSpace({ artifacts, session, onSelect, onObserve, onRender, inspection = false }: {
@@ -28,7 +28,7 @@ export function MuseumSpace({ artifacts, session, onSelect, onObserve, onRender,
       const current = new MuseumWorld(host.current, artifacts, session, {
         onSelect: (id) => callbacks.current.onSelect(id),
         onObserve: (yaw, pitch, zoom) => callbacks.current.onObserve(yaw, pitch, zoom),
-        onPick: (id) => { setPicked(id); setPickNotice(id ? `正在走近${artifacts.find((item) => item.id === id)?.title ?? "文物"}…` : "请点击展台或文物，柱子后面的文物需要先走近"); },
+        onPick: (id) => { setPicked(id); setPickNotice(id ? `正在走近${artifacts.find((item) => item.id === id)?.title ?? "文物"}…` : "请点击河畔展台或文物"); },
         onRender: (status, reason) => callbacks.current.onRender(status, reason),
         onLoaded: setLoaded,
       });
@@ -42,19 +42,20 @@ export function MuseumSpace({ artifacts, session, onSelect, onObserve, onRender,
   const focused = artifacts.find((artifact) => artifact.id === session.state.focused_entity_id);
   const focusedEra = focused?.time_range.display_label
     ?? (focused ? `${focused.time_range.start_year}—${focused.time_range.end_year}年` : "");
-  return <section className="museum-space" aria-label="大唐三维展廊" data-renderer="three-webgl" data-models-loaded={loaded} data-last-picked={picked ?? ""}>
+  return <section className={`museum-space museum-space--${environment}`} aria-label="大唐三维文物展廊" data-renderer="three-webgl" data-models-loaded={loaded} data-last-picked={picked ?? ""}>
+    <div className="museum-space-background" aria-hidden="true" />
     <div className="museum-webgl" ref={host} />
-    <div className="museum-space-brand"><span>时空博物馆</span><h2>大唐 · 文物长廊</h2><p>618 — 907</p></div>
+    <div className="museum-space-brand"><span>时空博物馆</span><h2>大唐 · 星河寻珍</h2><p>618 — 907</p></div>
     <nav className="museum-environment-switch" aria-label="展厅远景氛围">
       <span>远景</span>
       <button type="button" aria-pressed={environment === "ruins"} onClick={() => setEnvironment("ruins")}>遗迹</button>
       <button type="button" aria-pressed={environment === "stars"} onClick={() => setEnvironment("stars")}>星空</button>
     </nav>
-    {focused && <div className="museum-focused-artifact" aria-live="polite" aria-label="当前文物">
+    {focused && !inspection && <div className="museum-focused-artifact" aria-live="polite" aria-label="当前文物">
       <span>当前展品</span><strong>{focused.title}</strong><span>{focusedEra}</span>
     </div>}
     <div className="museum-space-guide">{error || pickNotice || (loaded < Math.min(3, artifacts.length)
       ? `真实文物正在入馆 ${loaded} / ${Math.min(3, artifacts.length)}`
-      : inspection ? "拖动观察文物 · 随时可以进入它的故事" : "点击展台上的文物，走近它的时代")}</div>
+      : inspection ? "拖动旋转文物 · 选择路线继续故事" : "点击河畔文物，走近它的时代")}</div>
   </section>;
 }
