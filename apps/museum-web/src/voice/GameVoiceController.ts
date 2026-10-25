@@ -1,3 +1,4 @@
+import { readStoryNode, refreshSession } from "../application/museumApi";
 import type { ActiveSession } from "../application/museumApi";
 import type { CommandReceipt } from "@history-play/contracts";
 import type { AudioFocus, AudioLease } from "../narration/AudioFocus";
@@ -147,6 +148,9 @@ export class GameVoiceController {
           return;
         }
         this.hooks.onStatus("展品已呈现，讲解员正在介绍它并提供后续选择");
+        if (["locate_artifact", "move_next", "move_previous"].includes(result.receipt.action ?? "")) {
+          await this.speakFocusedArtifact(sequence, result.receipt.revision);
+        }
       }
     }
     const committedAction = result.receipt?.status === "committed" ? result.receipt.action ?? "" : "";
@@ -156,9 +160,73 @@ export class GameVoiceController {
       this.hooks.onStoryTransition?.(committedAction);
     }
     if (result.narration && !storyTransition && !this.disposed && sequence === this.inputSequence) {
-      // The fixed paragraph is context for XiaoZhi's live response. Never label
-      // browser speech as XiaoZhi audio or silently replace the device voice.
-      this.hooks.onStatus("已读取当前文物的固定讲解稿，等待讲解员实时讲解");
+      await this.speakFocusedArtifact(sequence, result.receipt?.revision, result.narration);
+    }
+  }
+
+  private async speakFocusedArtifact(
+    sequence: number, expectedRevision?: number,
+    expectedNarration?: NonNullable<VoiceControlResult["narration"]>,
+  ): Promise<void> {
+    this.hooks.onStatus("展品已定位，正在准备当前文物的固定讲解稿");
+    try {
+      const current = await refreshSession(this.session);
+      const artifact = current.context.focused_artifact;
+      if (sequence !== this.inputSequence || this.disposed
+        || current.context.revision !== current.state.revision
+        || (expectedRevision !== undefined && current.state.revision !== expectedRevision)
+        || current.context.story_node
+        || !artifact || (expectedNarration && artifact.id !== expectedNarration.contentId)) return;
+
+      const page = await readStoryNode(current, artifact.id, AbortSignal.timeout(8000));
+      const paragraph = page.paragraphs[0];
+      if (sequence !== this.inputSequence || this.disposed
+        || page.content_id !== artifact.id || page.pack_id !== current.pack_id
+        || page.version !== current.version || page.artifact_id !== artifact.id
+        || !paragraph || paragraph.content_id !== artifact.id
+        || paragraph.authorship.story_id !== null
+        || (expectedNarration && (page.pack_id !== expectedNarration.packId
+          || page.version !== expectedNarration.version || paragraph.text !== expectedNarration.text))) {
+        return;
+      }
+
+      const beforePlayback = await refreshSession(current);
+      if (sequence !== this.inputSequence || this.disposed
+        || beforePlayback.context.revision !== beforePlayback.state.revision
+        || beforePlayback.state.revision !== current.state.revision
+        || beforePlayback.context.focused_artifact?.id !== artifact.id
+        || beforePlayback.context.story_node) return;
+
+      this.hooks.onStatus("展品已就位，小智正在讲解固定正文");
+      const completed = await this.narration.play({
+        packId: page.pack_id, version: page.version, contentId: page.content_id,
+        text: paragraph.text, role: "answer",
+      });
+      if (!completed || sequence !== this.inputSequence || this.disposed) return;
+
+      const after = await refreshSession(current);
+      const stillCurrent = after.context.revision === after.state.revision
+        && after.state.revision === current.state.revision
+        && after.context.focused_artifact?.id === artifact.id
+        && after.context.story_node === null;
+      if (!stillCurrent || sequence !== this.inputSequence || this.disposed) return;
+      if ((artifact.story_entry_ids ?? []).length > 0) {
+        this.hooks.onStatus("展品介绍完成，小智正在邀请你进入故事");
+        await this.narration.play({
+          packId: current.pack_id,
+          version: current.version,
+          contentId: artifact.id,
+          role: "answer",
+          text: "这件文物有一个已发布的故事。你可以说“进入故事”，我会直接从第一幕开始讲解。",
+        });
+      } else {
+        this.hooks.onStatus("展品介绍完成，可以继续参观或提问");
+      }
+    } catch (error) {
+      if (sequence !== this.inputSequence || this.disposed) return;
+      this.hooks.onStatus(error instanceof Error
+        ? `文物已定位，但小智没有完成自动讲解：${error.message}`
+        : "文物已定位，但小智没有完成自动讲解");
     }
   }
 
