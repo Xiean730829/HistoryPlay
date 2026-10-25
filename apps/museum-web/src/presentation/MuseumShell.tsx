@@ -326,7 +326,7 @@ export function MuseumShell() {
   }
 
   return (
-    <main className="museum-page museum-page-spatial">
+    <main className="museum-page museum-page-spatial" data-story-mode={session?.state.mode === "story" ? "true" : undefined}>
       <header className="masthead">
         <div className="brand-mark" aria-hidden="true">时</div>
         <div>
