@@ -113,9 +113,18 @@ def test_unconfigured_bridge_status_is_explicit_and_contains_no_credentials(orig
     asyncio.run(run())
 
 
-def test_read_only_entry_hint_tells_preview_to_use_the_one_configured_origin():
+def test_read_only_entry_hint_reports_only_the_configured_preview_origins():
     async def run():
-        app = create_app(None, port=8782, origin="http://127.0.0.1:5190")
+        allowed_origins = (
+            "http://127.0.0.1:5190",
+            "http://127.0.0.1:5192",
+        )
+        app = create_app(
+            None,
+            port=8782,
+            origin="http://127.0.0.1:5190",
+            web_origins=allowed_origins,
+        )
         runner = web.AppRunner(app)
         await runner.setup()
         site = web.TCPSite(runner, "127.0.0.1", 0)
@@ -124,13 +133,14 @@ def test_read_only_entry_hint_tells_preview_to_use_the_one_configured_origin():
         try:
             async with ClientSession() as client, client.get(
                 f"http://127.0.0.1:{port}/voice/entry",
-                headers={"Host": "127.0.0.1:8782", "Origin": "http://127.0.0.1:5191"},
+                headers={"Host": "127.0.0.1:8782", "Origin": "http://127.0.0.1:5190"},
             ) as response:
                 assert response.status == 200
-                assert response.headers["Access-Control-Allow-Origin"] == "*"
+                assert response.headers["Access-Control-Allow-Origin"] == "http://127.0.0.1:5190"
                 assert await response.json() == {
                     "service": "museum-voice",
                     "web_origin": "http://127.0.0.1:5190",
+                    "web_origins": sorted(allowed_origins),
                     "device_configured": False,
                 }
             async with ClientSession() as client, client.post(
@@ -139,6 +149,24 @@ def test_read_only_entry_hint_tells_preview_to_use_the_one_configured_origin():
                 json={},
             ) as denied:
                 assert denied.status == 403
+            async with ClientSession() as client, client.get(
+                f"http://127.0.0.1:{port}/voice/entry",
+                headers={"Host": "127.0.0.1:8782", "Origin": "http://127.0.0.1:5192"},
+            ) as response:
+                assert response.status == 200
+                assert (await response.json())["web_origin"] == "http://127.0.0.1:5192"
+            async with ClientSession() as client, client.get(
+                f"http://127.0.0.1:{port}/voice/status",
+                headers={"Host": "127.0.0.1:8782", "Origin": "http://127.0.0.1:5192"},
+            ) as allowed:
+                assert allowed.status == 200
+                assert allowed.headers["Access-Control-Allow-Origin"] == "http://127.0.0.1:5192"
+            async with ClientSession() as client, client.get(
+                f"http://127.0.0.1:{port}/voice/entry",
+                headers={"Host": "127.0.0.1:8782", "Origin": "http://127.0.0.1:5191"},
+            ) as unlisted:
+                assert unlisted.status == 200
+                assert "Access-Control-Allow-Origin" not in unlisted.headers
         finally:
             await runner.cleanup()
 

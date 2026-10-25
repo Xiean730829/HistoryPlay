@@ -42,10 +42,20 @@ export class GameVoiceController {
     this.hooks.onStatus("正在连接当前展台语音");
     const entryResponse = await fetch(`${this.bridgeUrl}/voice/entry`, { signal: AbortSignal.timeout(8000) });
     if (!entryResponse.ok) throw new Error("无法读取本机展台语音入口配置");
-    const entry = await entryResponse.json() as { service?: string; web_origin?: string; device_configured?: boolean };
-    if (entry.service !== "museum-voice" || !entry.web_origin) throw new Error("本机语音入口配置无效");
-    if (window.location.origin !== entry.web_origin) {
-      throw new Error(`当前页面来源与语音桥不匹配，请改用唯一展台入口：${entry.web_origin}`);
+    const entry = await entryResponse.json() as {
+      service?: string;
+      web_origin?: string;
+      web_origins?: string[];
+      device_configured?: boolean;
+    };
+    const allowedOrigins = entry.web_origins?.length
+      ? entry.web_origins
+      : entry.web_origin ? [entry.web_origin] : [];
+    if (entry.service !== "museum-voice" || allowedOrigins.length === 0) {
+      throw new Error("本机语音入口配置无效");
+    }
+    if (!allowedOrigins.includes(window.location.origin)) {
+      throw new Error(`当前页面来源与语音桥不匹配，可用展台入口：${allowedOrigins.join("、")}`);
     }
     if (entry.device_configured !== true) throw new Error("本机小智设备尚未配置，无法开启语音讲述");
     const response = await fetch(`${this.bridgeUrl}/voice/bind`, {
