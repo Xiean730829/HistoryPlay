@@ -64,7 +64,7 @@ export class MuseumWorld {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = PCFShadowMap;
     this.renderer.setClearColor(0x000000, 0);
-    this.renderer.domElement.setAttribute("aria-label", "沿弯曲阶梯逐级上行的三维文物展廊");
+    this.renderer.domElement.setAttribute("aria-label", "沿蜿蜒银河河道上行的三维文物展廊");
     this.renderer.domElement.style.touchAction = "none";
     host.appendChild(this.renderer.domElement);
     this.scene.background = null;
@@ -73,7 +73,7 @@ export class MuseumWorld {
     this.environment = generator.fromScene(environment, 0.04);
     this.scene.environment = this.environment.texture;
     environment.dispose(); generator.dispose();
-    this.river = new ParticleRiver();
+    this.river = new ParticleRiver(artifacts.length);
     this.scene.add(this.river.group);
     this.scene.add(buildGallery(artifacts.length));
     this.camera.position.copy(this.targetPosition);

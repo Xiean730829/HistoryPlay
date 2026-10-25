@@ -1,18 +1,13 @@
 import {
-  BoxGeometry, CylinderGeometry, Group, Mesh, MeshStandardMaterial, TorusGeometry,
+  BufferAttribute, BufferGeometry, BoxGeometry, CylinderGeometry, Group, Mesh, MeshStandardMaterial, TorusGeometry,
 } from "three";
 import { buildGalleryLighting } from "./galleryLighting";
 import { createGalleryMaterials } from "./materialLibrary";
 import {
-  LANDING_DEPTH, PEDESTAL_HEIGHT, STAIR_STEPS_PER_FLIGHT, STAIR_STEP_RISE,
-  STAIR_WIDTH, stairStepPlacement, stationPlacement,
+  PEDESTAL_HEIGHT, RIVER_WALKWAY_THICKNESS, RIVER_WALKWAY_WIDTH, stationPlacement,
 } from "./layout";
-import { riverPointAt, riverTangentAt } from "./riverPath";
-
-function pathYawAt(distance: number): number {
-  const tangent = riverTangentAt(distance);
-  return Math.atan2(-tangent.x, -tangent.z);
-}
+import { riverBankNormalAt, riverPointAt } from "./riverPath";
+import { riverRibbonEndForStationCount, RIVER_RIBBON_SAMPLES, RIVER_RIBBON_START_DISTANCE } from "./particleRiver";
 
 function bar(group: Group, material: MeshStandardMaterial, width: number, height: number, depth: number,
   x: number, y: number, z: number): Mesh {
@@ -25,13 +20,13 @@ function bar(group: Group, material: MeshStandardMaterial, width: number, height
   return mesh;
 }
 
-function addCase(group: Group, x: number, z: number, landingY: number,
+function addCase(group: Group, x: number, z: number, walkY: number,
   yaw: number, materials: ReturnType<typeof createGalleryMaterials>): void {
   const width = 2.15;
   const depth = 1.82;
   const height = 2.28;
   const rail = 0.018;
-  const baseY = landingY + PEDESTAL_HEIGHT;
+  const baseY = walkY + PEDESTAL_HEIGHT;
   const midY = baseY + height / 2;
   const caseRoot = new Group();
   caseRoot.position.set(x, 0, z);
@@ -70,7 +65,7 @@ function addCase(group: Group, x: number, z: number, landingY: number,
   }
 
   const pedestal = new Mesh(new CylinderGeometry(0.72, 0.82, PEDESTAL_HEIGHT, 56), materials.stone);
-  pedestal.position.set(x, landingY + PEDESTAL_HEIGHT / 2, z);
+  pedestal.position.set(x, walkY + PEDESTAL_HEIGHT / 2, z);
   pedestal.castShadow = true;
   pedestal.receiveShadow = true;
   pedestal.userData.pickThrough = true;
@@ -83,55 +78,71 @@ function addCase(group: Group, x: number, z: number, landingY: number,
   caseRoot.add(rim);
 }
 
-function addLanding(group: Group, index: number, materials: ReturnType<typeof createGalleryMaterials>): void {
-  const placement = stationPlacement(index);
-  const landing = new Mesh(new BoxGeometry(STAIR_WIDTH + 0.36, 0.22, LANDING_DEPTH), materials.stone);
-  landing.name = `stair-landing-${index}`;
-  landing.position.set(placement.centerX, placement.landingY - 0.11, placement.centerZ);
-  landing.rotation.y = pathYawAt(placement.distance);
-  landing.receiveShadow = true;
-  landing.castShadow = true;
-  landing.raycast = () => undefined;
-  group.add(landing);
-}
-
-function addStairFlight(group: Group, flightIndex: number, materials: ReturnType<typeof createGalleryMaterials>): void {
-  for (let stepIndex = 0; stepIndex < STAIR_STEPS_PER_FLIGHT; stepIndex += 1) {
-    const step = stairStepPlacement(flightIndex, stepIndex);
-    const center = riverPointAt(step.distance + step.treadDepth / 2);
-    const tread = new Mesh(new BoxGeometry(STAIR_WIDTH, step.height, step.treadDepth + 0.012), materials.stone);
-    tread.name = `stair-step-${flightIndex}-${stepIndex}`;
-    tread.position.set(center.x, flightIndex * STAIR_STEP_RISE * STAIR_STEPS_PER_FLIGHT + step.height / 2,
-      center.z);
-    tread.rotation.y = pathYawAt(step.distance + step.treadDepth / 2);
-    tread.castShadow = true;
-    tread.receiveShadow = true;
-    tread.raycast = () => undefined;
-    group.add(tread);
-
-    const edge = new Mesh(new BoxGeometry(STAIR_WIDTH, 0.022, 0.032), materials.bronze);
-    edge.name = `stair-edge-${flightIndex}-${stepIndex}`;
-    const edgeCenter = riverPointAt(step.distance + step.treadDepth * 0.94);
-    edge.position.set(edgeCenter.x, step.topY - 0.012, edgeCenter.z);
-    edge.rotation.y = pathYawAt(step.distance + step.treadDepth / 2);
-    edge.raycast = () => undefined;
-    group.add(edge);
+function createWalkwayGeometry(count: number): BufferGeometry {
+  const geometry = new BufferGeometry();
+  const start = RIVER_RIBBON_START_DISTANCE;
+  const end = riverRibbonEndForStationCount(count);
+  const positions = new Float32Array((RIVER_RIBBON_SAMPLES + 1) * 4 * 3);
+  const uvs = new Float32Array((RIVER_RIBBON_SAMPLES + 1) * 4 * 2);
+  const indices: number[] = [];
+  for (let row = 0; row <= RIVER_RIBBON_SAMPLES; row += 1) {
+    const t = row / RIVER_RIBBON_SAMPLES;
+    const distance = start + t * (end - start);
+    const center = riverPointAt(distance);
+    const bank = riverBankNormalAt(distance);
+    const vertices = [
+      [center.x - bank.x * RIVER_WALKWAY_WIDTH / 2, center.y, center.z - bank.z * RIVER_WALKWAY_WIDTH / 2],
+      [center.x + bank.x * RIVER_WALKWAY_WIDTH / 2, center.y, center.z + bank.z * RIVER_WALKWAY_WIDTH / 2],
+      [center.x - bank.x * RIVER_WALKWAY_WIDTH / 2, center.y - RIVER_WALKWAY_THICKNESS,
+        center.z - bank.z * RIVER_WALKWAY_WIDTH / 2],
+      [center.x + bank.x * RIVER_WALKWAY_WIDTH / 2, center.y - RIVER_WALKWAY_THICKNESS,
+        center.z + bank.z * RIVER_WALKWAY_WIDTH / 2],
+    ];
+    for (let vertex = 0; vertex < vertices.length; vertex += 1) {
+      const [x, y, z] = vertices[vertex]!;
+      const offset = (row * 4 + vertex) * 3;
+      positions.set([x, y, z], offset);
+      const uvOffset = (row * 4 + vertex) * 2;
+      uvs.set([t, vertex % 2], uvOffset);
+    }
+    if (row === RIVER_RIBBON_SAMPLES) continue;
+    const a = row * 4;
+    const b = a + 4;
+    indices.push(
+      a, a + 1, b, a + 1, b + 1, b,
+      a + 2, b + 2, a + 3, a + 3, b + 2, b + 3,
+      a, b, a + 2, a + 2, b, b + 2,
+      a + 1, a + 3, b + 1, a + 3, b + 3, b + 1,
+    );
   }
+  geometry.setAttribute("position", new BufferAttribute(positions, 3));
+  geometry.setAttribute("uv", new BufferAttribute(uvs, 2));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
 }
 
-/** A rising central stone stair separates paired amber-lit glass cases on each landing. */
+function addWalkway(group: Group, count: number, materials: ReturnType<typeof createGalleryMaterials>): void {
+  const walkway = new Mesh(createWalkwayGeometry(count), materials.stone);
+  walkway.name = "galaxy-river-walkway";
+  walkway.receiveShadow = true;
+  walkway.castShadow = true;
+  walkway.raycast = () => undefined;
+  group.add(walkway);
+}
+
+/** A continuous, gently rising S-shaped river carries one glass case at every bend. */
 export function buildGallery(count: number): Group {
   const gallery = new Group();
-  gallery.name = "ascending-stair-galaxy-gallery";
+  gallery.name = "sinuous-galaxy-river-gallery";
   const materials = createGalleryMaterials();
+  addWalkway(gallery, count, materials);
   for (let index = 0; index < count; index += 1) {
-    addLanding(gallery, index, materials);
     const placement = stationPlacement(index);
     const inwardX = -placement.side * placement.bankX;
     const inwardZ = -placement.side * placement.bankZ;
-    addCase(gallery, placement.x, placement.z, placement.landingY,
+    addCase(gallery, placement.x, placement.z, placement.walkY,
       Math.atan2(inwardX, inwardZ), materials);
-    if (index < count - 1) addStairFlight(gallery, index, materials);
   }
   gallery.add(buildGalleryLighting(count));
   return gallery;
