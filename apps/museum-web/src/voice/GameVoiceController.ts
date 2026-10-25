@@ -11,6 +11,7 @@ import type { VoiceControlResult } from "./VoiceClient";
 export interface GameVoiceHooks {
   onStatus(message: string): void;
   onTranscript(text: string): void;
+  onUserTranscript?(text: string): void;
   onNewInput?(): void;
   onStoryTransition?(action: string): void;
   onRefresh(receipt?: CommandReceipt): Promise<"rendered" | "degraded" | "pending">;
@@ -86,7 +87,10 @@ export class GameVoiceController {
       },
       onText: (type, text, state) => {
         if (this.disposed || !text.trim()) return;
-        if (type === "stt") this.hooks.onTranscript(text);
+        if (type === "stt") {
+          this.hooks.onTranscript(text);
+          this.hooks.onUserTranscript?.(text);
+        }
         else if (type === "tts" && state !== "start") this.hooks.onTranscript(text);
         else if (type === "tts" && state === "start") this.hooks.onStatus("讲解员正在结合当前展台内容回答");
       },
@@ -101,6 +105,20 @@ export class GameVoiceController {
     });
     await this.voice.connect();
     this.hooks.onStatus("小智讲解员已连接；固定故事讲述以实际字幕和音频完成状态推进");
+  }
+
+  async speakWelcome(): Promise<void> {
+    if (!this.voice) throw new Error("小智讲解员尚未连接");
+    this.hooks.onStatus("小智正在介绍博物馆入口");
+    const completed = await this.narration.play({
+      packId: this.session.pack_id,
+      version: this.session.version,
+      contentId: "museum.portal.welcome",
+      role: "answer",
+      text: "欢迎来到时空博物馆，要我带你进去沿着时间长河欣赏文物的发展吗？",
+    });
+    if (!completed) throw new Error("入馆欢迎语未能完整播放");
+    this.hooks.onStatus("欢迎语已播完，请说“可以”进入博物馆");
   }
 
   beginTurn(): void {

@@ -5,11 +5,15 @@ import { GameVoiceController } from "../voice/GameVoiceController";
 import type { RenderAcknowledgement } from "../voice/VoiceClient";
 import { VoiceEntry } from "./VoiceEntry";
 
-export function GameVoicePanel({ session, onRefresh, onNewInput, onStoryTransition, gameUrl, bridgeUrl }: {
+export function GameVoicePanel({ session, onRefresh, onNewInput, onStoryTransition, onUserTranscript,
+  portalActive = false, welcomeOnConnect = false, gameUrl, bridgeUrl }: {
   session: ActiveSession;
   onRefresh: (receipt?: CommandReceipt) => Promise<RenderAcknowledgement>;
   onNewInput?: () => void;
   onStoryTransition?: (action: string) => void;
+  onUserTranscript?: (text: string) => void;
+  portalActive?: boolean;
+  welcomeOnConnect?: boolean;
   gameUrl?: string;
   bridgeUrl?: string;
 }) {
@@ -20,16 +24,18 @@ export function GameVoicePanel({ session, onRefresh, onNewInput, onStoryTransiti
   const [caption, setCaption] = useState("");
   useEffect(() => () => { controller.current?.dispose(); controller.current = null; }, [session.connection_id]);
 
-  return <aside aria-label="语音讲解">
+  return <aside aria-label="语音讲解" data-portal-active={portalActive || undefined}>
     <VoiceEntry beforeStart={async () => {
       controller.current?.dispose();
       const current = new GameVoiceController(latest.current.session, {
-        onStatus: setStatus, onTranscript: setCaption, onNewInput, onStoryTransition,
+        onStatus: setStatus, onTranscript: setCaption, onUserTranscript, onNewInput, onStoryTransition,
         onRefresh: (receipt) => latest.current.onRefresh(receipt),
       }, gameUrl, bridgeUrl);
       controller.current = current;
       try { await current.initialize(); }
       catch (error) { current.dispose(); throw error; }
+    }} afterConnect={async () => {
+      if (welcomeOnConnect) await controller.current?.speakWelcome();
     }} onStop={() => { controller.current?.dispose(); controller.current = null; }} callbacks={{
       onSpeechStarted: () => controller.current?.beginTurn(),
       onSpeechEnded: () => controller.current?.endTurn(),

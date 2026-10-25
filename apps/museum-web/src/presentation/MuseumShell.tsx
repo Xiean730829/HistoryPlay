@@ -31,6 +31,8 @@ import { MuseumSpace } from "../scene3d/MuseumSpace";
 import { GameVoicePanel } from "../voice-ui/GameVoicePanel";
 import { ArtifactStoryStage } from "../story/ArtifactStoryStage";
 import { RenderReceiptReporter } from "../capabilities/RenderReceiptReporter";
+import { isMuseumEntryConsent } from "./entryConsent";
+import "./museum-portal.css";
 
 const SESSION_KEY = "history-play.session.v1";
 const DEFAULT_PACK_ID = import.meta.env.VITE_MUSEUM_PACK_ID?.trim() || "cn.tang.core";
@@ -51,6 +53,7 @@ export function MuseumShell() {
   const [results, setResults] = React.useState<SearchHit[]>([]);
   const [busy, setBusy] = React.useState(false);
   const [inspection, setInspection] = React.useState(false);
+  const [portalOpen, setPortalOpen] = React.useState(true);
   const [voiceDrivenStory, setVoiceDrivenStory] = React.useState(false);
   const previousFocus = React.useRef<string | null>(null);
   const [notice, setNotice] = React.useState("正在连接本地游戏服务…");
@@ -339,6 +342,19 @@ export function MuseumShell() {
         </div>
       </header>
 
+      {portalOpen && <section className="museum-entry-door" aria-label="时空博物馆入口">
+        <div className="museum-entry-copy">
+          <p className="museum-entry-kicker">唐代特展 · 星河寻珍</p>
+          <h2>时空博物馆</h2>
+          <p>循着时间长河，走进一座真正的博物馆。</p>
+          <span>{session
+            ? "开启语音后，小智讲解员会先向你问候；说“可以”即可进入展厅。"
+            : noticeTone === "error" ? notice : healthError ? "展厅暂未连接，请重试本地展厅服务。" : "正在准备展厅入口…"}</span>
+          {!session && (healthError || noticeTone === "error") && <button className="museum-entry-retry" disabled={busy}
+            onClick={() => void startMuseum()} type="button">{busy ? "正在重试…" : "重试连接"}</button>}
+        </div>
+      </section>}
+
       {(noticeTone === "error" || SHOW_DIAGNOSTICS) && <StatusNotice message={notice} tone={noticeTone} />}
 
       {session && <MuseumSpace
@@ -391,8 +407,17 @@ export function MuseumShell() {
         <GameVoicePanel
           key={`${session.session_id}:${session.connection_id}`}
           session={session}
+          portalActive={portalOpen}
+          welcomeOnConnect={portalOpen}
           gameUrl={import.meta.env.VITE_MUSEUM_GAME_URL?.trim() || "http://127.0.0.1:8781"}
           bridgeUrl={import.meta.env.VITE_MUSEUM_BRIDGE_URL?.trim() || "http://127.0.0.1:8782"}
+          onUserTranscript={(text) => {
+            if (portalOpen && isMuseumEntryConsent(text)) {
+              setPortalOpen(false);
+              setNotice("欢迎入馆。当前展厅展示三件发布版本中的文物，可沿星河弯道逐件参观。");
+              setNoticeTone("success");
+            }
+          }}
           onNewInput={cancelVoiceRenderWaiters}
           onStoryTransition={(action) => setVoiceDrivenStory(action !== "return_to_exhibit")}
           onRefresh={async (receipt) => {
@@ -529,6 +554,9 @@ function showError(
   setMessage: (message: string) => void,
   setTone: (tone: "info" | "error" | "success") => void,
 ) {
-  setMessage(reason instanceof Error ? reason.message : "操作未完成，请稍后重试。");
+  const networkFailure = reason instanceof TypeError && /fetch/i.test(reason.message);
+  setMessage(networkFailure
+    ? "本地展厅请求失败。刷新页面可清除旧会话；若仍失败，请确认本机游戏服务正在运行。"
+    : reason instanceof Error ? reason.message : "操作未完成，请稍后重试。");
   setTone("error");
 }

@@ -18,7 +18,7 @@ import { ParticleRiver, type GalleryEnvironment } from "./particleRiver";
 import { loadPreviewTexture } from "./previewTexture";
 
 interface Exhibit {
-  root: Group; spin: Group; loaded: boolean; loading: boolean; controller: AbortController;
+  root: Group; spin: Group; loaded: boolean; loading: boolean; attempted: boolean; controller: AbortController;
   lease?: AssetLease; preview?: Group; previewLease?: AssetLease; previewVisible: boolean;
 }
 interface WorldHooks {
@@ -109,7 +109,7 @@ export class MuseumWorld {
     root.userData.artifactId = artifact.id;
     const spin = new Group(); root.add(spin); this.scene.add(root);
     const entry: Exhibit = {
-      root, spin, loaded: false, loading: false, controller: new AbortController(), previewVisible: false,
+      root, spin, loaded: false, loading: false, attempted: false, controller: new AbortController(), previewVisible: false,
     };
     this.exhibits.set(artifact.id, entry);
     // A case-sized target catches the coin hole and the supporting plinth as one exhibit.
@@ -120,14 +120,14 @@ export class MuseumWorld {
 
   private async loadModel(artifact: ArtifactProjection, entry: Exhibit): Promise<void> {
     const assetId = artifact.presentation?.display?.asset_id;
-    if (!assetId || artifact.presentation?.display?.kind !== "model3d") return;
-    const controller = entry.controller; entry.loading = true;
+    const hasDisplayModel = Boolean(assetId && artifact.presentation?.display?.kind === "model3d");
+    const controller = entry.controller; entry.loading = true; entry.attempted = true;
     try {
-      // Keep an authored, true-object preview in the glass case while the 3D
-      // display model downloads and decodes. If GLTF fails, the exhibit never
-      // becomes an empty case and the UI explicitly identifies it as a preview.
+      // Load a published preview even when no GLB is available; otherwise a
+      // preview-only artifact becomes an empty case on the opening view.
       await this.showPreview(artifact, entry, controller);
       if (this.disposed || controller.signal.aborted || entry.controller !== controller) return;
+      if (!hasDisplayModel || !assetId) return;
       const lease = await galleryAssets.acquire(this.latest, assetId, "model", controller.signal);
       if (this.disposed || controller.signal.aborted || entry.controller !== controller) { lease.release(); return; }
       entry.lease = lease;
@@ -213,12 +213,12 @@ export class MuseumWorld {
     this.artifacts.forEach((artifact, itemIndex) => {
       const entry = this.exhibits.get(artifact.id)!;
       if (near.has(itemIndex)) {
-        if (!entry.loaded && !entry.loading) void this.loadModel(artifact, entry);
-      } else if (entry.loaded || entry.loading || entry.preview) {
+        if (!entry.loaded && !entry.loading && !entry.attempted) void this.loadModel(artifact, entry);
+      } else if (entry.loaded || entry.loading || entry.attempted || entry.preview) {
         entry.controller.abort(); entry.lease?.release(); entry.lease = undefined;
         this.removePreview(artifact.id, entry);
         disposeTree(entry.spin); entry.loaded = false; entry.loading = false;
-        entry.controller = new AbortController();
+        entry.attempted = false; entry.controller = new AbortController();
       }
     });
     const cameraPose = routeCameraPose(index, inspection, session.state.camera_pose?.zoom ?? 1);
@@ -299,7 +299,8 @@ export class MuseumWorld {
     this.renderer.render(this.scene, this.camera);
     const receiptKey = `${state.revision}:${state.view_revision}:${state.interaction_epoch}`;
     const yawError = entry ? Math.atan2(Math.sin(entry.spin.rotation.y + (state.camera_pose?.yaw ?? 0) * Math.PI / 180), Math.cos(entry.spin.rotation.y + (state.camera_pose?.yaw ?? 0) * Math.PI / 180)) : 1;
-    if (!this.preview && !this.drag && state.mode === "explore" && entry?.loaded && Math.abs(yawError) < 0.01
+    if (!this.preview && !this.drag && state.mode === "explore" && (entry?.loaded || entry?.previewVisible)
+      && Math.abs(yawError) < 0.01
       && Math.abs(entry.spin.rotation.x - (state.camera_pose?.pitch ?? 0) * Math.PI / 180) < 0.01
       && (this.acknowledged !== receiptKey || time - this.acknowledgedAt > 1000) && this.camera.position.distanceTo(this.targetPosition) < 0.015
       && this.currentLook.distanceTo(this.targetLook) < 0.015 && this.host.getBoundingClientRect().height > 0) {
