@@ -18,8 +18,8 @@ RULES = (
     (r"正面|恢复角度|转回来", "front"),
     (r"放大|靠近一点", "zoom_in"),
     (r"缩小|远一点", "zoom_out"),
-    (r"下一件|下一个文物|往前|前进|往里", "next"),
-    (r"上一件|上一个文物|后退|往后", "previous"),
+    (r"下一件|下一个文物|往博物馆后面(?:走+|去)?|往后面(?:走+|去)?|去里面|往里面|再往里|往前|前进|往里", "next"),
+    (r"上一件|上一个文物|回(?:到)?入口|返回入口|退回入口|往回走|后退|退回|往后(?!面)", "previous"),
     (r"背后的故事|讲.*故事|看.*故事", "enter_story"),
     (r"介绍|这是什么|背景|讲讲它|讲讲这个", "background"),
 )
@@ -31,6 +31,15 @@ def interpret(text: str) -> Intent | None:
         return None
     text = re.sub(r"\s+", "", text)
     if re.search(r"为什么|为何|怎么会|是不是|是否|什么时候|怎样制作", text):
+        return None
+    # Scope negation to the same clause as a movement phrase. A preceding
+    # object-level negation (for example, “不要看铜钱了，再往前走”) must not
+    # cancel a later, affirmative movement request.
+    movement_clause = re.split(r"[，,。！？；;]", text)[-1]
+    if re.search(
+        r"(?:不要|别|不想|不用|无需).{0,8}(?:往前|前进|往里|往里面|再往里|去里面|后面|后退|往后|往回|回入口|返回入口|下一件|上一件)",
+        movement_clause,
+    ):
         return None
     candidates = [
         (match.start(), query)
