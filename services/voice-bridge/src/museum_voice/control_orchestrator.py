@@ -45,19 +45,25 @@ class InputOrchestrator:
         return result
 
     async def _narration(self, *, background=False) -> dict:
-        state = await self.client.state()
         context = await self.client.get("context")
+        if self.closed:
+            raise GatewayError("当前语音轮次已结束")
         focused = context.get("focused_artifact") or {}
         node = context.get("story_node") or {}
         content_id = focused.get("id") if background else node.get("node_id")
         if not content_id:
             raise GatewayError("当前没有可朗读的固定正文")
+        state = await self.client.state()
+        if self.closed:
+            raise GatewayError("当前语音轮次已结束")
         packs = state.get("pack_versions", {})
-        pack_id = next((key for key in packs if content_id.startswith(key.rsplit(".", 1)[0])), None)
-        if pack_id is None:
+        if not isinstance(packs, dict) or any(not isinstance(value, str) for value in packs.values()):
+            raise GatewayError("当前会话没有有效的固定内容版本")
+        pack_id = next((key for key in sorted(packs, key=len, reverse=True) if content_id.startswith(key)), None)
+        if pack_id is None and len(packs) == 1:
             pack_id = next(iter(packs), None)
         if not pack_id:
-            raise GatewayError("当前会话没有固定内容版本")
+            raise GatewayError("无法从当前内容身份确定唯一固定内容版本")
         page = await self.client.get(
             "content",
             {
@@ -69,13 +75,33 @@ class InputOrchestrator:
             },
         )
         paragraphs = page.get("paragraphs") or []
-        if not paragraphs:
+        if not paragraphs or not isinstance(paragraphs[0], dict):
             raise GatewayError("当前片段没有已准备正文")
+        paragraph = paragraphs[0]
+        if paragraph.get("content_id") not in (None, content_id):
+            raise GatewayError("固定正文与当前文物或故事段落不一致")
+        if background and page.get("artifact_id") not in (None, focused.get("id")):
+            raise GatewayError("讲解正文属于另一件文物，已取消本轮讲解")
+        if not background and page.get("story_id") not in (None, node.get("story_id")):
+            raise GatewayError("故事正文属于另一条故事线，已取消本轮讲解")
+        if not isinstance(paragraph.get("text"), str) or not paragraph["text"].strip():
+            raise GatewayError("当前片段没有有效的固定正文")
+        current = await self.client.get("context")
+        if self.closed:
+            raise GatewayError("当前语音轮次已结束")
+        current_node = current.get("story_node") or {}
+        current_focus = current.get("focused_artifact") or {}
+        if (
+            current.get("revision") != context.get("revision")
+            or current_focus.get("id") != focused.get("id")
+            or current_node.get("node_id") != node.get("node_id")
+        ):
+            raise GatewayError("讲解准备期间展台已变化，已取消旧文物讲解")
         return {
             "packId": pack_id,
             "version": packs[pack_id],
-            "contentId": paragraphs[0]["content_id"],
-            "text": paragraphs[0]["text"],
+            "contentId": paragraph["content_id"],
+            "text": paragraph["text"],
         }
 
     async def close(self) -> None:

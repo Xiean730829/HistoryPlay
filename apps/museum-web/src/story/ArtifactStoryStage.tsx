@@ -8,6 +8,7 @@ import { StoryAutoplayController } from "./StoryAutoplayController";
 interface ArtifactStoryStageProps {
   session: ActiveSession;
   busy: boolean;
+  voiceDriven?: boolean;
   onContinue: () => void;
   onChooseRoute: (targetNodeId: string) => void;
   onReturn: () => void;
@@ -38,6 +39,16 @@ export function ArtifactStoryStage(props: ArtifactStoryStageProps) {
         </button>
       </section>
     );
+  }
+  if (props.voiceDriven) {
+    return <>
+      <StoryFrame {...props} />
+      <div className="story-narration-status" role="status" aria-live="polite">
+        <p className="story-assets-note">
+          已显示当前固定正文与对应画面。讲解员使用小智实时语音回答；目前没有可验证的逐字音频完成回执，因此不会用浏览器朗读冒充同步讲述或自动翻页。可说“下一段”继续。
+        </p>
+      </div>
+    </>;
   }
   return <StoryAutoplayStage {...props} />;
 }
