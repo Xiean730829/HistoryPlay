@@ -8,7 +8,7 @@ export function VoiceEntry({ callbacks, beforeStart, afterConnect, onStop }: {
   /** Called from the explicit user gesture: unlock the shared output context here. */
   beforeStart?: () => Promise<void>;
   /** Speak an app welcome after transport setup, before opening the microphone. */
-  afterConnect?: () => Promise<void>;
+  afterConnect?: () => Promise<void | string>;
   /** Close the voice transport and release AudioFocus on pause/unmount. */
   onStop?: () => void;
 }) {
@@ -48,13 +48,15 @@ export function VoiceEntry({ callbacks, beforeStart, afterConnect, onStop }: {
       setStatus("麦克风权限已取得，正在连接讲解员");
       await beforeStart?.();
       if (!alive.current) return;
-      await afterConnect?.();
+      const afterConnectStatus = await afterConnect?.();
       if (!alive.current) return;
-      setStatus("请允许使用麦克风，以便回答讲解员");
+      setStatus(afterConnectStatus || "请允许使用麦克风，以便回答讲解员");
       const settings = await microphone.start();
       if (!alive.current) return;
       setActive(true);
-      setStatus(settings.echoCancellation === true ? "麦克风已开启" : "麦克风已开启，回声抑制未确认");
+      const microphoneStatus = settings.echoCancellation === true
+        ? "麦克风已开启" : "麦克风已开启，回声抑制未确认";
+      setStatus(afterConnectStatus ? `${afterConnectStatus} ${microphoneStatus}` : microphoneStatus);
     } catch (error) {
       microphone.stop();
       onStop?.();

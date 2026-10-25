@@ -37,3 +37,9 @@ def test_current_read_binding_updates_without_renewing_any_control_scope(tmp_pat
         )
         asyncio.run(client.get("context"))
     assert seen == ["page-one", "page-two"]
+
+
+def test_relative_binding_path_is_rejected_instead_of_using_process_cwd(monkeypatch):
+    monkeypatch.setenv("MUSEUM_MCP_BINDING_FILE", ".local/voice/game-binding.json")
+    with pytest.raises(GatewayError, match="绑定文件缺失或格式无效"):
+        server.load_binding()

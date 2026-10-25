@@ -18,6 +18,7 @@ from aiohttp import (
 from av.error import FFmpegError
 from museum_mcp.action_tools import TrustedInput
 from museum_mcp.application_client import GatewayError
+from museum_mcp.binding_path import require_absolute_binding_path
 
 from museum_voice.codec import AudioCodec, pack_audio, unpack_audio
 from museum_voice.config import DeviceConfig
@@ -406,6 +407,11 @@ def main() -> None:
         if item.strip()
     )
     binding_file = os.environ.get("MUSEUM_MCP_BINDING_FILE")
+    if binding_file:
+        try:
+            binding_file = str(require_absolute_binding_path(binding_file))
+        except ValueError as error:
+            raise SystemExit(str(error)) from None
     web.run_app(
         create_app(
             device,
