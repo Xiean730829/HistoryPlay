@@ -1,0 +1,12 @@
+id: cn.tang.node.t04.n06
+story_id: cn.tang.story.t04
+fact_grade: C
+narration: >-
+  阿禾重新联系托付她的人，说明眼下无法按原先想的时间完成，并提出一个双方都能接受的新约定。对方可以同意，也可以提出别的安排；她不再默默把所有事都揽下。她说：“把做不到的部分讲明白，也是在认真对待承诺。”
+allowed_actions:
+  - ask
+  - observe
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.t04.n07

@@ -1,0 +1,12 @@
+id: cn.tang.node.t04.n05
+story_id: cn.tang.story.t04
+fact_grade: C
+narration: >-
+  阿禾先问清邻人需要什么，也问对方现在是否方便。邻人愿意留出一小段时间，两人约好互相搭手；若对方另有急事，她们就改约时间，不把帮忙当成理所当然。阿禾有了余地，也要记得回报这份合作。
+allowed_actions:
+  - ask
+  - observe
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.t04.n07
