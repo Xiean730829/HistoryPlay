@@ -69,11 +69,13 @@
 
 .museum-page-spatial aside[aria-label="语音讲解"][data-portal-active="true"] {
   position: fixed;
+  top: auto;
   z-index: 22;
   right: auto;
   bottom: max(22px, env(safe-area-inset-bottom));
   left: 50%;
   width: min(460px, calc(100% - 32px));
+  height: auto;
   max-width: none;
   transform: translateX(-50%);
   border-color: rgb(226 188 123 / 65%);
@@ -111,8 +113,10 @@
   .museum-entry-copy > p:not(.museum-entry-kicker) { font-size: 15px; }
   .museum-entry-kicker { font-size: 10px; }
   .museum-page-spatial aside[aria-label="语音讲解"][data-portal-active="true"] {
+    top: auto;
     bottom: max(12px, env(safe-area-inset-bottom));
     left: 50%;
+    height: auto;
     max-width: none;
   }
 }
