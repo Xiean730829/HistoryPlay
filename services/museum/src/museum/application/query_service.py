@@ -276,6 +276,8 @@ class QueryService:
                 )
             )
 
+        presentation_kind = _optional_text(gallery.get("presentation_kind"))
+        scrolls = _gallery_scrolls(gallery, gallery_id)
         return GalleryProjection(
             id=gallery_id,
             title=_required_text(gallery.get("title"), gallery_id),
@@ -287,6 +289,8 @@ class QueryService:
             default_station_id=_optional_text(gallery.get("default_station_id")),
             stations=tuple(projected),
             visible_artifacts=tuple(self._artifact(packs, item) for item in visible_ids),
+            presentation_kind=presentation_kind,
+            scrolls=scrolls,
         )
 
     def _load_pinned_packs(self, state: SessionState) -> tuple[PublishedPack, ...]:
@@ -303,20 +307,100 @@ class QueryService:
         artifact = _find_document(packs, artifact_id, "artifact")
         museum = artifact.get("museum")
         time_range = artifact.get("time_range")
-        if not isinstance(museum, Mapping) or not isinstance(time_range, Mapping):
-            raise ContentUnavailable(f"文物缺少馆藏或年代信息：{artifact_id}")
+        if museum is not None and not isinstance(museum, Mapping):
+            raise ContentUnavailable(f"文物馆藏信息无效：{artifact_id}")
+        if not isinstance(time_range, Mapping):
+            raise ContentUnavailable(f"文物缺少年代信息：{artifact_id}")
+        material = artifact.get("material")
+        category = artifact.get("category")
+        if material is not None and not isinstance(material, str):
+            raise ContentUnavailable(f"文物材质信息无效：{artifact_id}")
+        if category is not None and not isinstance(category, str):
+            raise ContentUnavailable(f"文物类别信息无效：{artifact_id}")
+        exhibit_type = artifact.get("exhibit_type")
+        if exhibit_type is not None and not isinstance(exhibit_type, str):
+            raise ContentUnavailable(f"展品类型信息无效：{artifact_id}")
+        source_ids = tuple(_text_items(artifact.get("source_ids")))
+        identity = artifact.get("identity")
+        if identity is not None and not isinstance(identity, Mapping):
+            raise ContentUnavailable(f"展品身份标注无效：{artifact_id}")
         return ArtifactProjection(
             id=artifact_id,
             title=_required_text(artifact.get("title"), artifact_id),
-            museum=dict(museum),
+            museum=dict(museum) if isinstance(museum, Mapping) else None,
             time_range=dict(time_range),
-            material=_required_text(artifact.get("material"), artifact_id),
-            category=_required_text(artifact.get("category"), artifact_id),
+            material=material,
+            category=category,
             asset_ids=tuple(_text_items(artifact.get("asset_ids"))),
             fact_card_ids=tuple(_text_items(artifact.get("fact_card_ids"))),
-            story_entry_ids=tuple(_text_items(artifact.get("story_entry_ids"))),
+            story_entry_ids=_openable_story_ids(packs, artifact),
+            exhibit_type=exhibit_type,
+            source_ids=source_ids,
+            identity=dict(identity) if isinstance(identity, Mapping) else None,
             presentation=_optional_mapping(artifact.get("presentation")),
         )
+def _gallery_scrolls(gallery: Mapping[str, Any], gallery_id: str) -> tuple[dict[str, Any], ...]:
+    raw_scrolls = gallery.get("scrolls", [])
+    if raw_scrolls is None:
+        return ()
+    if not isinstance(raw_scrolls, list) or any(not isinstance(item, Mapping) for item in raw_scrolls):
+        raise ContentUnavailable(f"展厅画卷清单无效：{gallery_id}")
+    result: list[dict[str, Any]] = []
+    for index, item in enumerate(raw_scrolls):
+        scroll_id = _required_text(item.get("id"), f"{gallery_id}.scrolls[{index}]")
+        title = _required_text(item.get("title"), scroll_id)
+        theme = _required_text(item.get("theme"), scroll_id)
+        background_asset_id = _required_text(item.get("background_asset_id"), scroll_id)
+        interpretation_label = _required_text(item.get("interpretation_label"), scroll_id)
+        station_ids = _text_items(item.get("station_ids"))
+        if not station_ids:
+            raise ContentUnavailable(f"画卷缺少展位：{scroll_id}")
+        hotspots = item.get("hotspots", [])
+        if not isinstance(hotspots, list) or any(not isinstance(spot, Mapping) for spot in hotspots):
+            raise ContentUnavailable(f"画卷热点清单无效：{scroll_id}")
+        normalized_hotspots: list[dict[str, Any]] = []
+        for spot_index, spot in enumerate(hotspots):
+            station_id = _required_text(spot.get("station_id"), f"{scroll_id}.hotspots[{spot_index}]")
+            label = _required_text(spot.get("label"), station_id)
+            values = {key: spot.get(key) for key in ("x", "y", "width", "height")}
+            if any(type(value) not in (int, float) for value in values.values()):
+                raise ContentUnavailable(f"画卷热点坐标无效：{scroll_id}")
+            x, y, width, height = (float(values[key]) for key in ("x", "y", "width", "height"))
+            if not (0 <= x <= 1 and 0 <= y <= 1 and 0 < width <= 1 and 0 < height <= 1 and x + width <= 1 and y + height <= 1):
+                raise ContentUnavailable(f"画卷热点越界：{scroll_id}")
+            normalized_hotspots.append({
+                "station_id": station_id,
+                "x": x,
+                "y": y,
+                "width": width,
+                "height": height,
+                "label": label,
+            })
+        result.append({
+            "id": scroll_id,
+            "title": title,
+            "theme": theme,
+            "background_asset_id": background_asset_id,
+            "interpretation_label": interpretation_label,
+            "station_ids": station_ids,
+            "hotspots": normalized_hotspots,
+        })
+    return tuple(result)
+
+
+
+def _openable_story_ids(packs: tuple[PublishedPack, ...], artifact: Mapping[str, Any]) -> tuple[str, ...]:
+    openable: list[str] = []
+    for story_id in _text_items(artifact.get("story_entry_ids")):
+        try:
+            story = _find_document(packs, story_id, "story")
+        except ContentUnavailable:
+            openable.append(story_id)
+            continue
+        if story.get("review_status") in {"draft", "unavailable"}:
+            continue
+        openable.append(story_id)
+    return tuple(openable)
 
 
 def _find_document(

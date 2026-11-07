@@ -24,13 +24,16 @@ class SearchPage:
 class ArtifactProjection:
     id: str
     title: str
-    museum: dict[str, Any]
+    museum: dict[str, Any] | None
     time_range: dict[str, Any]
-    material: str
-    category: str
+    material: str | None
+    category: str | None
     asset_ids: tuple[str, ...]
     fact_card_ids: tuple[str, ...]
     story_entry_ids: tuple[str, ...]
+    exhibit_type: str | None = None
+    source_ids: tuple[str, ...] = ()
+    identity: dict[str, Any] | None = None
     presentation: dict[str, Any] | None = None
 
 
@@ -56,6 +59,8 @@ class GalleryProjection:
     default_station_id: str | None
     stations: tuple[GalleryStationProjection, ...]
     visible_artifacts: tuple[ArtifactProjection, ...]
+    presentation_kind: str | None = None
+    scrolls: tuple[dict[str, Any], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
