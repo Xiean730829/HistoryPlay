@@ -140,7 +140,7 @@
         "properties": {
           "tool": {"const": "museum_act"},
           "action": {
-            "enum": ["enter_gallery", "move_next", "move_previous", "locate_artifact", "return_to_exhibit"]
+            "enum": ["enter_gallery", "move_next", "move_previous", "locate_artifact", "return_to_exhibit", "browse_gallery", "seek_time_range"]
           }
         },
         "required": ["tool", "action"]

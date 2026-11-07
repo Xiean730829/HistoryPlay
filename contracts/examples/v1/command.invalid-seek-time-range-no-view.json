@@ -1,0 +1,11 @@
+{
+  "schema_version": "1",
+  "request_id": "request-seek-0002",
+  "expected_revision": 7,
+  "interaction_epoch": 12,
+  "action": "seek_time_range",
+  "params": {
+    "start_year": 701,
+    "end_year": 800
+  }
+}

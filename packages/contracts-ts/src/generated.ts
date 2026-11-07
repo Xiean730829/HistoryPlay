@@ -6,7 +6,7 @@ export type NonNegativeInt = number;
 export type FactGrade = "F" | "R" | "C" | "H" | "U";
 export type CapabilityId = "artifact3d" | "comic" | "map" | "timeline" | "relationship_graph" | "compare";
 export type SessionMode = "explore" | "story" | "qa" | "hypothesis";
-export type CommandAction = "open_artifact" | "enter_gallery" | "move_next" | "move_previous" | "locate_artifact" | "return_to_exhibit" | "enter_story" | "continue_story" | "choose_route" | "pause_story" | "return_to_story" | "focus_detail" | "set_view" | "choose_action";
+export type CommandAction = "open_artifact" | "enter_gallery" | "move_next" | "move_previous" | "locate_artifact" | "return_to_exhibit" | "enter_story" | "continue_story" | "choose_route" | "pause_story" | "return_to_story" | "focus_detail" | "set_view" | "choose_action" | "browse_gallery" | "seek_time_range";
 export type VariableValue = boolean | number | string;
 
 export interface TimeRange {
@@ -247,6 +247,13 @@ export interface SessionProjectionExhibitReturnPoint {
   focused_entity_id?: NamespacedId;
   view: SessionProjectionObject;
   view_revision?: NonNegativeInt;
+  gallery_view?: SessionProjectionGalleryView;
+}
+
+export interface SessionProjectionGalleryView {
+  window_start: NonNegativeInt;
+  page_size: 1 | 2 | 3 | 4;
+  time_filter?: SessionProjectionTimeFilter;
 }
 
 export interface SessionProjectionNarrationCheckpoint {
@@ -271,6 +278,8 @@ export interface SessionProjection {
   camera_pose?: SessionProjectionObject;
   /** Optional root gallery anchor captured on the first story entry from exploration. */
   exhibit_return_point?: SessionProjectionExhibitReturnPoint;
+  /** Authoritative four-slot window and optional time filter. Older sessions default to the first unfiltered window. */
+  gallery_view?: SessionProjectionGalleryView;
   visible_entities?: Array<NamespacedId>;
   /** Server-authored order used to resolve 'the second one'. Clients must not reorder it. */
   display_order: Array<NamespacedId>;
@@ -398,6 +407,13 @@ export interface CommandObject {
   /** Untrusted player utterance. Must map to a declared intent before rules run. */
   input_text?: string;
   camera?: SessionProjectionObject;
+  /** browse_gallery moves one four-slot window; move_next still moves one exhibit. */
+  direction?: "next" | "previous";
+  start_year?: number;
+  end_year?: number;
+  clear?: boolean;
+  /** Session page size used by both voice and buttons for this visit. */
+  page_size?: 1 | 2 | 3 | 4;
 }
 
 export interface ContentPackRegion {
@@ -419,6 +435,11 @@ export interface SessionProjectionObject {
   yaw: number;
   pitch: number;
   zoom: number;
+}
+
+export interface SessionProjectionTimeFilter {
+  start_year: number;
+  end_year: number;
 }
 
 export interface SourceLocator {

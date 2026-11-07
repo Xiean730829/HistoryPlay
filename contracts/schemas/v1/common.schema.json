@@ -88,7 +88,9 @@
         "return_to_story",
         "focus_detail",
         "set_view",
-        "choose_action"
+        "choose_action",
+        "browse_gallery",
+        "seek_time_range"
       ],
       "description": "Frozen command actions. New exhibits do not add tools; new mechanisms add an action."
     },
@@ -110,6 +112,23 @@
         },
         "camera": {
           "$ref": "common.schema.json#/$defs/cameraPose"
+        },
+        "direction": {
+          "enum": ["next", "previous"],
+          "description": "browse_gallery moves one four-slot window; move_next still moves one exhibit."
+        },
+        "start_year": {
+          "type": "integer"
+        },
+        "end_year": {
+          "type": "integer"
+        },
+        "clear": {
+          "type": "boolean"
+        },
+        "page_size": {
+          "enum": [1, 2, 3, 4],
+          "description": "Session page size used by both voice and buttons for this visit."
         }
       }
     },

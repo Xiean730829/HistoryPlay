@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "request_id": "request-seek-0003",
+  "expected_revision": 7,
+  "expected_view_revision": 3,
+  "interaction_epoch": 12,
+  "action": "seek_time_range"
+}
