@@ -273,6 +273,192 @@ def test_wrong_kind_reference_fails(tmp_path: Path) -> None:
     assert any("需要故事" in issue.message for issue in issues)
 
 
+def _image_asset(asset_id: str) -> str:
+    return ASSET.replace("cn.tang.asset.stele.original", asset_id).replace(
+        "kind: model3d\nformat: glb", "kind: image\nformat: png"
+    )
+
+
+def test_poem_without_handwriting_uses_interpretive_image_and_source(tmp_path: Path) -> None:
+    artifact = """
+id: cn.tang.artifact.shui-diao
+title: 苏轼《水调歌头》
+exhibit_type: poem
+source_ids:
+  - cn.tang.source.mia.stele-record
+time_range:
+  start_year: 1076
+  end_year: 1076
+  precision: year
+  display_label: 1076年
+category: 词
+asset_ids:
+  - cn.tang.asset.poem.preview
+  - cn.tang.asset.poem.interpretive
+presentation:
+  preview_asset_id: cn.tang.asset.poem.preview
+  display:
+    kind: interpretive_image
+    asset_id: cn.tang.asset.poem.interpretive
+    interpretation_label: 艺术演绎，非手迹、非真实肖像
+  printed_text:
+    body: 明月几时有？把酒问青天。
+    script_status: printed_not_handwriting
+    source_label: 公共领域原作现代排印
+  teaser: 未核实手迹。
+  background_node_id: cn.tang.node.stele-observation.01
+story_entry_ids:
+  - cn.tang.story.stele-observation
+"""
+    pack = write_pack(
+        tmp_path,
+        artifact=artifact,
+        extra_assets=[
+            _image_asset("cn.tang.asset.poem.preview").replace("kind: image", "kind: preview"),
+            _image_asset("cn.tang.asset.poem.interpretive"),
+        ],
+    )
+    story = pack / "stories" / "observation.yaml"
+    story.write_text(STORY.replace("cn.tang.artifact.stele", "cn.tang.artifact.shui-diao"), encoding="utf-8")
+    assert validate_references(pack) == []
+
+
+def test_poem_cannot_disguise_print_as_photo(tmp_path: Path) -> None:
+    artifact = """
+id: cn.tang.artifact.shui-diao
+title: 苏轼《水调歌头》
+exhibit_type: poem
+source_ids:
+  - cn.tang.source.mia.stele-record
+time_range:
+  start_year: 1076
+  end_year: 1076
+  precision: year
+asset_ids:
+  - cn.tang.asset.poem.photo
+presentation:
+  preview_asset_id: cn.tang.asset.poem.photo
+  display:
+    kind: photo
+    asset_id: cn.tang.asset.poem.photo
+  teaser: 伪照片。
+  background_node_id: cn.tang.node.stele-observation.01
+story_entry_ids:
+  - cn.tang.story.stele-observation
+"""
+    pack = write_pack(tmp_path, artifact=artifact, extra_assets=[_image_asset("cn.tang.asset.poem.photo")])
+    story = pack / "stories" / "observation.yaml"
+    story.write_text(STORY.replace("cn.tang.artifact.stele", "cn.tang.artifact.shui-diao"), encoding="utf-8")
+    issues = validate_references(pack)
+    assert any("诗词不能把排印" in issue.message for issue in issues)
+
+
+def test_unknown_date_object_keeps_integer_envelope(tmp_path: Path) -> None:
+    artifact = ARTIFACT.replace(
+        "precision: year",
+        "precision: unknown\n  display_label: 时间不详",
+    )
+    pack = write_pack(tmp_path, artifact=artifact)
+    assert validate_references(pack) == []
+
+
+def test_song_scroll_hotspots_and_background_must_resolve(tmp_path: Path) -> None:
+    pack = write_pack(tmp_path, extra_assets=[_image_asset("cn.tang.asset.scroll.life")])
+    gallery = pack / "galleries" / "tang.yaml"
+    gallery.write_text(
+        """id: cn.tang.gallery.main
+title: 唐朝长廊
+region:
+  id: cn
+  label: 中国
+status: open
+presentation_kind: song_scroll
+default_station_id: cn.tang.station.stele
+scrolls:
+  - id: cn.tang.scroll.life
+    title: 生活卷
+    theme: 生活
+    background_asset_id: cn.tang.asset.scroll.life
+    interpretation_label: 艺术演绎，不是馆藏照片
+    station_ids:
+      - cn.tang.station.stele
+    hotspots:
+      - station_id: cn.tang.station.stele
+        x: 0.1
+        y: 0.2
+        width: 0.3
+        height: 0.4
+        label: 造像碑
+stations:
+  - id: cn.tang.station.stele
+    order: 0
+    time_range:
+      start_year: 678
+      end_year: 690
+      precision: range
+    placement_basis: 入口展位采用有纪年依据的造像碑。
+    artifact_id: cn.tang.artifact.stele
+""",
+        encoding="utf-8",
+    )
+    assert validate_references(pack) == []
+
+
+def test_song_scroll_rejects_missing_station_overflow_hotspot_and_bad_background(tmp_path: Path) -> None:
+    pack = write_pack(tmp_path)
+    gallery = pack / "galleries" / "tang.yaml"
+    gallery.write_text(
+        """id: cn.tang.gallery.main
+title: 唐朝长廊
+region:
+  id: cn
+  label: 中国
+status: open
+presentation_kind: song_scroll
+default_station_id: cn.tang.station.stele
+scrolls:
+  - id: cn.tang.scroll.life
+    title: 生活卷
+    theme: 生活
+    background_asset_id: cn.tang.asset.stele.original
+    interpretation_label: 艺术演绎，不是馆藏照片
+    station_ids:
+      - cn.tang.station.missing
+    hotspots:
+      - station_id: cn.tang.station.stele
+        x: 0.8
+        y: 0.2
+        width: 0.4
+        height: 0.3
+        label: 造像碑
+stations:
+  - id: cn.tang.station.stele
+    order: 0
+    time_range:
+      start_year: 678
+      end_year: 690
+      precision: range
+    placement_basis: 入口展位采用有纪年依据的造像碑。
+    artifact_id: cn.tang.artifact.stele
+""",
+        encoding="utf-8",
+    )
+    issues = validate_references(pack)
+    assert any("本展厅没有的展位" in issue.message for issue in issues)
+    assert any("画卷背景必须是图片资产" in issue.message for issue in issues)
+    assert any("画卷热点越界" in issue.message for issue in issues)
+    assert any("展位未编入任何画卷" in issue.message for issue in issues)
+
+
+def test_bad_source_id_fails_closed(tmp_path: Path) -> None:
+    artifact = ARTIFACT.replace(
+        "museum:",
+        "exhibit_type: object\nsource_ids:\n  - cn.tang.source.missing\nmuseum:",
+    )
+    issues = validate_references(write_pack(tmp_path, artifact=artifact))
+    assert any("缺少引用：cn.tang.source.missing" in issue.message for issue in issues)
+
+
 def test_duplicate_id_fails(tmp_path: Path) -> None:
     pack = write_pack(
         tmp_path,
