@@ -1,0 +1,12 @@
+{
+  "schema_version": "1",
+  "request_id": "request-browse-0003",
+  "expected_revision": 7,
+  "expected_view_revision": 3,
+  "interaction_epoch": 12,
+  "action": "browse_gallery",
+  "params": {
+    "direction": "next",
+    "artifact_ids": ["cn.tang.artifact.coin"]
+  }
+}

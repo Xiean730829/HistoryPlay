@@ -60,6 +60,10 @@
       "$ref": "#/$defs/exhibitReturnPoint",
       "description": "Optional root gallery anchor captured on the first story entry from exploration."
     },
+    "gallery_view": {
+      "$ref": "#/$defs/galleryView",
+      "description": "Authoritative four-slot window and optional time filter. Older sessions default to the first unfiltered window."
+    },
     "visible_entities": {
       "type": "array",
       "uniqueItems": true,
@@ -211,6 +215,31 @@
         },
         "view_revision": {
           "$ref": "common.schema.json#/$defs/nonNegativeInt"
+        },
+        "gallery_view": {
+          "$ref": "#/$defs/galleryView"
+        }
+      }
+    },
+    "galleryView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["window_start", "page_size"],
+      "properties": {
+        "window_start": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt"
+        },
+        "page_size": {
+          "enum": [1, 2, 3, 4]
+        },
+        "time_filter": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["start_year", "end_year"],
+          "properties": {
+            "start_year": {"type": "integer"},
+            "end_year": {"type": "integer"}
+          }
         }
       }
     },

@@ -64,7 +64,7 @@
       "if": {
         "properties": {
           "action": {
-            "enum": ["enter_gallery", "move_next", "move_previous", "locate_artifact", "return_to_exhibit"]
+            "enum": ["enter_gallery", "move_next", "move_previous", "locate_artifact", "return_to_exhibit", "browse_gallery", "seek_time_range"]
           }
         },
         "required": ["action"]
@@ -97,6 +97,32 @@
       },
       "then": {
         "required": ["params"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "const": "browse_gallery"
+          }
+        },
+        "required": ["action"]
+      },
+      "then": {
+        "required": ["expected_view_revision", "params"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "const": "seek_time_range"
+          }
+        },
+        "required": ["action"]
+      },
+      "then": {
+        "required": ["expected_view_revision", "params"]
       }
     }
   ]
