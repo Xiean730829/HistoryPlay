@@ -256,6 +256,56 @@ def test_gallery_keeps_curated_station_order_and_projects_read_only_visible_orde
     assert state == make_state()
 
 
+def test_gallery_projects_song_scrolls_and_hides_unreviewed_stories() -> None:
+    pack = make_pack()
+    documents = dict(pack.documents)
+    documents["artifacts/a.json"] = {
+        **documents["artifacts/a.json"],
+        "exhibit_type": "object",
+        "source_ids": [SOURCE_ID],
+        "story_entry_ids": [STORY_ID, "cn.tang.story.unreviewed"],
+    }
+    documents["stories/unreviewed.json"] = {
+        "id": "cn.tang.story.unreviewed",
+        "title": "未审核故事",
+        "entry_node_id": NODE_ID,
+        "node_ids": [NODE_ID],
+        "review_status": "draft",
+    }
+    documents["galleries/main.json"] = {
+        **documents["galleries/main.json"],
+        "presentation_kind": "song_scroll",
+        "scrolls": [
+            {
+                "id": "cn.tang.scroll.life",
+                "title": "生活卷",
+                "theme": "生活",
+                "background_asset_id": "cn.tang.asset.scroll.life",
+                "interpretation_label": "艺术演绎，不是馆藏照片",
+                "station_ids": ["cn.tang.station.first", "cn.tang.station.second"],
+                "hotspots": [
+                    {
+                        "station_id": "cn.tang.station.first",
+                        "x": 0.1,
+                        "y": 0.2,
+                        "width": 0.3,
+                        "height": 0.4,
+                        "label": "造像碑",
+                    }
+                ],
+            }
+        ],
+    }
+    service = QueryService(MemoryCatalog(replace(pack, documents=documents)))
+    gallery = service.gallery(make_state(), "cn.tang.gallery.main")
+    assert gallery.presentation_kind == "song_scroll"
+    assert gallery.scrolls[0]["id"] == "cn.tang.scroll.life"
+    assert gallery.stations[0].artifact.exhibit_type == "object"
+    assert gallery.stations[0].artifact.source_ids == (SOURCE_ID,)
+    assert STORY_ID in gallery.stations[0].artifact.story_entry_ids
+    assert "cn.tang.story.unreviewed" not in gallery.stations[0].artifact.story_entry_ids
+
+
 def test_gallery_query_fails_when_pinned_pack_has_no_requested_gallery() -> None:
     service = QueryService(MemoryCatalog(make_pack()))
     with pytest.raises(ContentUnavailable, match="找不到展厅"):
