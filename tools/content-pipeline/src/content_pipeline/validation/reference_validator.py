@@ -172,6 +172,19 @@ def _check_story_node(entity: Entity, by_id: dict[str, Entity]) -> list[Issue]:
 
 def _check_artifact(entity: Entity, by_id: dict[str, Entity]) -> list[Issue]:
     issues: list[Issue] = []
+    exhibit_type = entity.data.get("exhibit_type")
+    if exhibit_type in {"poem", "food", "historical_record"} and entity.data.get("museum") is not None:
+        issues.append(entity.locate("诗词、食物或文献展品不能填写虚构馆藏号"))
+    if exhibit_type == "painting" and not isinstance(entity.data.get("identity"), dict):
+        issues.append(entity.locate("画作必须标明真迹、传本或馆藏局部"))
+    if exhibit_type == "object":
+        museum = entity.data.get("museum")
+        source_ids = _as_ids(entity.data.get("source_ids"))
+        if not isinstance(museum, dict) and not source_ids:
+            issues.append(entity.locate("器物须有可追溯机构馆藏号或来源"))
+        if isinstance(museum, dict) and not museum.get("accession"):
+            issues.append(entity.locate("器物馆藏记录缺少馆藏号"))
+
     presentation = entity.data.get("presentation")
     if not isinstance(presentation, dict):
         return issues
@@ -187,12 +200,26 @@ def _check_artifact(entity: Entity, by_id: dict[str, Entity]) -> list[Issue]:
     if isinstance(display, dict):
         asset_id = display.get("asset_id")
         display_kind = display.get("kind")
+        if exhibit_type == "poem" and display_kind not in _POEM_DISPLAY_KINDS:
+            issues.append(entity.locate("诗词不能把排印或演绎图标成真迹照片或三维模型"))
+        if display_kind == "interpretive_image":
+            label = display.get("interpretation_label")
+            if not isinstance(label, str) or not label.strip():
+                issues.append(entity.locate("演绎图必须标注艺术演绎，不能冒充真迹照片"))
+        if display_kind == "printed_text":
+            printed = presentation.get("printed_text")
+            if not isinstance(printed, dict) or not isinstance(printed.get("body"), str) or not printed["body"].strip():
+                issues.append(entity.locate("排印展示必须提供排印正文，不能用照片冒充手迹"))
+        if display_kind == "photo" and exhibit_type == "poem":
+            issues.append(entity.locate("诗词不能把排印内容伪装成真迹照片"))
         if isinstance(asset_id, str) and asset_id:
             issues.extend(_check_target(entity, "presentation.display.asset_id", asset_id, "asset", by_id))
             asset = by_id.get(asset_id)
             if asset is not None and asset.kind == "asset":
-                expected_kind = "model3d" if display_kind == "model3d" else "image"
-                if asset.data.get("kind") != expected_kind:
+                expected_kind = _DISPLAY_ASSET_KIND.get(display_kind if isinstance(display_kind, str) else "", "image")
+                if display_kind not in _DISPLAY_ASSET_KIND:
+                    issues.append(entity.locate(f"不支持的展示类型：{display_kind}"))
+                elif asset.data.get("kind") != expected_kind:
                     issues.append(
                         entity.locate(
                             f"presentation.display.kind 与资产类型不一致：{display_kind} / {asset.data.get('kind')}"
@@ -219,8 +246,22 @@ def _check_artifact(entity: Entity, by_id: dict[str, Entity]) -> list[Issue]:
     return issues
 
 
+_DISPLAY_ASSET_KIND = {
+    "model3d": "model3d",
+    "photo": "image",
+    "printed_text": "image",
+    "interpretive_image": "image",
+}
+_POEM_DISPLAY_KINDS = frozenset({"printed_text", "interpretive_image"})
+
+
 _FIELD_REFS: dict[str, tuple[tuple[str, str | None], ...]] = {
-    "artifact": (("asset_ids", "asset"), ("fact_card_ids", "fact"), ("story_entry_ids", "story")),
+    "artifact": (
+        ("asset_ids", "asset"),
+        ("fact_card_ids", "fact"),
+        ("story_entry_ids", "story"),
+        ("source_ids", "source"),
+    ),
     "asset": (("derived_from", "asset"), ("fallback_asset_id", "asset")),
     "fact": (("source_ids", "source"),),
     "story": (
@@ -332,6 +373,129 @@ def _check_gallery(entity: Entity, by_id: dict[str, Entity]) -> list[Issue]:
     default_station_id = entity.data.get("default_station_id")
     if isinstance(default_station_id, str) and default_station_id not in station_ids:
         issues.append(entity.locate(f"默认展位不属于本展厅：{default_station_id}"))
+    issues.extend(_check_gallery_scrolls(entity, station_ids, by_id))
+    return issues
+
+
+def _check_gallery_scrolls(
+    entity: Entity,
+    station_ids: set[str],
+    by_id: dict[str, Entity],
+) -> list[Issue]:
+    issues: list[Issue] = []
+    scrolls = entity.data.get("scrolls")
+    if scrolls is None:
+        if entity.data.get("presentation_kind") == "song_scroll":
+            issues.append(entity.locate("宋风画卷展厅必须声明 scrolls"))
+        return issues
+    if not isinstance(scrolls, list):
+        issues.append(entity.locate("scrolls 必须是数组"))
+        return issues
+    if entity.data.get("presentation_kind") == "song_scroll" and not scrolls:
+        issues.append(entity.locate("宋风画卷展厅必须至少有一卷"))
+        return issues
+    scroll_ids: set[str] = set()
+    station_owner: dict[str, str] = {}
+    assigned_stations: set[str] = set()
+    for index, scroll in enumerate(scrolls):
+        if not isinstance(scroll, dict):
+            issues.append(entity.locate(f"scrolls[{index}] 必须是对象"))
+            continue
+        scroll_id = scroll.get("id")
+        if not isinstance(scroll_id, str) or not scroll_id:
+            issues.append(entity.locate(f"scrolls[{index}] 缺少稳定卷ID"))
+            continue
+        if scroll_id in scroll_ids:
+            issues.append(entity.locate(f"画卷标识重复：{scroll_id}"))
+            continue
+        if scroll_id in by_id:
+            issues.append(entity.locate(f"画卷标识与已有实体冲突：{scroll_id}"))
+            continue
+        scroll_ids.add(scroll_id)
+        background_id = scroll.get("background_asset_id")
+        if isinstance(background_id, str) and background_id:
+            issues.extend(
+                _check_target(
+                    entity,
+                    f"scrolls[{index}].background_asset_id",
+                    background_id,
+                    "asset",
+                    by_id,
+                )
+            )
+            background = by_id.get(background_id)
+            if (
+                background is not None
+                and background.kind == "asset"
+                and background.data.get("kind") not in {"image", "preview"}
+            ):
+                issues.append(entity.locate(f"画卷背景必须是图片资产：{background_id}"))
+        else:
+            issues.append(entity.locate(f"画卷缺少背景资源：{scroll_id}"))
+        scroll_stations = _as_ids(scroll.get("station_ids"))
+        if not scroll_stations:
+            issues.append(entity.locate(f"画卷缺少展位：{scroll_id}"))
+        for station_id in scroll_stations:
+            if station_id not in station_ids:
+                issues.append(entity.locate(f"画卷引用了本展厅没有的展位：{station_id}"))
+                continue
+            owner = station_owner.get(station_id)
+            if owner is not None:
+                issues.append(entity.locate(f"展位不能跨卷重复：{station_id} 已属于 {owner}"))
+            else:
+                station_owner[station_id] = scroll_id
+                assigned_stations.add(station_id)
+        issues.extend(_check_scroll_hotspots(entity, index, scroll_id, scroll, set(scroll_stations)))
+    if entity.data.get("presentation_kind") == "song_scroll":
+        missing = sorted(station_ids - assigned_stations)
+        for station_id in missing:
+            issues.append(entity.locate(f"展位未编入任何画卷：{station_id}"))
+    return issues
+
+
+def _check_scroll_hotspots(
+    entity: Entity,
+    index: int,
+    scroll_id: str,
+    scroll: dict[str, object],
+    scroll_stations: set[str],
+) -> list[Issue]:
+    issues: list[Issue] = []
+    hotspots = scroll.get("hotspots")
+    if hotspots is None:
+        return issues
+    if not isinstance(hotspots, list):
+        issues.append(entity.locate(f"scrolls[{index}].hotspots 必须是数组"))
+        return issues
+    seen_stations: set[str] = set()
+    for spot_index, spot in enumerate(hotspots):
+        locate = f"scrolls[{index}].hotspots[{spot_index}]"
+        if not isinstance(spot, dict):
+            issues.append(entity.locate(f"{locate} 必须是对象"))
+            continue
+        station_id = spot.get("station_id")
+        if not isinstance(station_id, str) or not station_id:
+            issues.append(entity.locate(f"{locate} 缺少展位"))
+            continue
+        if station_id not in scroll_stations:
+            issues.append(entity.locate(f"热点不属于本卷展位：{station_id}"))
+        if station_id in seen_stations:
+            issues.append(entity.locate(f"同一展位在一卷中不能有多个热点：{station_id}"))
+        seen_stations.add(station_id)
+        values = {key: spot.get(key) for key in ("x", "y", "width", "height")}
+        if any(type(value) not in (int, float) or isinstance(value, bool) for value in values.values()):
+            issues.append(entity.locate(f"画卷热点坐标无效：{scroll_id}"))
+            continue
+        x, y, width, height = (float(values[key]) for key in ("x", "y", "width", "height"))
+        if not (
+            0 <= x <= 1
+            and 0 <= y <= 1
+            and 0 < width <= 1
+            and 0 < height <= 1
+            and x + width <= 1
+            and y + height <= 1
+        ):
+            issues.append(entity.locate(f"画卷热点越界：{scroll_id}"))
     return issues
 
 
