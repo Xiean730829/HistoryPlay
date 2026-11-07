@@ -26,10 +26,13 @@ class Artifact(TypedDict):
     id: NamespacedId
     title: NonEmptyText
     aliases: NotRequired[list[str]]
-    museum: ArtifactMuseum
+    exhibit_type: NotRequired[Literal["object", "painting", "poem", "food", "historical_record"]]
+    museum: NotRequired[ArtifactMuseum]
+    source_ids: NotRequired[list[NamespacedId]]
+    identity: NotRequired[ArtifactIdentity]
     time_range: TimeRange
-    material: NonEmptyText
-    category: NonEmptyText
+    material: NotRequired[NonEmptyText]
+    category: NotRequired[NonEmptyText]
     asset_ids: list[NamespacedId]
     presentation: NotRequired[ArtifactPresentation]
     fact_card_ids: NotRequired[list[NamespacedId]]
@@ -294,9 +297,15 @@ class ArtifactMuseum(TypedDict):
     accession: NonEmptyText
     collection_url: NotRequired[str]
 
+class ArtifactIdentity(TypedDict):
+    kind: Literal["original", "copy", "crop"]
+    label: NonEmptyText
+    attribution_note: NotRequired[str]
+
 class ArtifactPresentation(TypedDict):
     preview_asset_id: NamespacedId
     display: ArtifactDisplay
+    printed_text: NotRequired[ArtifactPrintedText]
     default_camera: NotRequired[ArtifactDefaultCamera]
     teaser: str
     background_node_id: NamespacedId
@@ -354,8 +363,15 @@ class StoryNodeExits(TypedDict):
     when: NotRequired[StoryNodeCondition]
 
 class ArtifactDisplay(TypedDict):
-    kind: Literal["model3d", "photo"]
+    kind: Literal["model3d", "photo", "printed_text", "interpretive_image"]
     asset_id: NamespacedId
+    interpretation_label: NotRequired[NonEmptyText]
+
+class ArtifactPrintedText(TypedDict):
+    body: str
+    script_status: Literal["verified_handwriting", "printed_not_handwriting"]
+    source_label: NonEmptyText
+    interpretation_label: NotRequired[str]
 
 class ArtifactDefaultCamera(TypedDict):
     orbit: NonEmptyText

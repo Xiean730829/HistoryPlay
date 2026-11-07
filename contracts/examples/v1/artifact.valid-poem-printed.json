@@ -1,0 +1,33 @@
+{
+  "id": "cn.song.artifact.shui-diao-ge-tou",
+  "title": "苏轼《水调歌头》",
+  "exhibit_type": "poem",
+  "source_ids": ["cn.song.source.shui-diao-ge-tou"],
+  "time_range": {
+    "start_year": 1076,
+    "end_year": 1076,
+    "precision": "year",
+    "display_label": "1076年"
+  },
+  "category": "词",
+  "asset_ids": [
+    "cn.song.asset.shui-diao-ge-tou.preview",
+    "cn.song.asset.shui-diao-ge-tou.interpretive"
+  ],
+  "presentation": {
+    "preview_asset_id": "cn.song.asset.shui-diao-ge-tou.preview",
+    "display": {
+      "kind": "interpretive_image",
+      "asset_id": "cn.song.asset.shui-diao-ge-tou.interpretive",
+      "interpretation_label": "艺术演绎，非手迹、非真实肖像"
+    },
+    "printed_text": {
+      "body": "明月几时有？把酒问青天。",
+      "script_status": "printed_not_handwriting",
+      "source_label": "公共领域原作现代排印",
+      "interpretation_label": "现代排印文字，不是手迹照片"
+    },
+    "teaser": "未核实手迹，排印与书写演绎图分开标注。",
+    "background_node_id": "cn.song.node.shui-diao-ge-tou.01"
+  }
+}

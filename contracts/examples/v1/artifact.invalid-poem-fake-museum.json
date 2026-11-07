@@ -1,0 +1,16 @@
+{
+  "id": "cn.song.artifact.shui-diao-ge-tou",
+  "title": "苏轼《水调歌头》",
+  "exhibit_type": "poem",
+  "museum": {
+    "name": "虚构博物馆",
+    "accession": "FAKE-01"
+  },
+  "source_ids": ["cn.song.source.shui-diao-ge-tou"],
+  "time_range": {
+    "start_year": 1076,
+    "end_year": 1076,
+    "precision": "year"
+  },
+  "asset_ids": []
+}

@@ -1,0 +1,29 @@
+{
+  "id": "cn.song.artifact.qingbai-ewer",
+  "title": "青白瓷注子",
+  "exhibit_type": "object",
+  "museum": {
+    "name": "The Metropolitan Museum of Art",
+    "accession": "18.57.1",
+    "collection_url": "https://www.metmuseum.org/art/collection/search/49214"
+  },
+  "source_ids": ["cn.song.source.met-qingbai-ewer"],
+  "time_range": {
+    "start_year": 1000,
+    "end_year": 1099,
+    "precision": "century",
+    "display_label": "北宋11世纪"
+  },
+  "material": "瓷",
+  "category": "注子",
+  "asset_ids": ["cn.song.asset.qingbai-ewer.photo"],
+  "presentation": {
+    "preview_asset_id": "cn.song.asset.qingbai-ewer.photo",
+    "display": {
+      "kind": "photo",
+      "asset_id": "cn.song.asset.qingbai-ewer.photo"
+    },
+    "teaser": "北宋青白瓷注子，馆藏号可追溯。",
+    "background_node_id": "cn.song.node.qingbai-ewer.01"
+  }
+}

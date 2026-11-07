@@ -23,13 +23,19 @@ export interface Artifact {
   title: NonEmptyText;
   /** Explicit search aliases, including common Chinese names; never inferred from unpublished sources. */
   aliases?: Array<string>;
-  museum: ArtifactMuseum;
+  /** What is being exhibited; non-object entries must not be presented as excavated physical artifacts. */
+  exhibit_type?: "object" | "painting" | "poem" | "food" | "historical_record";
+  museum?: ArtifactMuseum;
+  /** Primary museum or historical sources for non-object entries and objects without an accession record. */
+  source_ids?: Array<NamespacedId>;
+  /** Required for paintings so a copy or crop is never labelled as the original. */
+  identity?: ArtifactIdentity;
   time_range: TimeRange;
-  material: NonEmptyText;
-  category: NonEmptyText;
+  material?: NonEmptyText;
+  category?: NonEmptyText;
   /** Logical digital asset IDs. Replacing a model does not change this artifact ID. */
   asset_ids: Array<NamespacedId>;
-  /** Optional explicit presentation bindings. The display source is a model or a photo, never whichever asset happens to be first. */
+  /** Optional explicit presentation bindings. The display medium is declared, never inferred from asset_ids order. Printed text and interpretive images must not be disguised as original photographs. */
   presentation?: ArtifactPresentation;
   fact_card_ids?: Array<NamespacedId>;
   story_entry_ids?: Array<NamespacedId>;
@@ -351,10 +357,19 @@ export interface ArtifactMuseum {
   collection_url?: string;
 }
 
+export interface ArtifactIdentity {
+  /** Whether the displayed work is an original, a later copy/transmission, or a collection crop. */
+  kind: "original" | "copy" | "crop";
+  /** Visitor-facing identity label such as 真迹、传本 or 馆藏局部. */
+  label: NonEmptyText;
+  attribution_note?: string;
+}
+
 export interface ArtifactPresentation {
   /** Stable ID of a real preview image; never inferred from asset_ids order. */
   preview_asset_id: NamespacedId;
   display: ArtifactDisplay;
+  printed_text?: ArtifactPrintedText;
   default_camera?: ArtifactDefaultCamera;
   /** One-line exhibit introduction; the longer background remains in the referenced story node. */
   teaser: string;
@@ -429,10 +444,20 @@ export interface StoryNodeExits {
 }
 
 export interface ArtifactDisplay {
-  /** Explicit display medium, checked against the referenced asset kind. */
-  kind: "model3d" | "photo";
-  /** Stable ID of the display model or photograph. */
+  /** Explicit display medium, checked against the referenced asset kind. printed_text and interpretive_image must never be labelled as original photographs. */
+  kind: "model3d" | "photo" | "printed_text" | "interpretive_image";
+  /** Stable ID of the display model, photograph, typeset image, or interpretive illustration. */
   asset_id: NamespacedId;
+  /** Required for interpretive_image, e.g. 艺术演绎，非手迹、非真实肖像. */
+  interpretation_label?: NonEmptyText;
+}
+
+export interface ArtifactPrintedText {
+  /** Modern typeset text from a cited source; not a handwriting photograph. */
+  body: string;
+  script_status: "verified_handwriting" | "printed_not_handwriting";
+  source_label: NonEmptyText;
+  interpretation_label?: string;
 }
 
 export interface ArtifactDefaultCamera {

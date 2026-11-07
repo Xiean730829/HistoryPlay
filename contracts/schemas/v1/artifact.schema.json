@@ -7,10 +7,7 @@
   "required": [
     "id",
     "title",
-    "museum",
     "time_range",
-    "material",
-    "category",
     "asset_ids"
   ],
   "properties": {
@@ -31,6 +28,10 @@
       },
       "description": "Explicit search aliases, including common Chinese names; never inferred from unpublished sources."
     },
+    "exhibit_type": {
+      "enum": ["object", "painting", "poem", "food", "historical_record"],
+      "description": "What is being exhibited; non-object entries must not be presented as excavated physical artifacts."
+    },
     "museum": {
       "type": "object",
       "additionalProperties": false,
@@ -48,6 +49,35 @@
           "maxLength": 500
         }
       }
+    },
+    "source_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "common.schema.json#/$defs/namespacedId"
+      },
+      "description": "Primary museum or historical sources for non-object entries and objects without an accession record."
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "label"],
+      "properties": {
+        "kind": {
+          "enum": ["original", "copy", "crop"],
+          "description": "Whether the displayed work is an original, a later copy/transmission, or a collection crop."
+        },
+        "label": {
+          "$ref": "common.schema.json#/$defs/nonEmptyText",
+          "description": "Visitor-facing identity label such as 真迹、传本 or 馆藏局部."
+        },
+        "attribution_note": {
+          "type": "string",
+          "maxLength": 200
+        }
+      },
+      "description": "Required for paintings so a copy or crop is never labelled as the original."
     },
     "time_range": {
       "$ref": "common.schema.json#/$defs/timeRange"
@@ -81,12 +111,39 @@
           "required": ["kind", "asset_id"],
           "properties": {
             "kind": {
-              "enum": ["model3d", "photo"],
-              "description": "Explicit display medium, checked against the referenced asset kind."
+              "enum": ["model3d", "photo", "printed_text", "interpretive_image"],
+              "description": "Explicit display medium, checked against the referenced asset kind. printed_text and interpretive_image must never be labelled as original photographs."
             },
             "asset_id": {
               "$ref": "common.schema.json#/$defs/namespacedId",
-              "description": "Stable ID of the display model or photograph."
+              "description": "Stable ID of the display model, photograph, typeset image, or interpretive illustration."
+            },
+            "interpretation_label": {
+              "$ref": "common.schema.json#/$defs/nonEmptyText",
+              "description": "Required for interpretive_image, e.g. 艺术演绎，非手迹、非真实肖像."
+            }
+          }
+        },
+        "printed_text": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["body", "script_status", "source_label"],
+          "properties": {
+            "body": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 8000,
+              "description": "Modern typeset text from a cited source; not a handwriting photograph."
+            },
+            "script_status": {
+              "enum": ["verified_handwriting", "printed_not_handwriting"]
+            },
+            "source_label": {
+              "$ref": "common.schema.json#/$defs/nonEmptyText"
+            },
+            "interpretation_label": {
+              "type": "string",
+              "maxLength": 200
             }
           }
         },
@@ -117,7 +174,39 @@
           "description": "Stable story-node ID containing the single authored background narration."
         }
       },
-      "description": "Optional explicit presentation bindings. The display source is a model or a photo, never whichever asset happens to be first."
+      "description": "Optional explicit presentation bindings. The display medium is declared, never inferred from asset_ids order. Printed text and interpretive images must not be disguised as original photographs.",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "display": {
+                "properties": {"kind": {"const": "printed_text"}},
+                "required": ["kind"]
+              }
+            },
+            "required": ["display"]
+          },
+          "then": {"required": ["printed_text"]}
+        },
+        {
+          "if": {
+            "properties": {
+              "display": {
+                "properties": {"kind": {"const": "interpretive_image"}},
+                "required": ["kind"]
+              }
+            },
+            "required": ["display"]
+          },
+          "then": {
+            "properties": {
+              "display": {
+                "required": ["kind", "asset_id", "interpretation_label"]
+              }
+            }
+          }
+        }
+      ]
     },
     "fact_card_ids": {
       "type": "array",
@@ -136,5 +225,51 @@
     "identity_unknown": {
       "type": "boolean"
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "not": {"required": ["exhibit_type"]}
+      },
+      "then": {
+        "required": ["museum"],
+        "description": "Legacy physical exhibits without exhibit_type keep a museum accession."
+      }
+    },
+    {
+      "if": {
+        "properties": {"exhibit_type": {"const": "object"}},
+        "required": ["exhibit_type"]
+      },
+      "then": {
+        "anyOf": [
+          {"required": ["museum"]},
+          {"required": ["source_ids"]}
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {"exhibit_type": {"enum": ["poem", "food", "historical_record"]}},
+        "required": ["exhibit_type"]
+      },
+      "then": {
+        "required": ["source_ids"],
+        "not": {"required": ["museum"]}
+      }
+    },
+    {
+      "if": {
+        "properties": {"exhibit_type": {"const": "painting"}},
+        "required": ["exhibit_type"]
+      },
+      "then": {
+        "required": ["identity"],
+        "anyOf": [
+          {"required": ["museum"]},
+          {"required": ["source_ids"]}
+        ]
+      }
+    }
+  ]
 }
