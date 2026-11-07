@@ -1,0 +1,15 @@
+{
+  "id": "cn.song.artifact.fan-kuan-style-landscape",
+  "title": "仿范宽山水图",
+  "exhibit_type": "painting",
+  "museum": {
+    "name": "The Metropolitan Museum of Art",
+    "accession": "13.100.102"
+  },
+  "time_range": {
+    "start_year": 1100,
+    "end_year": 1130,
+    "precision": "range"
+  },
+  "asset_ids": ["cn.song.asset.fan-kuan-style.photo"]
+}
