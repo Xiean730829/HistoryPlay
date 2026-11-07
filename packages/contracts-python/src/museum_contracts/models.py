@@ -94,6 +94,23 @@ class FactCard(TypedDict):
     dispute: NotRequired[str]
     reviewer: NotRequired[str]
 
+class GalleryHotspot(TypedDict):
+    station_id: NamespacedId
+    x: float
+    y: float
+    width: float
+    height: float
+    label: NonEmptyText
+
+class GalleryScroll(TypedDict):
+    id: NamespacedId
+    title: NonEmptyText
+    theme: NonEmptyText
+    background_asset_id: NamespacedId
+    interpretation_label: NonEmptyText
+    station_ids: list[NamespacedId]
+    hotspots: list[GalleryHotspot]
+
 class GalleryStation(TypedDict):
     id: NamespacedId
     order: int
@@ -108,6 +125,8 @@ class Gallery(TypedDict):
     title: NonEmptyText
     region: ContentPackRegion
     status: Literal["open", "planned", "closed"]
+    presentation_kind: NotRequired[Literal["river", "song_scroll"]]
+    scrolls: NotRequired[list[GalleryScroll]]
     default_station_id: NotRequired[NamespacedId]
     stations: list[GalleryStation]
 

@@ -1,0 +1,55 @@
+{
+  "id": "cn.song.gallery.main",
+  "title": "宋代画卷",
+  "region": {"id": "cn", "label": "中国"},
+  "status": "open",
+  "presentation_kind": "song_scroll",
+  "default_station_id": "cn.song.station.qingbai-ewer",
+  "scrolls": [
+    {
+      "id": "cn.song.scroll.life",
+      "title": "生活卷",
+      "theme": "生活",
+      "background_asset_id": "cn.song.asset.scroll.life",
+      "interpretation_label": "艺术演绎，不是馆藏照片",
+      "station_ids": [
+        "cn.song.station.qingbai-ewer",
+        "cn.song.station.house-model",
+        "cn.song.station.jian-tea-bowl"
+      ],
+      "hotspots": [
+        {
+          "station_id": "cn.song.station.qingbai-ewer",
+          "x": 0.08,
+          "y": 0.22,
+          "width": 0.24,
+          "height": 0.4,
+          "label": "青白瓷注子"
+        }
+      ]
+    }
+  ],
+  "stations": [
+    {
+      "id": "cn.song.station.qingbai-ewer",
+      "order": 0,
+      "time_range": {"start_year": 1000, "end_year": 1099, "precision": "century", "display_label": "北宋11世纪"},
+      "placement_basis": "生活卷按主题陈列注子，不宣称制作先后。",
+      "artifact_id": "cn.song.artifact.qingbai-ewer"
+    },
+    {
+      "id": "cn.song.station.house-model",
+      "order": 1,
+      "time_range": {"start_year": 1000, "end_year": 1099, "precision": "century"},
+      "placement_basis": "同卷相邻的墓葬小屋模型。",
+      "artifact_id": "cn.song.artifact.house-model"
+    },
+    {
+      "id": "cn.song.station.jian-tea-bowl",
+      "order": 2,
+      "time_range": {"start_year": 1000, "end_year": 1199, "precision": "range", "display_label": "11—12世纪"},
+      "placement_basis": "同卷相邻的建窑茶盏。",
+      "artifact_id": "cn.song.artifact.jian-tea-bowl"
+    }
+  ]
+}

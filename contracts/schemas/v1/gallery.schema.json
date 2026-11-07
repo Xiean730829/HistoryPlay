@@ -31,6 +31,18 @@
     "status": {
       "enum": ["open", "planned", "closed"]
     },
+    "presentation_kind": {
+      "enum": ["river", "song_scroll"],
+      "description": "Client presentation family; does not change the authoritative station order."
+    },
+    "scrolls": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/scroll"
+      },
+      "uniqueItems": true,
+      "description": "Optional authored scroll scenes for a non-river gallery. Each scroll has a stable ID, stations, a licensed background asset, and 0–1 normalized hotspots."
+    },
     "default_station_id": {
       "$ref": "common.schema.json#/$defs/namespacedId"
     },
@@ -49,9 +61,58 @@
         "required": ["status"]
       },
       "then": {"required": ["default_station_id"]}
+    },
+    {
+      "if": {
+        "properties": {"presentation_kind": {"const": "song_scroll"}},
+        "required": ["presentation_kind"]
+      },
+      "then": {
+        "required": ["scrolls"],
+        "properties": {
+          "scrolls": {"minItems": 1}
+        }
+      }
     }
   ],
   "$defs": {
+    "hotspot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["station_id", "x", "y", "width", "height", "label"],
+      "properties": {
+        "station_id": {
+          "$ref": "common.schema.json#/$defs/namespacedId"
+        },
+        "x": {"type": "number", "minimum": 0, "maximum": 1},
+        "y": {"type": "number", "minimum": 0, "maximum": 1},
+        "width": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+        "height": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+        "label": {"$ref": "common.schema.json#/$defs/nonEmptyText"}
+      }
+    },
+    "scroll": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "theme", "background_asset_id", "interpretation_label", "station_ids", "hotspots"],
+      "properties": {
+        "id": {"$ref": "common.schema.json#/$defs/namespacedId"},
+        "title": {"$ref": "common.schema.json#/$defs/nonEmptyText"},
+        "theme": {"$ref": "common.schema.json#/$defs/nonEmptyText"},
+        "background_asset_id": {"$ref": "common.schema.json#/$defs/namespacedId"},
+        "interpretation_label": {"$ref": "common.schema.json#/$defs/nonEmptyText"},
+        "station_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "common.schema.json#/$defs/namespacedId"}
+        },
+        "hotspots": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/hotspot"}
+        }
+      }
+    },
     "station": {
       "type": "object",
       "additionalProperties": false,

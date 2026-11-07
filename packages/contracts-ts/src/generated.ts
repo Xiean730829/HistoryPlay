@@ -103,6 +103,25 @@ export interface FactCard {
   reviewer?: string;
 }
 
+export interface GalleryHotspot {
+  station_id: NamespacedId;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  label: NonEmptyText;
+}
+
+export interface GalleryScroll {
+  id: NamespacedId;
+  title: NonEmptyText;
+  theme: NonEmptyText;
+  background_asset_id: NamespacedId;
+  interpretation_label: NonEmptyText;
+  station_ids: Array<NamespacedId>;
+  hotspots: Array<GalleryHotspot>;
+}
+
 export interface GalleryStation {
   id: NamespacedId;
   /** Stable curator-defined order, independent from frame coordinates or uncertain date overlap. */
@@ -121,6 +140,10 @@ export interface Gallery {
   title: NonEmptyText;
   region: ContentPackRegion;
   status: "open" | "planned" | "closed";
+  /** Client presentation family; does not change the authoritative station order. */
+  presentation_kind?: "river" | "song_scroll";
+  /** Optional authored scroll scenes for a non-river gallery. Each scroll has a stable ID, stations, a licensed background asset, and 0–1 normalized hotspots. */
+  scrolls?: Array<GalleryScroll>;
   default_station_id?: NamespacedId;
   stations: Array<GalleryStation>;
 }
