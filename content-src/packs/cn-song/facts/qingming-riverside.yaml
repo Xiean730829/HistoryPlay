@@ -1,0 +1,12 @@
+id: cn.song.fact.qingming-riverside.reference
+claim: 北宋张择端绘《清明上河图》，现藏故宫博物院，描绘汴京市郊、汴河虹桥及市区。
+grade: F
+applicable_time:
+  start_year: 1100
+  end_year: 1125
+  precision: range
+  display_label: 北宋末期
+  uncertainty: 成画约在北宋末期；画中人物不能当作可确认姓名的真实人物。
+source_ids:
+- cn.song.source.reference-qingming-riverside
+evidence_note: 手册引用用于核事实；图像下载、再分发与展示权利另核。故事画面为艺术演绎。

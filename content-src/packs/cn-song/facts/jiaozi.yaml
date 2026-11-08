@@ -1,0 +1,12 @@
+id: cn.song.fact.jiaozi.reference
+claim: 北宋四川出现民间交子，后有官办交子务；早期阶段与纸币性质的演变不应混为一谈。
+grade: F
+applicable_time:
+  start_year: 1000
+  end_year: 1100
+  precision: century
+  display_label: 北宋11世纪
+  uncertainty: 民间交子与官办交子务阶段不要混为一谈；早期原票原件未确认。
+source_ids:
+- cn.song.source.reference-jiaozi
+evidence_note: 手册引用用于核事实；图像下载、再分发与展示权利另核。故事画面为艺术演绎。

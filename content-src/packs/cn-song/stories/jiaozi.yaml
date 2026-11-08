@@ -1,0 +1,10 @@
+id: cn.song.story.jiaozi
+title: 从沉重的钱到一张凭据
+entry_node_id: cn.song.node.jiaozi.01
+node_ids:
+- cn.song.node.jiaozi.intro
+- cn.song.node.jiaozi.01
+- cn.song.node.jiaozi.02
+- cn.song.node.jiaozi.03
+artifact_id: cn.song.artifact.jiaozi
+return_to_exhibit: true

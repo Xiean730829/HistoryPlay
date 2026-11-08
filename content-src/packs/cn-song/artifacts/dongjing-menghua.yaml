@@ -1,0 +1,35 @@
+id: cn.song.artifact.dongjing-menghua
+title: 孟元老《东京梦华录》
+exhibit_type: historical_record
+aliases:
+- 东京梦华录
+- 孟元老《东京梦华录》
+- 梦华录
+source_ids:
+- cn.song.source.reference-dongjing-menghua
+time_range:
+  start_year: 1127
+  end_year: 1160
+  precision: range
+  display_label: 南宋初期追忆
+  uncertainty: 书成于南宋对北宋东京的追忆，不能把每个场景当成作者精确亲历镜头。
+category: 追忆文献
+asset_ids:
+- cn.song.asset.dongjing-menghua.interpretation
+presentation:
+  preview_asset_id: cn.song.asset.dongjing-menghua.interpretation
+  display:
+    kind: interpretive_image
+    asset_id: cn.song.asset.dongjing-menghua.interpretation
+    interpretation_label: 文献意境演绎，不是作者手迹或亲历照片。
+  teaser: 汴京的热闹后来怎样被记住？孟元老用一本书，把城市的街市、节日和生活留给了后人。
+  background_node_id: cn.song.node.dongjing-menghua.intro
+  printed_text:
+    body: 《东京梦华录》是孟元老在南宋追忆北宋东京生活的文献。本页展示现代说明，不是原书手稿照片。
+    script_status: printed_not_handwriting
+    source_label: 现代说明，非原书手稿
+    interpretation_label: 排印说明与艺术演绎，不是手稿。
+fact_card_ids:
+- cn.song.fact.dongjing-menghua.reference
+story_entry_ids:
+- cn.song.story.dongjing-menghua

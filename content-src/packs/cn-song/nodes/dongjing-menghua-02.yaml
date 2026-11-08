@@ -1,0 +1,13 @@
+id: cn.song.node.dongjing-menghua.02
+story_id: cn.song.story.dongjing-menghua
+fact_grade: C
+narration: 书中有街市和节日的记述。读着文字，我们可以想象夜色里的灯火与店铺，但画面中的人物是今天的艺术想象。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.dongjing-menghua.03
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.dongjing-menghua.story-02

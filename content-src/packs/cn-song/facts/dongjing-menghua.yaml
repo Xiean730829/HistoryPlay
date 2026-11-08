@@ -1,0 +1,12 @@
+id: cn.song.fact.dongjing-menghua.reference
+claim: 孟元老在南宋追忆北宋东京生活，《东京梦华录》是追忆性文献。
+grade: F
+applicable_time:
+  start_year: 1127
+  end_year: 1160
+  precision: range
+  display_label: 南宋初期追忆
+  uncertainty: 书成于南宋对北宋东京的追忆，不能把每个场景当成作者精确亲历镜头。
+source_ids:
+- cn.song.source.reference-dongjing-menghua
+evidence_note: 手册引用用于核事实；图像下载、再分发与展示权利另核。故事画面为艺术演绎。

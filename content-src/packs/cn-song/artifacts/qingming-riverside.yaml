@@ -1,0 +1,38 @@
+id: cn.song.artifact.qingming-riverside
+title: 张择端《清明上河图》
+exhibit_type: painting
+aliases:
+- 清明上河图
+- 张择端《清明上河图》
+- 虹桥漕船
+source_ids:
+- cn.song.source.reference-qingming-riverside
+time_range:
+  start_year: 1100
+  end_year: 1125
+  precision: range
+  display_label: 北宋末期
+  uncertainty: 成画约在北宋末期；画中人物不能当作可确认姓名的真实人物。
+category: 馆藏画卷
+asset_ids:
+- cn.song.asset.qingming-riverside.interpretation
+presentation:
+  preview_asset_id: cn.song.asset.qingming-riverside.interpretation
+  display:
+    kind: interpretive_image
+    asset_id: cn.song.asset.qingming-riverside.interpretation
+    interpretation_label: 艺术演绎，非馆藏原图。长卷真迹请通过馆方入口查看。
+  teaser: 这幅长卷把北宋汴京的街道、河流和来往的人画在一起。最热闹的地方，有一座桥和一艘正准备穿桥的船。
+  background_node_id: cn.song.node.qingming-riverside.intro
+fact_card_ids:
+- cn.song.fact.qingming-riverside.reference
+story_entry_ids:
+- cn.song.story.qingming-riverside
+museum:
+  name: 故宫博物院
+  accession: 故宫藏《清明上河图》
+  collection_url: https://minghuaji.dpm.org.cn/paint/detail?id=592d80e225aac624977fee2e19452c1f
+identity:
+  kind: original
+  label: 故宫藏原作。本包画面为艺术演绎，不是原卷扫描件。
+  attribution_note: 张择端绘；画中人物不等于可确认姓名的真实人物。
