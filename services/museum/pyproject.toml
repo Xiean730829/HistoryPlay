@@ -5,6 +5,7 @@ description = "Authoritative local application for the Time-Space Museum"
 requires-python = ">=3.12"
 dependencies = [
   "aiohttp>=3.11,<4",
+  "pypinyin>=0.53,<1",
 ]
 
 [build-system]

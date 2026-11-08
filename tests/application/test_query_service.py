@@ -204,6 +204,17 @@ def test_search_uses_explicit_chinese_aliases_pinned_version_and_cursor_scope() 
     assert set(catalog.requests) == {(PACK_ID, VERSION)}
 
 
+def test_spoken_search_uses_exact_names_and_rejects_unknown_mode() -> None:
+    service = QueryService(MemoryCatalog(make_pack()))
+    state = make_state()
+    spoken = service.search(state, "佛碑", kind="artifact", mode="spoken")
+    assert tuple(item.id for item in spoken.items) == (ARTIFACT_ID,)
+    knowledge = service.search(state, "佛", kind="artifact", mode="knowledge")
+    assert {item.id for item in knowledge.items} == {ARTIFACT_ID, "cn.tang.artifact.stele.second"}
+    with pytest.raises(ValueError, match="搜索模式"):
+        service.search(state, "佛碑", kind="artifact", mode="guess")
+
+
 def test_context_preserves_server_order_and_projects_the_current_story_node() -> None:
     state = make_state()
     service = QueryService(MemoryCatalog(make_pack()))

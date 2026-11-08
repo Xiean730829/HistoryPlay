@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 
 from aiohttp.test_utils import TestClient, TestServer
+from museum.adapters.http.helpers import SERVICES_KEY
 from museum.adapters.sqlite.database import SQLiteDatabase
 from museum.main import create_app
 from museum.ports.content_catalog import PackReference, PublishedPack
@@ -148,6 +149,65 @@ def make_app(tmp_path, catalog=None):
         catalog=catalog or MemoryCatalog(),
         allowed_origins=frozenset({ORIGIN}),
     )
+
+
+def test_renew_control_ticket_requires_same_session_and_live_binding(tmp_path) -> None:
+    async def scenario() -> None:
+        client = TestClient(TestServer(make_app(tmp_path)))
+        await client.start_server()
+        origin = {"Origin": ORIGIN}
+        response = await client.post('/api/sessions', json={'pack_id': PACK_ID, 'version': VERSION}, headers=origin)
+        created = await response.json()
+        session_id, token = created['state']['session_id'], created['session_token']
+        auth = {**origin, 'Authorization': f'Bearer {token}'}
+        pair = await (await client.post(f'/api/sessions/{session_id}/pair', headers=auth)).json()
+        bound = {**auth, 'X-Museum-Connection': pair['connection_id']}
+        url = f'/api/sessions/{session_id}/control-ticket'
+        assert (await client.post(url, headers=auth)).status == 403
+        assert (await client.post(url, headers={**bound, 'Origin': 'http://untrusted.invalid'})).status == 403
+        renewal = await client.post(url, headers=bound)
+        assert renewal.status == 200
+        fresh = await renewal.json()
+        assert fresh['control_ticket'] != pair['control_ticket']
+        assert fresh['ticket_ttl_seconds'] == 300
+        payload = {'schema_version':'1', 'request_id':'renewal-test', 'expected_revision':0,
+                   'interaction_epoch':0, 'control_ticket':fresh['control_ticket'],
+                   'action':'open_artifact', 'target_id':ARTIFACT_ID}
+        assert (await client.post(f'/api/sessions/{session_id}/commands', json=payload, headers=bound)).status == 200
+        replacement = await (await client.post(f'/api/sessions/{session_id}/pair', headers=auth)).json()
+        assert replacement['connection_id'] != pair['connection_id']
+        assert (await client.post(url, headers=bound)).status == 403
+        await client.close()
+    asyncio.run(scenario())
+
+
+def test_expired_ticket_can_be_renewed_without_rebinding_or_losing_story_command(tmp_path) -> None:
+    async def scenario() -> None:
+        app = make_app(tmp_path)
+        now = [0.0]
+        app[SERVICES_KEY].bindings._tickets._clock = lambda: now[0]
+        client = TestClient(TestServer(app))
+        await client.start_server()
+        origin = {'Origin':ORIGIN}
+        created = await (await client.post('/api/sessions', json={'pack_id':PACK_ID,'version':VERSION}, headers=origin)).json()
+        sid = created['state']['session_id']
+        auth = {**origin,'Authorization':f"Bearer {created['session_token']}"}
+        paired = await (await client.post(f'/api/sessions/{sid}/pair', headers=auth)).json()
+        bound = {**auth,'X-Museum-Connection':paired['connection_id']}
+        payload = {'schema_version':'1','request_id':'expired-then-renew','expected_revision':0,
+                   'interaction_epoch':0,'control_ticket':paired['control_ticket'],
+                   'action':'open_artifact','target_id':ARTIFACT_ID}
+        now[0] = 301.0
+        rejected = await client.post(f'/api/sessions/{sid}/commands',json=payload,headers=bound)
+        assert rejected.status == 403
+        assert '控制票据已过期' in await rejected.text()
+        fresh = await (await client.post(f'/api/sessions/{sid}/control-ticket',headers=bound)).json()
+        payload['control_ticket'] = fresh['control_ticket']
+        committed = await client.post(f'/api/sessions/{sid}/commands',json=payload,headers=bound)
+        assert committed.status == 200 and (await committed.json())['status'] == 'committed'
+        assert (await client.get(f'/api/sessions/{sid}/context',headers=bound)).status == 200
+        await client.close()
+    asyncio.run(scenario())
 
 
 def test_http_session_pairing_context_and_command_flow(tmp_path) -> None:
@@ -514,6 +574,112 @@ def test_event_stream_replays_events_and_ignores_stale_render_receipt(tmp_path) 
         await socket.close()
         await replay.close()
         await snapshot.close()
+        await client.close()
+
+    asyncio.run(scenario())
+
+
+def test_http_enter_gallery_persists_requested_page_size_through_sqlite(tmp_path) -> None:
+    async def scenario() -> None:
+        client = TestClient(TestServer(make_app(tmp_path)))
+        await client.start_server()
+        origin = {"Origin": ORIGIN}
+        created = await client.post(
+            "/api/sessions",
+            json={"pack_id": PACK_ID, "version": VERSION},
+            headers=origin,
+        )
+        assert created.status == 201
+        created_body = await created.json()
+        session_id = created_body["state"]["session_id"]
+        token = created_body["session_token"]
+        headers = {**origin, "Authorization": f"Bearer {token}"}
+        paired = await client.post(f"/api/sessions/{session_id}/pair", headers=headers)
+        binding = await paired.json()
+        bound = {**headers, "X-Museum-Connection": binding["connection_id"]}
+
+        invalid = await client.post(
+            f"/api/sessions/{session_id}/commands",
+            json={
+                "schema_version": "1",
+                "request_id": "enter-page-5",
+                "expected_revision": 0,
+                "expected_view_revision": 0,
+                "interaction_epoch": 0,
+                "control_ticket": binding["control_ticket"],
+                "action": "enter_gallery",
+                "target_id": "cn.tang.gallery.main",
+                "params": {"page_size": 5},
+            },
+            headers=bound,
+        )
+        assert invalid.status == 400
+
+        entered = await client.post(
+            f"/api/sessions/{session_id}/commands",
+            json={
+                "schema_version": "1",
+                "request_id": "enter-page-3",
+                "expected_revision": 0,
+                "expected_view_revision": 0,
+                "interaction_epoch": 0,
+                "control_ticket": binding["control_ticket"],
+                "action": "enter_gallery",
+                "target_id": "cn.tang.gallery.main",
+                "params": {"page_size": 3},
+            },
+            headers=bound,
+        )
+        assert entered.status == 200
+        receipt = await entered.json()
+        assert receipt["status"] == "committed"
+
+        restored = await client.get(f"/api/sessions/{session_id}", headers=headers)
+        assert restored.status == 200
+        state = await restored.json()
+        assert state["gallery_view"]["page_size"] == 3
+        assert state["gallery_view"]["window_start"] == 0
+        assert state["gallery_id"] == "cn.tang.gallery.main"
+        await client.close()
+
+    asyncio.run(scenario())
+
+
+def test_http_enter_gallery_defaults_to_four_without_page_size(tmp_path) -> None:
+    async def scenario() -> None:
+        client = TestClient(TestServer(make_app(tmp_path)))
+        await client.start_server()
+        origin = {"Origin": ORIGIN}
+        created = await client.post(
+            "/api/sessions",
+            json={"pack_id": PACK_ID, "version": VERSION},
+            headers=origin,
+        )
+        created_body = await created.json()
+        session_id = created_body["state"]["session_id"]
+        token = created_body["session_token"]
+        headers = {**origin, "Authorization": f"Bearer {token}"}
+        paired = await client.post(f"/api/sessions/{session_id}/pair", headers=headers)
+        binding = await paired.json()
+        bound = {**headers, "X-Museum-Connection": binding["connection_id"]}
+        entered = await client.post(
+            f"/api/sessions/{session_id}/commands",
+            json={
+                "schema_version": "1",
+                "request_id": "enter-default-4",
+                "expected_revision": 0,
+                "expected_view_revision": 0,
+                "interaction_epoch": 0,
+                "control_ticket": binding["control_ticket"],
+                "action": "enter_gallery",
+                "target_id": "cn.tang.gallery.main",
+            },
+            headers=bound,
+        )
+        assert entered.status == 200
+        restored = await client.get(f"/api/sessions/{session_id}", headers=headers)
+        state = await restored.json()
+        assert state["gallery_view"]["page_size"] == 4
         await client.close()
 
     asyncio.run(scenario())

@@ -14,6 +14,7 @@ from museum.adapters.http.helpers import (
     services,
     state_projection,
 )
+from museum.application.binding_service import InvalidBinding
 from museum.application.pack_versions import RuntimePackError, resolve_runtime_pack_versions
 from museum.domain.session.models import SessionState
 
@@ -23,6 +24,7 @@ def register_session_routes(app: web.Application) -> None:
     app.router.add_get("/api/sessions/{session_id}", get_session)
     app.router.add_post("/api/sessions/{session_id}/pair", pair_session)
     app.router.add_delete("/api/sessions/{session_id}/pair", unpair_session)
+    app.router.add_post("/api/sessions/{session_id}/control-ticket", renew_control_ticket)
     app.router.add_get("/api/sessions/{session_id}/context", get_context)
     app.router.add_get("/api/sessions/{session_id}/galleries/{gallery_id}", get_gallery)
     app.router.add_get("/api/sessions/{session_id}/search", search_content)
@@ -91,6 +93,18 @@ async def unpair_session(request: web.Request) -> web.Response:
     return web.json_response({"status": "unpaired"})
 
 
+async def renew_control_ticket(request: web.Request) -> web.Response:
+    session_id = request.match_info["session_id"]
+    configured = require_session(request, session_id, mutation=True)
+    connection_id = require_binding(request, configured, session_id)
+    load_state(configured, session_id)
+    try:
+        ticket = configured.bindings.renew_ticket(session_id, connection_id)
+    except InvalidBinding as error:
+        raise web.HTTPForbidden(text=str(error)) from error
+    return web.json_response({"control_ticket": ticket, "ticket_ttl_seconds": 300})
+
+
 async def issue_event_ticket(request: web.Request) -> web.Response:
     session_id = request.match_info["session_id"]
     configured = require_session(request, session_id, mutation=True)
@@ -148,6 +162,7 @@ async def search_content(request: web.Request) -> web.Response:
             kind=request.query.get("kind"),
             cursor=request.query.get("cursor"),
             limit=limit,
+            mode=request.query.get("mode"),
         )
     except (ValueError, LookupError) as error:
         raise web.HTTPBadRequest(text=str(error)) from error
