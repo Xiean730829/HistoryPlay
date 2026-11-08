@@ -1,7 +1,7 @@
 import { AmbientLight, Group, HemisphereLight, PointLight } from "three";
 import { stationPlacement } from "./layout";
 
-/** Warm amber pools identify real exhibits on alternating bends of the rising river route. */
+/** Warm amber pools identify real exhibits along the level horizontal river. */
 export function buildGalleryLighting(count: number): Group {
   const rig = new Group();
   rig.name = "gallery-exhibit-lights";
@@ -11,7 +11,7 @@ export function buildGalleryLighting(count: number): Group {
   for (let index = 0; index < count; index += 1) {
     const p = stationPlacement(index);
     const light = new PointLight(accents[index % accents.length], 14, 7.5, 2);
-    light.position.set(p.x - p.bankX * p.side * 0.55, p.walkY + 3.7, p.z - p.bankZ * p.side * 0.55);
+    light.position.set(p.x, p.walkY + 3.7, p.z + 1.4);
     rig.add(light);
   }
   return rig;

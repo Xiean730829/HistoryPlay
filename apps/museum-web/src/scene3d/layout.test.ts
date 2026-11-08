@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import { Box3, BoxGeometry, BufferGeometry, Group, Mesh, MeshStandardMaterial, Points, PointsMaterial, Texture, Vector3 } from "three";
-import { maintainSurfaceContact, nearbyModelIndices, RIVER_STATION_SPACING, RIVER_WALKWAY_WIDTH,
-  seatModel, stationPlacement } from "./layout";
+import { maintainSurfaceContact, nearbyModelIndices, overviewModelIndices, RIVER_STATION_SPACING, RIVER_WALKWAY_WIDTH,
+  seatModel, stationLabelAnchor, stationPlacement } from "./layout";
 import { RIVER_RISE_PER_METER, riverHeightAt, riverPointAt, riverStationDistance } from "./riverPath";
 import { createRibbonGeometry } from "./particleRiver";
 import { disposeTree } from "./resources";
 
-describe("curved river exhibit placement", () => {
-  it("maps the full galaxy ribbon once over a rising curve", () => {
-    const geometry = createRibbonGeometry(4.8, 20, 3);
+describe("horizontal galaxy river exhibit placement", () => {
+  it("maps the galaxy ribbon once along a level horizontal river", () => {
+    const geometry = createRibbonGeometry(4.8, 20, 8);
     const position = geometry.getAttribute("position");
     expect(position.count).toBe(42);
     const firstX = (position.getX(0) + position.getX(1)) / 2;
@@ -17,8 +17,9 @@ describe("curved river exhibit placement", () => {
     expect(firstX).not.toBeCloseTo(middleX);
     expect(lastX).not.toBeCloseTo(middleX);
     expect(geometry.getAttribute("uv").getX(0)).toBe(0);
-    expect(geometry.getAttribute("uv").getX(position.count - 2)).toBe(1);
-    expect(position.getY(position.count - 2)).toBeGreaterThan(position.getY(0));
+    expect(geometry.getAttribute("uv").getX(position.count - 2)).toBeGreaterThan(1);
+    expect(position.getY(position.count - 2)).toBeCloseTo(position.getY(0));
+    expect(position.getY(0)).toBeCloseTo(0.025);
     geometry.dispose();
   });
   it("releases the particle geometry and material when the scene is disposed", () => {
@@ -29,31 +30,41 @@ describe("curved river exhibit placement", () => {
     expect(a).toHaveBeenCalledTimes(1); expect(b).toHaveBeenCalledTimes(1);
   });
 
-  it("places one exhibit at every alternating bend and keeps it on the shared curve", () => {
-    for (let index = 0; index < 6; index += 1) {
+  it("places overview name anchors under each pedestal without encoding titles", () => {
+    const first = stationLabelAnchor(0);
+    const fourth = stationLabelAnchor(3);
+    expect(first.y).toBeCloseTo(stationPlacement(0).walkY + 0.04);
+    expect(fourth.x).toBeCloseTo(stationPlacement(3).x);
+    expect(fourth.z).toBeCloseTo(stationPlacement(3).z);
+  });
+
+  it("places every exhibit on one level row at equal visual scale", () => {
+    for (let index = 0; index < 8; index += 1) {
       const current = stationPlacement(index);
       expect(current.bendIndex).toBe(index);
       expect(current.distance).toBeCloseTo(riverStationDistance(index));
-      expect(current.walkY).toBeCloseTo(riverHeightAt(current.distance));
-      expect(current.plinthTop).toBeCloseTo(current.walkY + 0.18);
+      expect(current.x).toBeCloseTo(index * RIVER_STATION_SPACING);
+      expect(current.z).toBeCloseTo(0);
+      expect(current.walkY).toBeCloseTo(0);
+      expect(current.plinthTop).toBeCloseTo(0.18);
+      expect(current.side).toBe(1);
       if (index > 0) {
         const previous = stationPlacement(index - 1);
-        expect(previous.side).toBe(-current.side);
         expect(current.distance - previous.distance).toBeCloseTo(RIVER_STATION_SPACING);
-        expect(current.walkY - previous.walkY).toBeCloseTo(RIVER_STATION_SPACING * RIVER_RISE_PER_METER);
+        expect(current.walkY).toBeCloseTo(previous.walkY);
+        expect(current.z).toBeCloseTo(previous.z);
       }
-      const center = riverPointAt(current.distance);
-      expect(Math.hypot(current.x - center.x, current.z - center.z))
-        .toBeCloseTo(RIVER_WALKWAY_WIDTH / 2 + 1.55);
     }
-    expect(stationPlacement(0).centerX).toBeCloseTo(3.1);
-    expect(stationPlacement(1).centerX).toBeCloseTo(-3.1);
+    expect(RIVER_RISE_PER_METER).toBe(0);
+    expect(Math.abs(stationPlacement(3).z)).toBeLessThan(0.01);
+    expect(RIVER_WALKWAY_WIDTH).toBeGreaterThan(2);
+    expect(riverPointAt(stationPlacement(2).distance).y).toBeCloseTo(0);
   });
 
-  it("uses a gentle continuous grade instead of discrete step elevations", () => {
+  it("keeps the visitor path level instead of a rising grade", () => {
     for (let distance = 0; distance < 80; distance += 0.25) {
-      expect(riverHeightAt(distance + 0.25) - riverHeightAt(distance))
-        .toBeCloseTo(0.25 * RIVER_RISE_PER_METER);
+      expect(riverHeightAt(distance)).toBeCloseTo(0);
+      expect(riverHeightAt(distance + 0.25) - riverHeightAt(distance)).toBeCloseTo(0);
     }
   });
 
@@ -65,9 +76,13 @@ describe("curved river exhibit placement", () => {
     expect(new Box3().setFromObject(spin).min.y).toBeCloseTo(root.position.y);
   });
 
-  it("keeps the nearby model window bounded as the river grows", () => {
+  it("loads the current four-slot window plus at most one neighbor on each side", () => {
     expect([...nearbyModelIndices(3, 0)]).toEqual([0, 1, 2]);
     expect([...nearbyModelIndices(19, 12)]).toEqual([12, 11, 13]);
+    expect([...overviewModelIndices(3)]).toEqual([0, 1, 2]);
+    expect([...overviewModelIndices(19)]).toEqual([0, 1, 2, 3, 4]);
+    expect([...overviewModelIndices(19, 4)]).toEqual([3, 4, 5, 6, 7, 8]);
+    expect([...overviewModelIndices(19, 16)]).toEqual([15, 16, 17, 18]);
   });
 
   it("centers an offset GLB and preserves its aspect ratio", () => {

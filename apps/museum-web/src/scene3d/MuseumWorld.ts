@@ -4,13 +4,15 @@ import {
   PMREMGenerator, BoxGeometry, SRGBColorSpace, Texture, type WebGLRenderTarget,
 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { legacyMaterials } from "./legacyMaterials";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import type { ActiveSession, ArtifactProjection } from "../application/museumApi";
 import { galleryAssets } from "../capabilities/galleryAssets";
 import type { AssetLease } from "../capabilities/assetLoader";
 import { buildGallery } from "./architecture";
-import { MODEL_SURFACE_OFFSET, maintainSurfaceContact, nearbyModelIndices, seatModel, stationPlacement } from "./layout";
-import { routeCameraPose, stationFacingYaw } from "./routeCamera";
+import { DESKTOP_PAGE_SIZE, windowStartForIndex } from "../gallery/horizontalProjection";
+import { MODEL_SURFACE_OFFSET, maintainSurfaceContact, nearbyModelIndices, overviewModelIndices, seatModel, stationLabelAnchor, stationPlacement } from "./layout";
+import { cameraFrameEasing, galleryOverviewPose, routeCameraPose, stationFacingYaw } from "./routeCamera";
 import { disposeTree } from "./resources";
 import { pickArtifact } from "./picking";
 import { galleryVisualTheme } from "./visualTheme";
@@ -21,6 +23,14 @@ interface Exhibit {
   root: Group; spin: Group; loaded: boolean; loading: boolean; attempted: boolean; controller: AbortController;
   lease?: AssetLease; preview?: Group; previewLease?: AssetLease; previewVisible: boolean;
 }
+export interface StationLabelProjection {
+  id: string;
+  title: string;
+  x: number;
+  y: number;
+  visible: boolean;
+}
+
 interface WorldHooks {
   onSelect(id: string): void;
   onObserve(yaw: number, pitch: number, zoom: number): void;
@@ -28,16 +38,17 @@ interface WorldHooks {
   onLoaded(count: number): void;
   onPreview(artifactId: string, visible: boolean): void;
   onRender(status: "rendered" | "degraded", reason?: string): void;
+  onLabels?(labels: readonly StationLabelProjection[]): void;
 }
 
 /** One WebGL world owns the hall, actual GLBs, camera and their GPU lifetime. */
 export class MuseumWorld {
   readonly scene = new Scene();
-  readonly camera = new PerspectiveCamera(47, 1, 0.08, 100);
+  readonly camera = new PerspectiveCamera(47, 1, 0.08, 220);
   readonly renderer: WebGLRenderer;
   private readonly exhibits = new Map<string, Exhibit>();
-  private readonly targetPosition = new Vector3().fromArray(routeCameraPose(0, false).position);
-  private readonly targetLook = new Vector3().fromArray(routeCameraPose(0, false).lookAt);
+  private readonly targetPosition = new Vector3().fromArray(galleryOverviewPose().position);
+  private readonly targetLook = new Vector3().fromArray(galleryOverviewPose().lookAt);
   private readonly currentLook = this.targetLook.clone();
   private readonly raycaster = new Raycaster();
   private readonly pointer = new Vector2();
@@ -58,6 +69,7 @@ export class MuseumWorld {
   private suppressClick = false;
   private wheelTimer: ReturnType<typeof setTimeout> | null = null;
   private wheelFactor = 1;
+  private lastLabelKey = "";
 
   constructor(private readonly host: HTMLElement, private readonly artifacts: readonly ArtifactProjection[],
     session: ActiveSession, private readonly hooks: WorldHooks) {
@@ -69,7 +81,7 @@ export class MuseumWorld {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = PCFShadowMap;
     this.renderer.setClearColor(0x000000, 0);
-    this.renderer.domElement.setAttribute("aria-label", "沿蜿蜒银河河道上行的三维文物展廊");
+    this.renderer.domElement.setAttribute("aria-label", "横向银河展廊中的三维文物");
     this.renderer.domElement.style.touchAction = "none";
     host.appendChild(this.renderer.domElement);
     this.scene.background = null;
@@ -98,8 +110,31 @@ export class MuseumWorld {
     const { width, height } = this.host.getBoundingClientRect();
     if (!width || !height) return;
     this.camera.aspect = width / height; this.camera.updateProjectionMatrix();
-    this.camera.fov = width < 650 ? 62 : 47; this.camera.updateProjectionMatrix();
+    this.camera.fov = this.inspection ? (width < 650 ? 62 : 47) : 54;
+    this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height, false);
+    if (!this.inspection) this.aimOverview();
+  }
+
+  private currentWindowStart(index: number): number {
+    const view = this.latest.state.gallery_view;
+    const pageSize = view?.page_size ?? DESKTOP_PAGE_SIZE;
+    if (view && Number.isInteger(view.window_start)) {
+      return windowStartForIndex(view.window_start, this.artifacts.length, pageSize);
+    }
+    return windowStartForIndex(index, this.artifacts.length, pageSize);
+  }
+
+  private aimOverview(index = this.artifacts.findIndex((item) => item.id === this.latest.state.focused_entity_id)): void {
+    const focused = index < 0 ? 0 : index;
+    const pose = galleryOverviewPose(
+      this.currentWindowStart(focused),
+      this.artifacts.length,
+      this.camera.aspect || 16 / 9,
+      this.latest.state.gallery_view?.page_size ?? DESKTOP_PAGE_SIZE,
+    );
+    this.targetPosition.fromArray(pose.position);
+    this.targetLook.fromArray(pose.lookAt);
   }
 
   private createExhibit(artifact: ArtifactProjection, index: number): void {
@@ -131,7 +166,7 @@ export class MuseumWorld {
       const lease = await galleryAssets.acquire(this.latest, assetId, "model", controller.signal);
       if (this.disposed || controller.signal.aborted || entry.controller !== controller) { lease.release(); return; }
       entry.lease = lease;
-      const gltf = await new GLTFLoader().loadAsync(lease.url);
+      const gltf = await new GLTFLoader().register(legacyMaterials).loadAsync(lease.url);
       if (this.disposed || controller.signal.aborted || entry.controller !== controller) { disposeTree(gltf.scene); lease.release(); return; }
       const model = gltf.scene;
       const preset = artifact.presentation?.default_camera?.orbit;
@@ -149,7 +184,11 @@ export class MuseumWorld {
       this.removePreview(artifact.id, entry);
       this.hooks.onLoaded([...this.exhibits.values()].filter((item) => item.loaded).length);
     } catch (cause) {
-      if (!this.disposed && !controller.signal.aborted && entry.controller === controller) {
+      if (!this.disposed && !controller.signal.aborted && entry.controller === controller
+        && this.latest.state.focused_entity_id === artifact.id && !entry.previewVisible) {
+        // A neighboring preload failure is not evidence that the selected
+        // exhibit failed to render. A visible authored preview is acknowledged
+        // by animate() only after its own camera/frame has actually settled.
         this.hooks.onRender("degraded", `展品 ${artifact.id} 的三维资产 ${assetId} 载入失败（${safeModelFailure(cause)}）；`
           + (entry.previewVisible ? "展位当前显示馆藏真实预览图" : "馆藏预览也未能载入"));
       }
@@ -205,11 +244,16 @@ export class MuseumWorld {
   update(session: ActiveSession, inspection: boolean): void {
     if (this.latest.state.revision !== session.state.revision || this.latest.state.view_revision !== session.state.view_revision) this.preview = null;
     this.latest = session;
+    const inspectionChanged = this.inspection !== inspection;
     this.inspection = inspection;
+    if (inspectionChanged) this.fit();
     const index = this.artifacts.findIndex((item) => item.id === session.state.focused_entity_id);
     if (index < 0) return;
-    this.targetRoutePosition = index;
-    const near = nearbyModelIndices(this.artifacts.length, index);
+    this.targetRoutePosition = inspection ? index : this.currentWindowStart(index);
+    const pageSize = this.latest.state.gallery_view?.page_size ?? DESKTOP_PAGE_SIZE;
+    const near = inspection
+      ? nearbyModelIndices(this.artifacts.length, index)
+      : overviewModelIndices(this.artifacts.length, this.currentWindowStart(index), pageSize);
     this.artifacts.forEach((artifact, itemIndex) => {
       const entry = this.exhibits.get(artifact.id)!;
       if (near.has(itemIndex)) {
@@ -221,7 +265,11 @@ export class MuseumWorld {
         entry.attempted = false; entry.controller = new AbortController();
       }
     });
-    const cameraPose = routeCameraPose(index, inspection, session.state.camera_pose?.zoom ?? 1);
+    const cameraPose = routeCameraPose(
+      index, inspection, session.state.camera_pose?.zoom ?? 1, !inspection,
+      this.artifacts.length, this.camera.aspect || 16 / 9, this.currentWindowStart(index),
+      session.state.gallery_view?.page_size ?? DESKTOP_PAGE_SIZE,
+    );
     this.targetPosition.fromArray(cameraPose.position);
     this.targetLook.fromArray(cameraPose.lookAt);
   }
@@ -276,13 +324,11 @@ export class MuseumWorld {
     if (this.latest.state.mode === "story") {
       this.frame = requestAnimationFrame(this.animate); this.lastTime = time; return;
     }
-    const dt = Math.min((time - (this.lastTime || time)) / 1000, 0.05); this.lastTime = time;
-    const easing = 1 - Math.exp(-dt * 5.5);
+    const dt = (time - (this.lastTime || time)) / 1000; this.lastTime = time;
+    const easing = cameraFrameEasing(dt);
     if (!this.inspection) {
       this.routePosition += (this.targetRoutePosition - this.routePosition) * easing;
-      const route = routeCameraPose(this.routePosition, false);
-      this.targetPosition.fromArray(route.position);
-      this.targetLook.fromArray(route.lookAt);
+      this.aimOverview();
     }
     this.camera.position.lerp(this.targetPosition, easing);
     this.currentLook.lerp(this.targetLook, easing); this.camera.lookAt(this.currentLook);
@@ -297,20 +343,66 @@ export class MuseumWorld {
       if (entry.loaded) maintainSurfaceContact(entry.spin, entry.root.position.y);
     }
     this.renderer.render(this.scene, this.camera);
+    this.publishOverviewLabels();
     const receiptKey = `${state.revision}:${state.view_revision}:${state.interaction_epoch}`;
+    const cameraSettled = this.camera.position.distanceTo(this.targetPosition) < 0.015
+      && this.currentLook.distanceTo(this.targetLook) < 0.015
+      && this.host.getBoundingClientRect().height > 0;
     const yawError = entry ? Math.atan2(Math.sin(entry.spin.rotation.y + (state.camera_pose?.yaw ?? 0) * Math.PI / 180), Math.cos(entry.spin.rotation.y + (state.camera_pose?.yaw ?? 0) * Math.PI / 180)) : 1;
-    if (!this.preview && !this.drag && state.mode === "explore" && (entry?.loaded || entry?.previewVisible)
+    const closeUpReady = Boolean(entry) && (entry?.loaded || entry?.previewVisible)
       && Math.abs(yawError) < 0.01
-      && Math.abs(entry.spin.rotation.x - (state.camera_pose?.pitch ?? 0) * Math.PI / 180) < 0.01
-      && (this.acknowledged !== receiptKey || time - this.acknowledgedAt > 1000) && this.camera.position.distanceTo(this.targetPosition) < 0.015
-      && this.currentLook.distanceTo(this.targetLook) < 0.015 && this.host.getBoundingClientRect().height > 0) {
-      const bounds = new Box3().setFromObject(entry.spin);
-      const center = bounds.getCenter(new Vector3()).project(this.camera);
-      if (Math.abs(center.x) < 1 && Math.abs(center.y) < 1 && center.z > -1 && center.z < 1) {
+      && Math.abs(entry!.spin.rotation.x - (state.camera_pose?.pitch ?? 0) * Math.PI / 180) < 0.01;
+    const overviewReady = !this.inspection && cameraSettled;
+    if (!this.preview && !this.drag && state.mode === "explore"
+      && (this.inspection ? closeUpReady : overviewReady)
+      && (this.acknowledged !== receiptKey || time - this.acknowledgedAt > 1000)
+      && cameraSettled) {
+      if (this.inspection) {
+        const bounds = new Box3().setFromObject(entry!.spin);
+        const center = bounds.getCenter(new Vector3()).project(this.camera);
+        if (Math.abs(center.x) < 1 && Math.abs(center.y) < 1 && center.z > -1 && center.z < 1) {
+          this.acknowledged = receiptKey; this.acknowledgedAt = time; this.hooks.onRender("rendered");
+        }
+      } else {
         this.acknowledged = receiptKey; this.acknowledgedAt = time; this.hooks.onRender("rendered");
       }
     }
     this.frame = requestAnimationFrame(this.animate);
+  }
+
+  overviewLabels(): StationLabelProjection[] {
+    if (this.inspection || this.latest.state.mode !== "explore") return [];
+    const { width, height } = this.host.getBoundingClientRect();
+    if (!width || !height) return [];
+    const pageSize = this.latest.state.gallery_view?.page_size ?? DESKTOP_PAGE_SIZE;
+    const start = this.currentWindowStart(
+      this.artifacts.findIndex((item) => item.id === this.latest.state.focused_entity_id),
+    );
+    const end = Math.min(this.artifacts.length, start + pageSize);
+    const labels: StationLabelProjection[] = [];
+    for (let index = start; index < end; index += 1) {
+      const artifact = this.artifacts[index];
+      if (!artifact) continue;
+      const anchor = stationLabelAnchor(index);
+      const projected = new Vector3(anchor.x, anchor.y, anchor.z).project(this.camera);
+      const onScreen = Math.abs(projected.x) <= 1.15 && Math.abs(projected.y) <= 1.15 && projected.z > -1 && projected.z < 1;
+      labels.push({
+        id: artifact.id,
+        title: artifact.title,
+        x: (projected.x * 0.5 + 0.5) * 100,
+        y: (-projected.y * 0.5 + 0.5) * 100,
+        visible: onScreen,
+      });
+    }
+    return labels;
+  }
+
+  private publishOverviewLabels(): void {
+    const labels = this.overviewLabels();
+    const key = labels.map((item) => `${item.id}:${item.visible ? Math.round(item.x) : "off"}:${item.visible ? Math.round(item.y) : "off"}`).join("|");
+    if (key === this.lastLabelKey) return;
+    this.lastLabelKey = key;
+    this.hooks.onLabels?.(labels);
   };
 
   dispose(): void {

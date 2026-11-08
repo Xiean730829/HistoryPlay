@@ -1,7 +1,6 @@
 import { Box3, Group, Vector3 } from "three";
-import {
-  riverBankNormalAt, riverPointAt, riverStationDistance,
-} from "./riverPath";
+import { DESKTOP_PAGE_SIZE } from "../gallery/horizontalProjection";
+import { RIVER_STATION_Z, riverHeightAt, riverStationDistance } from "./riverPath";
 
 export const MODEL_SURFACE_OFFSET = 0.014;
 export const PEDESTAL_HEIGHT = 0.18;
@@ -10,7 +9,7 @@ export const RIVER_WALKWAY_THICKNESS = 0.18;
 export { RIVER_STATION_SPACING } from "./riverPath";
 
 export interface StationPlacement {
-  /** One exhibit is assigned to each successive bend in the shared river route. */
+  /** One exhibit occupies one slot along the shared horizontal river. */
   bendIndex: number;
   x: number;
   z: number;
@@ -28,27 +27,44 @@ export interface StationPlacement {
 export function stationPlacement(index: number): StationPlacement {
   const bendIndex = Math.max(0, Math.floor(index));
   const distance = riverStationDistance(bendIndex);
-  const center = riverPointAt(distance);
-  const bank = riverBankNormalAt(distance);
-  const side: -1 | 1 = bendIndex % 2 === 0 ? -1 : 1;
+  const walkY = riverHeightAt(distance);
+  const side: -1 | 1 = 1;
   return {
     bendIndex,
-    x: center.x + bank.x * side * (RIVER_WALKWAY_WIDTH / 2 + 1.55),
-    z: center.z + bank.z * side * (RIVER_WALKWAY_WIDTH / 2 + 1.55),
+    x: distance,
+    z: RIVER_STATION_Z,
     distance,
     side,
-    centerX: center.x,
-    centerZ: center.z,
-    bankX: bank.x,
-    bankZ: bank.z,
-    walkY: center.y,
-    plinthTop: center.y + PEDESTAL_HEIGHT,
+    centerX: distance,
+    centerZ: RIVER_STATION_Z,
+    bankX: 0,
+    bankZ: 1,
+    walkY,
+    plinthTop: walkY + PEDESTAL_HEIGHT,
   };
+}
+
+/** Pedestal underside used by overview name labels; not an identity. */
+export function stationLabelAnchor(index: number): { x: number; y: number; z: number } {
+  const placement = stationPlacement(index);
+  return { x: placement.x, y: placement.walkY + 0.04, z: placement.z };
 }
 
 export function nearbyModelIndices(count: number, focused: number, limit = 3): Set<number> {
   return new Set(Array.from({ length: count }, (_, index) => index)
     .sort((a, b) => Math.abs(a - focused) - Math.abs(b - focused)).slice(0, limit));
+}
+
+/** Overview loads the current four-slot window plus at most one neighbor on each side. */
+export function overviewModelIndices(
+  count: number,
+  windowStart = 0,
+  pageSize = DESKTOP_PAGE_SIZE,
+  prefetch = 1,
+): Set<number> {
+  const start = Math.max(0, Math.floor(windowStart) - prefetch);
+  const end = Math.min(count, Math.floor(windowStart) + pageSize + prefetch);
+  return new Set(Array.from({ length: Math.max(0, end - start) }, (_, index) => start + index));
 }
 
 /** Keep the true mesh resting on its world-space river-bank pedestal. */
