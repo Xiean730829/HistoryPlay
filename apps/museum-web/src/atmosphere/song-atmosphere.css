@@ -1,0 +1,12 @@
+.song-atmosphere { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; overflow: hidden; pointer-events: none; }
+.song-atmosphere-water { fill: none; stroke: #f6ead2; stroke-width: 2; stroke-linecap: round; opacity: .3; animation: song-water-shimmer var(--cue-duration) ease-in-out var(--cue-delay) infinite alternate; }
+.song-atmosphere-mist { opacity: .3; animation: song-mist-drift 15s ease-in-out infinite alternate; }
+.song-atmosphere-lamp { opacity: .45; animation: song-lamp-flicker 2.8s ease-in-out infinite alternate; }
+.song-atmosphere-smoke { opacity: 0; animation: song-smoke-rise var(--cue-duration) linear var(--cue-delay) infinite; }
+.song-atmosphere-dust { opacity: .5; animation: song-dust-drift 7s ease-in-out var(--cue-delay) infinite alternate; }
+@keyframes song-water-shimmer { from { opacity: .05; transform: translateX(-7px); } to { opacity: .65; transform: translateX(12px); } }
+@keyframes song-mist-drift { from { transform: translateX(-25px); opacity: .18; } to { transform: translateX(40px); opacity: .38; } }
+@keyframes song-lamp-flicker { from { opacity: .25; transform: scale(.85); } to { opacity: .6; transform: scale(1.12); } }
+@keyframes song-smoke-rise { 0% { opacity: 0; transform: translate(0, 0) scale(.5); } 20% { opacity: .7; } 70% { opacity: .45; } 100% { opacity: 0; transform: translate(25px, -160px) scale(2.3); } }
+@keyframes song-dust-drift { from { opacity: .15; transform: translate(-5px, 10px); } to { opacity: .6; transform: translate(8px, -15px); } }
+@media (prefers-reduced-motion: reduce) { .song-atmosphere { display: none; } }
