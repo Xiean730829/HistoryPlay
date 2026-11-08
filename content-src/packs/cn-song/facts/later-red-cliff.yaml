@@ -1,0 +1,12 @@
+id: cn.song.fact.later-red-cliff.reference
+claim: 苏轼于1082年重游黄州赤壁后写《后赤壁赋》；所游黄州赤壁与三国战场地址不可简单等同。
+grade: F
+applicable_time:
+  start_year: 1082
+  end_year: 1082
+  precision: year
+  display_label: 1082年
+  uncertainty: 黄州赤壁与三国战场地址不可简单等同。
+source_ids:
+- cn.song.source.reference-later-red-cliff
+evidence_note: 手册引用用于核事实；图像下载、再分发与展示权利另核。故事画面为艺术演绎。

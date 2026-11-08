@@ -1,0 +1,34 @@
+id: cn.song.artifact.later-red-cliff
+title: 苏轼《后赤壁赋》
+exhibit_type: historical_record
+aliases:
+- 后赤壁赋
+- 苏轼《后赤壁赋》
+source_ids:
+- cn.song.source.reference-later-red-cliff
+time_range:
+  start_year: 1082
+  end_year: 1082
+  precision: year
+  display_label: 1082年
+  uncertainty: 黄州赤壁与三国战场地址不可简单等同。
+category: 文章
+asset_ids:
+- cn.song.asset.later-red-cliff.interpretation
+presentation:
+  preview_asset_id: cn.song.asset.later-red-cliff.interpretation
+  display:
+    kind: interpretive_image
+    asset_id: cn.song.asset.later-red-cliff.interpretation
+    interpretation_label: 文章与宋画意象演绎，不是出游记录照片。
+  teaser: 一个初冬的夜晚，苏轼和友人重游赤壁。文章把江声、山路和归舟写得像一场夜间旅行。
+  background_node_id: cn.song.node.later-red-cliff.intro
+  printed_text:
+    body: 是岁十月之望，步自雪堂，将归于临皋。二客从予过黄泥之坂。
+    script_status: printed_not_handwriting
+    source_label: 传世文本现代排印，非作者手迹
+    interpretation_label: 排印摘句，不是手迹。
+fact_card_ids:
+- cn.song.fact.later-red-cliff.reference
+story_entry_ids:
+- cn.song.story.later-red-cliff

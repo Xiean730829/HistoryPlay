@@ -1,0 +1,12 @@
+id: cn.song.fact.hanshi-scroll.reference
+claim: 苏轼黄州时期作寒食诗，之后书写成卷，现藏台北故宫。
+grade: F
+applicable_time:
+  start_year: 1082
+  end_year: 1105
+  precision: range
+  display_label: 黄州时期及之后书写
+  uncertainty: 诗作时间与后来书写成卷的时间不要混为一谈。
+source_ids:
+- cn.song.source.reference-hanshi-scroll
+evidence_note: 手册引用用于核事实；图像下载、再分发与展示权利另核。故事画面为艺术演绎。

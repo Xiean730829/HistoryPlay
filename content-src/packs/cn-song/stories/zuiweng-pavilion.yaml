@@ -1,0 +1,10 @@
+id: cn.song.story.zuiweng-pavilion
+title: 山水里的同乐
+entry_node_id: cn.song.node.zuiweng-pavilion.01
+node_ids:
+- cn.song.node.zuiweng-pavilion.intro
+- cn.song.node.zuiweng-pavilion.01
+- cn.song.node.zuiweng-pavilion.02
+- cn.song.node.zuiweng-pavilion.03
+artifact_id: cn.song.artifact.zuiweng-pavilion
+return_to_exhibit: true

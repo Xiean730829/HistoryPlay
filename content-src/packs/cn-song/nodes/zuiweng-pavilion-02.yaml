@@ -1,0 +1,13 @@
+id: cn.song.node.zuiweng-pavilion.02
+story_id: cn.song.story.zuiweng-pavilion
+fact_grade: C
+narration: 文中写到行人、游人和宴饮的人。山水之美，也因为有人分享而更加生动。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.zuiweng-pavilion.03
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.zuiweng-pavilion.story-02

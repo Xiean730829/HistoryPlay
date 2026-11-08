@@ -1,0 +1,12 @@
+id: cn.song.fact.zuiweng-pavilion.reference
+claim: 欧阳修于1045年任滁州知州；醉翁亭与《醉翁亭记》相关，讲亭、山水和与民同乐。
+grade: F
+applicable_time:
+  start_year: 1045
+  end_year: 1046
+  precision: year
+  display_label: 1045年前后
+  uncertainty: 文章场景属于文学描绘，不能逐一等同于记录镜头。
+source_ids:
+- cn.song.source.reference-zuiweng-pavilion
+evidence_note: 手册引用用于核事实；图像下载、再分发与展示权利另核。故事画面为艺术演绎。
