@@ -37,4 +37,23 @@ describe("loadGalleryArtifacts", () => {
       } }),
     );
   });
+
+  it("403 绑定失效时明确提示，不当作文物没有资料", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(
+      "展台连接未绑定或已被新的配对替代",
+      { status: 403 },
+    )));
+    const session = {
+      session_id: "session-1",
+      session_token: "secret-token",
+      pack_id: "cn.tang.core",
+      version: "0.3.3",
+      state: { gallery_id: "cn.tang.gallery.main" },
+      connection_id: "stale-connection",
+      control_ticket: "ticket-12345678",
+      context: {},
+    } as ActiveSession;
+    await expect(loadGalleryArtifacts(session, "cn.tang.gallery.main"))
+      .rejects.toThrow("展台绑定已失效，请在当前页面重新开启语音后再试。这不是文物缺少资料。");
+  });
 });

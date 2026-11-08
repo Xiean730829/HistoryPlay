@@ -29,12 +29,13 @@ export function FocusedArtifact({ artifact, session, poster, onRender }: Focused
   React.useEffect(() => {
     const controller = new AbortController();
     let lease: AssetLease | null = null;
-    if (!assetId || (display?.kind !== "model3d" && display?.kind !== "photo")) {
+    if (!assetId || (display?.kind !== "model3d" && display?.kind !== "photo"
+      && display?.kind !== "printed_text" && display?.kind !== "interpretive_image")) {
       setAssetState(null);
       return;
     }
 
-    const kind = display?.kind === "photo" ? "preview" : "model";
+    const kind = display?.kind === "model3d" ? "model" : "preview";
     void galleryAssets.acquire(session, assetId, kind, controller.signal)
       .then((assetLease) => {
         lease = assetLease;
@@ -50,17 +51,29 @@ export function FocusedArtifact({ artifact, session, poster, onRender }: Focused
     };
   }, [assetId, display?.kind, session.session_id, session.session_token]);
 
-  if (display?.kind === "photo") {
+  if (display?.kind === "photo" || display?.kind === "printed_text" || display?.kind === "interpretive_image") {
+    const interpretive = display.kind !== "photo";
+    const caption = display.kind === "interpretive_image"
+      ? (display.interpretation_label || "艺术演绎，非手迹、非真实肖像")
+      : display.kind === "printed_text"
+        ? "现代排印文字，不是手迹照片"
+        : "当前展位使用照片呈现";
+    const alt = display.kind === "photo" ? `${artifact.title}照片展品`
+      : display.kind === "printed_text" ? `${artifact.title}排印文字`
+      : `${artifact.title}艺术演绎图`;
     return modelUrl
-      ? <img
-          alt={`${artifact.title}照片展品`}
-          className="artifact-photo"
-          onLoad={() => onRender?.("degraded", "当前展位使用照片呈现")}
-          src={modelUrl}
-        />
+      ? <>
+          <img
+            alt={alt}
+            className="artifact-photo"
+            onLoad={() => onRender?.("degraded", caption)}
+            src={modelUrl}
+          />
+          {interpretive && <span className="exhibit-interpretation-label" role="note">{caption}</span>}
+        </>
       : <>
           {poster && <img alt="" className="station-preview" src={poster} />}
-          <span className="visually-hidden" role="status">{failed ? "照片展品不可用，保留真实预览图" : "正在载入照片展品"}</span>
+          <span className="visually-hidden" role="status">{failed ? "展示图不可用，保留真实预览图" : "正在载入展示图"}</span>
         </>;
   }
   if (display?.kind !== "model3d" || !assetId) {

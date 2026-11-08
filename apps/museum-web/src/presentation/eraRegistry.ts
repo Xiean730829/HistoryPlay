@@ -22,7 +22,7 @@ export const eraRegistry: Readonly<Record<EraId, EraDefinition>> = {
   song: {
     id: "song", title: "宋代 · 画卷人间",
     packId: "cn.song.core",
-    version: import.meta.env.VITE_MUSEUM_SONG_VERSION?.trim() || "0.1.0",
+    version: import.meta.env.VITE_MUSEUM_SONG_VERSION?.trim() || "0.1.4",
     galleryId: "cn.song.gallery.main",
     pageSize: 3, presentation: "song_scroll",
   },

@@ -1,0 +1,82 @@
+.era-entrance {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100svh;
+  padding: clamp(20px, 3vh, 36px) clamp(16px, 3vw, 48px) 18px;
+  color: #f4ead6;
+  background: #172021 url('/era-art/tang-song-entrance-v1.png') center / cover no-repeat;
+  font-family: 'Songti SC', 'SimSun', 'Noto Serif SC', serif;
+}
+.era-entrance::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgb(13 18 18 / 76%), rgb(13 18 18 / 12%) 38%, rgb(9 14 15 / 28%) 70%, rgb(9 14 15 / 88%));
+}
+.era-heading { text-align: center; text-shadow: 0 3px 25px #10120e; }
+.era-heading h1 { margin: .3rem 0 .35rem; font-size: clamp(2.6rem, 5vw, 4.5rem); font-weight: 500; letter-spacing: .2em; padding-left: .2em; }
+.era-heading > p:last-child { margin: 0; color: #e5d7bd; font-size: clamp(.85rem, 1.2vw, 1rem); letter-spacing: .2em; }
+.era-kicker { margin: 0; font: .65rem sans-serif; letter-spacing: .25em; color: #d8c49d; }
+.era-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); flex: 1; gap: 1px; width: min(100%, 1440px); min-height: 290px; margin: 1.2rem 0 .8rem; }
+.era-choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: .55rem;
+  min-width: 0;
+  min-height: 0;
+  padding: clamp(22px, 4vw, 56px);
+  color: #fff3db;
+  text-align: left;
+  text-shadow: 0 2px 14px #111;
+  border: 1px solid rgb(232 211 171 / 28%);
+  border-radius: 0;
+  background: linear-gradient(180deg, rgb(21 14 10 / 4%) 28%, rgb(28 17 10 / 38%) 65%, rgb(28 17 10 / 82%));
+  cursor: pointer;
+  transition: border-color .25s ease, background-color .25s ease;
+}
+.era-choice-song { background: linear-gradient(180deg, rgb(14 25 23 / 4%) 28%, rgb(14 25 23 / 38%) 65%, rgb(14 25 23 / 84%)); }
+.era-choice:hover { border-color: #f1d39a; background-color: rgb(240 221 181 / 7%); }
+.era-choice-kicker { color: #e4c99b; font: .62rem sans-serif; letter-spacing: .23em; }
+.era-choice-song .era-choice-kicker { color: #c1d8c6; }
+.era-choice strong { font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 500; letter-spacing: .12em; line-height: 1.2; }
+.era-choice-description { color: #e7dac4; font-size: clamp(.85rem, 1.2vw, 1rem); letter-spacing: .08em; line-height: 1.6; }
+.era-choice-enter { display: inline-block; margin-top: .6rem; padding: .55rem .9rem; border: 1px solid rgb(238 215 173 / 68%); font-size: .85rem; letter-spacing: .12em; background: rgb(17 19 17 / 25%); }
+.era-choice:focus-visible, .era-entrance input:focus-visible, .era-entrance button:focus-visible, .era-text-choice summary:focus-visible { outline: 3px solid #f3d99f; outline-offset: 3px; }
+.era-choice:disabled { opacity: .6; cursor: wait; }
+.era-controls { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: .4rem 1rem; width: min(100%, 1100px); color: #e6ddcb; font: .82rem/1.5 'Microsoft YaHei', sans-serif; text-align: center; }
+.era-controls aside[aria-label='语音讲解'] { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: .25rem .8rem; padding: .45rem .7rem; border: 1px solid #a89069; background: rgb(18 26 24 / 86%); }
+.era-controls .voice-entry { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: .35rem .65rem; }
+.era-controls aside p { margin: 0; }
+.era-controls button { padding: .55rem .8rem; border: 1px solid #b8a57c; background: #273c37; color: #fff2d9; cursor: pointer; }
+.era-controls button:disabled { opacity: .6; cursor: wait; }
+.era-controls .voice-diag { text-align: left; }
+.era-controls .voice-diag pre { max-height: 9rem; max-width: min(90vw, 35rem); overflow: auto; white-space: pre-wrap; }
+.era-status { margin: 0; color: #e5d8bc; }
+.era-text-choice { position: relative; text-align: left; }
+.era-text-choice summary { color: #dbcba9; cursor: pointer; }
+.era-command { position: absolute; right: 0; bottom: calc(100% + .5rem); display: flex; gap: .5rem; align-items: center; width: max-content; max-width: 90vw; padding: .75rem; background: #172522; border: 1px solid #aa966e; }
+.era-command input { min-width: 0; width: min(16rem, 35vw); padding: .55rem; color: #183132; background: #efede0; border: 1px solid #978566; }
+.era-note { margin: 0; color: #e2d7bf; }
+.era-tang-legacy { color: #dbcba9; text-underline-offset: .2em; }
+@media (min-width: 800px) and (min-height: 600px) {
+  .era-entrance { height: 100svh; overflow: hidden; }
+}
+@media (max-width: 700px) {
+  .era-entrance { min-height: 100svh; padding: 1.25rem 1rem; background-position: center; }
+  .era-heading h1 { font-size: 2.5rem; }
+  .era-choices { grid-template-columns: 1fr; gap: .5rem; min-height: 420px; margin: 1.2rem 0; }
+  .era-choice { min-height: 205px; padding: 1.3rem; }
+  .era-choice-tang { background: linear-gradient(180deg, transparent, rgb(28 17 10 / 88%)), url('/era-art/tang-song-entrance-v1.png') left center / 200% auto no-repeat; }
+  .era-choice-song { background: linear-gradient(180deg, transparent, rgb(14 25 23 / 88%)), url('/era-art/tang-song-entrance-v1.png') right center / 200% auto no-repeat; }
+  .era-choice strong { font-size: 2rem; }
+  .era-controls { gap: .5rem; }
+  .era-command { right: auto; left: 50%; transform: translateX(-50%); }
+}

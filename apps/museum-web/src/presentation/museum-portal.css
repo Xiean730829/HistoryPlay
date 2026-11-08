@@ -1,3 +1,15 @@
+.era-change-button {
+  position: relative;
+  z-index: 5;
+  margin: .5rem 1rem;
+  padding: .6rem 1rem;
+  color: #e8e1cc;
+  background: #213b40;
+  border: 1px solid #8a876a;
+  border-radius: .5rem;
+  cursor: pointer;
+}
+
 .museum-entry-door {
   position: absolute;
   z-index: 20;
