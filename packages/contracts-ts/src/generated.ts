@@ -343,6 +343,8 @@ export interface Story {
   fact_card_ids?: Array<NamespacedId>;
   artifact_id?: NamespacedId;
   return_to_exhibit?: boolean;
+  /** Unreviewed stories stay draft or unavailable and must not open at runtime. Omitted status is treated as reviewed for existing published packs. */
+  review_status?: "draft" | "unavailable" | "reviewed";
 }
 
 export interface VoiceEvent {
