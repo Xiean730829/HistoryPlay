@@ -6,6 +6,8 @@ from enum import StrEnum
 from math import isfinite
 from types import MappingProxyType
 
+from museum.domain.gallery.browse_view import GalleryView, default_gallery_view
+
 
 class SessionMode(StrEnum):
     EXPLORE = "explore"
@@ -58,6 +60,7 @@ class ExhibitReturnPoint:
     view: CameraPose
     view_revision: int
     focused_entity_id: str | None = None
+    gallery_view: GalleryView | None = None
 
     def __post_init__(self) -> None:
         if not self.gallery_id or not self.station_id:
@@ -106,6 +109,7 @@ class SessionState:
     narration_checkpoint: NarrationCheckpoint | None = None
     camera_pose: CameraPose = field(default_factory=CameraPose)
     exhibit_return_point: ExhibitReturnPoint | None = None
+    gallery_view: GalleryView = field(default_factory=default_gallery_view)
 
     def __post_init__(self) -> None:
         if not self.session_id:
