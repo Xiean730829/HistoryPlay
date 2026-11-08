@@ -4,8 +4,12 @@ export class PlaybackQueue {
   private generation = 0;
   private nextTime = 0;
   private drained: (() => void)[] = [];
+  private readonly output: GainNode;
 
-  constructor(private readonly context: AudioContext) {}
+  constructor(private readonly context: AudioContext) {
+    this.output = context.createGain();
+    this.output.connect(context.destination);
+  }
 
   get epoch(): number {
     return this.generation;
@@ -21,7 +25,7 @@ export class PlaybackQueue {
     for (let i = 0; i < pcm.length; i += 1) data[i] = pcm[i] / 32768;
     const source = this.context.createBufferSource();
     source.buffer = buffer;
-    source.connect(this.context.destination);
+    source.connect(this.output);
     this.sources.add(source);
     source.onended = () => {
       source.disconnect();
@@ -37,8 +41,14 @@ export class PlaybackQueue {
     return true;
   }
 
+  /** Candidate noise may duck playback; only confirmed speech stops the epoch. */
+  duck(active: boolean): void {
+    this.output.gain.value = active ? 0.18 : 1;
+  }
+
   /** Must happen synchronously before forwarding speech_started/abort to a bridge. */
   stop(): number {
+    this.output.gain.value = 1;
     this.generation += 1;
     this.drained = [];
     for (const source of this.sources) {

@@ -8,10 +8,7 @@ export interface WelcomeAttemptStorage {
 }
 
 /** Reserve one welcome attempt. Only successful playback is persisted as complete. */
-export function claimPortalWelcome(
-  sessionId: string,
-  storage?: WelcomeAttemptStorage | null,
-): boolean {
+export function claimPortalWelcome(sessionId: string, storage?: WelcomeAttemptStorage | null): boolean {
   if (!sessionId || completedInMemory.has(sessionId) || inFlight.has(sessionId)) return false;
   const key = `${STORAGE_PREFIX}${encodeURIComponent(sessionId)}`;
   if (storage === undefined && typeof window !== "undefined") {
@@ -31,18 +28,18 @@ export function claimPortalWelcome(
   return true;
 }
 
-/** Failed or timed-out playback releases the reservation for the next manual reopen. */
+/** Failed/timeout playback releases the reservation so the next manual reopen can retry. */
 export function finishPortalWelcome(
   sessionId: string,
   playedToCompletion: boolean,
   storage?: WelcomeAttemptStorage | null,
 ): void {
   inFlight.delete(sessionId);
-  if (!sessionId || !playedToCompletion) return;
+  if (!playedToCompletion || !sessionId) return;
   completedInMemory.add(sessionId);
   const key = `${STORAGE_PREFIX}${encodeURIComponent(sessionId)}`;
   if (storage === undefined && typeof window !== "undefined") {
     try { storage = window.sessionStorage; } catch { storage = null; }
   }
-  try { storage?.setItem(key, "completed"); } catch { /* Current-page deduplication still applies. */ }
+  try { storage?.setItem(key, "completed"); } catch { /* In-memory completion still prevents repeats in this tab. */ }
 }
