@@ -1,0 +1,9 @@
+id: cn.song.node.ding-vase.intro
+story_id: cn.song.story.ding-vase
+fact_grade: F
+narration: 这件定窑系白瓷瓶有细长的颈和舒展的腹部。我们沿着它的线条，慢慢看它的美。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.ding-vase.01

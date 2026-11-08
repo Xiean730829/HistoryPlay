@@ -1,0 +1,13 @@
+id: cn.song.node.guan-vase.02
+story_id: cn.song.story.guan-vase
+fact_grade: C
+narration: 靠近一些，能看到釉面细细的纹路。馆方将这类带有开片的青釉，视为官窑器物的重要特点之一。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.guan-vase.03
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.guan-vase.story-02

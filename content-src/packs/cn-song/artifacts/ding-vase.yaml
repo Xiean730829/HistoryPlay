@@ -1,0 +1,33 @@
+id: cn.song.artifact.ding-vase
+title: 定窑系白瓷玉壶春瓶
+exhibit_type: object
+aliases:
+- 定窑系白瓷玉壶春瓶
+- 定窑白瓷瓶
+- 白瓷瓶
+source_ids:
+- cn.song.source.reference-ding-vase
+time_range:
+  start_year: 1000
+  end_year: 1199
+  precision: range
+  display_label: 11—12世纪
+  uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+category: 器物
+asset_ids:
+- cn.song.asset.ding-vase.photo
+presentation:
+  preview_asset_id: cn.song.asset.ding-vase.photo
+  display:
+    kind: photo
+    asset_id: cn.song.asset.ding-vase.photo
+  teaser: 这件定窑系白瓷瓶有细长的颈和舒展的腹部。我们沿着它的线条，慢慢看它的美。
+  background_node_id: cn.song.node.ding-vase.intro
+fact_card_ids:
+- cn.song.fact.ding-vase.reference
+story_entry_ids:
+- cn.song.story.ding-vase
+museum:
+  name: The Metropolitan Museum of Art
+  accession: 1991.253.14
+  collection_url: https://www.metmuseum.org/art/collection/search/42450

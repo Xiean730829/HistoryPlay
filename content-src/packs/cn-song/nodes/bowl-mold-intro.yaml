@@ -1,0 +1,9 @@
+id: cn.song.node.bowl-mold.intro
+story_id: cn.song.story.bowl-mold
+fact_grade: F
+narration: 这件器物不是一只普通的碗，而是制作碗时使用的模具。馆藏照片旁还有现代复原碗，方便我们理解纹样怎样形成。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.bowl-mold.01
