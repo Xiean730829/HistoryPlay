@@ -1,0 +1,10 @@
+id: cn.song.story.mi-fu-scroll
+title: 舟中诗意（本地候选）
+entry_node_id: cn.song.node.mi-fu-scroll.01
+node_ids:
+- cn.song.node.mi-fu-scroll.intro
+- cn.song.node.mi-fu-scroll.01
+- cn.song.node.mi-fu-scroll.02
+- cn.song.node.mi-fu-scroll.03
+artifact_id: cn.song.artifact.mi-fu-scroll
+return_to_exhibit: true

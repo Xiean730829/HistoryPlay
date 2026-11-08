@@ -1,0 +1,10 @@
+id: cn.song.story.bronze-censer
+title: 一缕香烟（本地候选）
+entry_node_id: cn.song.node.bronze-censer.01
+node_ids:
+- cn.song.node.bronze-censer.intro
+- cn.song.node.bronze-censer.01
+- cn.song.node.bronze-censer.02
+- cn.song.node.bronze-censer.03
+artifact_id: cn.song.artifact.bronze-censer
+return_to_exhibit: true

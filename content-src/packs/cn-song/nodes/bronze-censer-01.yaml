@@ -1,0 +1,13 @@
+id: cn.song.node.bronze-censer.01
+story_id: cn.song.story.bronze-censer
+fact_grade: C
+narration: 想象一间宋代室内，香炉安静地放在案上，一缕香烟慢慢升起。这是对焚香场景的艺术演绎。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.bronze-censer.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.bronze-censer.story-01

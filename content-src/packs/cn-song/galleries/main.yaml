@@ -147,6 +147,34 @@ scrolls:
     width: 0.11
     height: 0.55
     label: 持龙舟模型女俑
+- id: cn.song.scroll.gathering
+  title: 雅集卷
+  theme: 雅集
+  background_asset_id: cn.song.asset.scroll.gathering
+  interpretation_label: 画卷为艺术演绎；展品原件以独立页面馆藏资料为准。
+  station_ids:
+  - cn.song.station.bronze-censer
+  - cn.song.station.longquan-vase
+  - cn.song.station.mi-fu-scroll
+  hotspots:
+  - station_id: cn.song.station.bronze-censer
+    x: 0.04
+    y: 0.48
+    width: 0.07
+    height: 0.23
+    label: 铜弦纹炉
+  - station_id: cn.song.station.longquan-vase
+    x: 0.32
+    y: 0.53
+    width: 0.08
+    height: 0.33
+    label: 龙泉窑青瓷瓶
+  - station_id: cn.song.station.mi-fu-scroll
+    x: 0.77
+    y: 0.54
+    width: 0.14
+    height: 0.35
+    label: 米芾《吴江舟中诗卷》
 stations:
 - id: cn.song.station.qingbai-ewer
   order: 0
@@ -312,4 +340,37 @@ stations:
     uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
   placement_basis: 主题画卷顺序，非精确年代排序；资料和热区仍待逐项核验。
   artifact_id: cn.song.artifact.dragon-boat-figurine
+  side: center
+- id: cn.song.station.bronze-censer
+  order: 15
+  time_range:
+    start_year: 1100
+    end_year: 1299
+    precision: range
+    display_label: 12—13世纪
+    uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+  placement_basis: 主题画卷顺序，非精确年代排序；资料和热区仍待逐项核验。
+  artifact_id: cn.song.artifact.bronze-censer
+  side: center
+- id: cn.song.station.longquan-vase
+  order: 16
+  time_range:
+    start_year: 1200
+    end_year: 1279
+    precision: range
+    display_label: 13世纪
+    uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+  placement_basis: 主题画卷顺序，非精确年代排序；资料和热区仍待逐项核验。
+  artifact_id: cn.song.artifact.longquan-vase
+  side: center
+- id: cn.song.station.mi-fu-scroll
+  order: 17
+  time_range:
+    start_year: 1085
+    end_year: 1105
+    precision: range
+    display_label: 约1095年
+    uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+  placement_basis: 主题画卷顺序，非精确年代排序；资料和热区仍待逐项核验。
+  artifact_id: cn.song.artifact.mi-fu-scroll
   side: center

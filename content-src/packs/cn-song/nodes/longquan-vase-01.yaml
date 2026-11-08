@@ -1,0 +1,13 @@
+id: cn.song.node.longquan-vase.01
+story_id: cn.song.story.longquan-vase
+fact_grade: C
+narration: 先看瓶子的整体，口、颈和腹部相连，形成匀称的轮廓。馆方把它断代为十三世纪。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.longquan-vase.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.longquan-vase.story-01

@@ -1,0 +1,9 @@
+id: cn.song.node.mi-fu-scroll.intro
+story_id: cn.song.story.mi-fu-scroll
+fact_grade: F
+narration: 这是一卷馆方著录为米芾作品的书法手卷，题作《吴江舟中诗》。让我们从舟行的诗意，走近纸上的笔墨。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.mi-fu-scroll.01
