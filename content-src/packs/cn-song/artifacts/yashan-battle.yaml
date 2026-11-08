@@ -1,0 +1,29 @@
+id: cn.song.artifact.yashan-battle
+title: 崖山海战
+exhibit_type: historical_record
+aliases:
+- 崖山海战
+- 崖门海战
+source_ids:
+- cn.song.source.reference-yashan-battle
+time_range:
+  start_year: 1279
+  end_year: 1279
+  precision: year
+  display_label: 1279年
+  uncertainty: 人物、经过、人数在不同资料中可能详略不一，不把争议数字当事实。
+category: 历史事件
+asset_ids:
+- cn.song.asset.yashan-battle.interpretation
+presentation:
+  preview_asset_id: cn.song.asset.yashan-battle.interpretation
+  display:
+    kind: interpretive_image
+    asset_id: cn.song.asset.yashan-battle.interpretation
+    interpretation_label: 历史事件概念演绎，不是海战照片。
+  teaser: 宋朝的最后阶段，历史来到南方海面。崖山海战之后，南宋结束，一个时代就此翻篇。
+  background_node_id: cn.song.node.yashan-battle.intro
+fact_card_ids:
+- cn.song.fact.yashan-battle.reference
+story_entry_ids:
+- cn.song.story.yashan-battle

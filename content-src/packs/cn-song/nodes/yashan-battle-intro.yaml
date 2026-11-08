@@ -1,0 +1,9 @@
+id: cn.song.node.yashan-battle.intro
+story_id: cn.song.story.yashan-battle
+fact_grade: F
+narration: 宋朝的最后阶段，历史来到南方海面。崖山海战之后，南宋结束，一个时代就此翻篇。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.yashan-battle.01

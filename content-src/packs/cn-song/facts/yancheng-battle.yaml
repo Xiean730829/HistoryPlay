@@ -1,0 +1,12 @@
+id: cn.song.fact.yancheng-battle.reference
+claim: 1140年宋金战争中的郾城之战与岳飞等南宋军队相关；具体兵力、喊话、阵型如无充分来源不得确定化。
+grade: F
+applicable_time:
+  start_year: 1140
+  end_year: 1140
+  precision: year
+  display_label: 1140年
+  uncertainty: 具体兵力、喊话、阵型如无充分来源不得确定化。
+source_ids:
+- cn.song.source.reference-yancheng-battle
+evidence_note: 手册引用用于核事实；图像下载、再分发与展示权利另核。故事画面为艺术演绎。

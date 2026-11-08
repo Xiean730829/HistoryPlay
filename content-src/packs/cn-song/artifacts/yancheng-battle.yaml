@@ -1,0 +1,28 @@
+id: cn.song.artifact.yancheng-battle
+title: 郾城之战
+exhibit_type: historical_record
+aliases:
+- 郾城之战
+source_ids:
+- cn.song.source.reference-yancheng-battle
+time_range:
+  start_year: 1140
+  end_year: 1140
+  precision: year
+  display_label: 1140年
+  uncertainty: 具体兵力、喊话、阵型如无充分来源不得确定化。
+category: 历史事件
+asset_ids:
+- cn.song.asset.yancheng-battle.interpretation
+presentation:
+  preview_asset_id: cn.song.asset.yancheng-battle.interpretation
+  display:
+    kind: interpretive_image
+    asset_id: cn.song.asset.yancheng-battle.interpretation
+    interpretation_label: 历史事件地图式演绎，不是战场照片。
+  teaser: 南宋时期，宋金之间发生过多次战争。郾城之战是其中一次重要战事，我们会讲它的背景和结果。
+  background_node_id: cn.song.node.yancheng-battle.intro
+fact_card_ids:
+- cn.song.fact.yancheng-battle.reference
+story_entry_ids:
+- cn.song.story.yancheng-battle

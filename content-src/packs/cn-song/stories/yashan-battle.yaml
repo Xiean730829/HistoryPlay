@@ -1,0 +1,10 @@
+id: cn.song.story.yashan-battle
+title: 宋朝的最后一页
+entry_node_id: cn.song.node.yashan-battle.01
+node_ids:
+- cn.song.node.yashan-battle.intro
+- cn.song.node.yashan-battle.01
+- cn.song.node.yashan-battle.02
+- cn.song.node.yashan-battle.03
+artifact_id: cn.song.artifact.yashan-battle
+return_to_exhibit: true

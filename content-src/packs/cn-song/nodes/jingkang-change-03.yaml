@@ -1,0 +1,14 @@
+id: cn.song.node.jingkang-change.03
+story_id: cn.song.story.jingkang-change
+fact_grade: C
+narration: 同一年，赵构在应天府称帝，历史进入南宋时期。后来，许多文化和生活也在南方继续发展。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.jingkang-change.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.jingkang-change.story-03
+return_checkpoint: true

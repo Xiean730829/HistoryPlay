@@ -1,0 +1,13 @@
+id: cn.song.node.yashan-battle.01
+story_id: cn.song.story.yashan-battle
+fact_grade: C
+narration: 南宋末年，朝廷与军队辗转南下，最后来到崖山一带。海面成为他们面对战争的重要场所。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.yashan-battle.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.yashan-battle.story-01
