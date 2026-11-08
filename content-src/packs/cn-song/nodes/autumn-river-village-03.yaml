@@ -1,0 +1,14 @@
+id: cn.song.node.autumn-river-village.03
+story_id: cn.song.story.autumn-river-village
+fact_grade: C
+narration: 回到整幅手卷，水、岸和村落连成了秋天的清晨。馆方将它断代为十三世纪，标为依赵令穰风格创作。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.autumn-river-village.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.autumn-river-village.story-03
+return_checkpoint: true

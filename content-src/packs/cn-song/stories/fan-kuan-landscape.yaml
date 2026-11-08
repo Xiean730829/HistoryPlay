@@ -1,0 +1,10 @@
+id: cn.song.story.fan-kuan-landscape
+title: 走进山路（本地候选）
+entry_node_id: cn.song.node.fan-kuan-landscape.01
+node_ids:
+- cn.song.node.fan-kuan-landscape.intro
+- cn.song.node.fan-kuan-landscape.01
+- cn.song.node.fan-kuan-landscape.02
+- cn.song.node.fan-kuan-landscape.03
+artifact_id: cn.song.artifact.fan-kuan-landscape
+return_to_exhibit: true

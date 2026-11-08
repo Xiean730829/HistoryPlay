@@ -1,0 +1,36 @@
+id: cn.song.artifact.autumn-river-village
+title: 秋晓江村图
+exhibit_type: painting
+aliases:
+- 秋晓江村图
+- 秋晓江村
+- 秋水村落
+source_ids:
+- cn.song.source.reference-autumn-river-village
+time_range:
+  start_year: 1200
+  end_year: 1299
+  precision: century
+  display_label: 13世纪
+  uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+category: 书画
+asset_ids:
+- cn.song.asset.autumn-river-village.photo
+presentation:
+  preview_asset_id: cn.song.asset.autumn-river-village.photo
+  display:
+    kind: photo
+    asset_id: cn.song.asset.autumn-river-village.photo
+  teaser: 这幅手卷以赵令穰风格描绘江村秋晓。我们不必急着读完整卷，先沿着秋水看看村落。
+  background_node_id: cn.song.node.autumn-river-village.intro
+fact_card_ids:
+- cn.song.fact.autumn-river-village.reference
+story_entry_ids:
+- cn.song.story.autumn-river-village
+museum:
+  name: The Metropolitan Museum of Art
+  accession: 1973.121.2
+  collection_url: https://www.metmuseum.org/art/collection/search/39920
+identity:
+  kind: copy
+  label: 馆方标注赵令穰风格，并非确定为其本人之作。

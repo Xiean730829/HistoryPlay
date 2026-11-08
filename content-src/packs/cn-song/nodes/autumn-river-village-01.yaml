@@ -1,0 +1,13 @@
+id: cn.song.node.autumn-river-village.01
+story_id: cn.song.story.autumn-river-village
+fact_grade: C
+narration: 画卷展开，秋水和岸边的景色首先吸引目光。水面留出的空白，让整个江村显得宁静。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.autumn-river-village.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.autumn-river-village.story-01

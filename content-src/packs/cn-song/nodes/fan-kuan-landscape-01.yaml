@@ -1,0 +1,13 @@
+id: cn.song.node.fan-kuan-landscape.01
+story_id: cn.song.story.fan-kuan-landscape
+fact_grade: C
+narration: 先站在画前，找一找树木和山脚的入口。馆方在前景辨认出船只靠岸，山路由此把目光带向更深处。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.fan-kuan-landscape.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.fan-kuan-landscape.story-01

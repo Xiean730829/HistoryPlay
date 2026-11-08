@@ -1,0 +1,9 @@
+id: cn.song.node.fan-kuan-landscape.intro
+story_id: cn.song.story.fan-kuan-landscape
+fact_grade: F
+narration: 这幅山水出自不知名画家，采用范宽风格。让我们从画中的山路出发，一层层看向远方。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.fan-kuan-landscape.01
