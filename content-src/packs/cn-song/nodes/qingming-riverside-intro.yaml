@@ -1,0 +1,9 @@
+id: cn.song.node.qingming-riverside.intro
+story_id: cn.song.story.qingming-riverside
+fact_grade: F
+narration: 这幅长卷把北宋汴京的街道、河流和来往的人画在一起。最热闹的地方，有一座桥和一艘正准备穿桥的船。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.qingming-riverside.01

@@ -1,0 +1,13 @@
+id: cn.song.node.qingming-riverside.01
+story_id: cn.song.story.qingming-riverside
+fact_grade: C
+narration: 沿着画卷，先看到城外的屋舍、道路和来往的行人。画家从安静处开始，慢慢把我们带向热闹的城市。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.qingming-riverside.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.qingming-riverside.story-01

@@ -1,0 +1,10 @@
+id: cn.song.story.dongjing-menghua
+title: 把一座城市写进记忆
+entry_node_id: cn.song.node.dongjing-menghua.01
+node_ids:
+- cn.song.node.dongjing-menghua.intro
+- cn.song.node.dongjing-menghua.01
+- cn.song.node.dongjing-menghua.02
+- cn.song.node.dongjing-menghua.03
+artifact_id: cn.song.artifact.dongjing-menghua
+return_to_exhibit: true

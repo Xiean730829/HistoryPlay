@@ -175,6 +175,34 @@ scrolls:
     width: 0.14
     height: 0.35
     label: 米芾《吴江舟中诗卷》
+- id: cn.song.scroll.bianjing-lanterns
+  title: 汴京烟火
+  theme: 汴京烟火
+  background_asset_id: cn.song.asset.scroll.bianjing-lanterns
+  interpretation_label: 画卷为艺术演绎；展品原件以独立页面馆藏资料或排印文本为准。
+  station_ids:
+  - cn.song.station.qingming-riverside
+  - cn.song.station.jiaozi
+  - cn.song.station.dongjing-menghua
+  hotspots:
+  - station_id: cn.song.station.qingming-riverside
+    x: 0.08
+    y: 0.26
+    width: 0.35
+    height: 0.55
+    label: 清明上河图
+  - station_id: cn.song.station.jiaozi
+    x: 0.59
+    y: 0.48
+    width: 0.24
+    height: 0.39
+    label: 交子
+  - station_id: cn.song.station.dongjing-menghua
+    x: 0.86
+    y: 0.51
+    width: 0.13
+    height: 0.33
+    label: 东京梦华录
 stations:
 - id: cn.song.station.qingbai-ewer
   order: 0
@@ -373,4 +401,37 @@ stations:
     uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
   placement_basis: 主题画卷顺序，非精确年代排序；资料和热区仍待逐项核验。
   artifact_id: cn.song.artifact.mi-fu-scroll
+  side: center
+- id: cn.song.station.qingming-riverside
+  order: 18
+  time_range:
+    start_year: 1100
+    end_year: 1125
+    precision: range
+    display_label: 北宋末期
+    uncertainty: 成画约在北宋末期；画中人物不能当作可确认姓名的真实人物。
+  placement_basis: 按主题画卷追加，不对全部三十六项做全局年代重排。
+  artifact_id: cn.song.artifact.qingming-riverside
+  side: center
+- id: cn.song.station.jiaozi
+  order: 19
+  time_range:
+    start_year: 1000
+    end_year: 1100
+    precision: century
+    display_label: 北宋11世纪
+    uncertainty: 民间交子与官办交子务阶段不要混为一谈；早期原票原件未确认。
+  placement_basis: 按主题画卷追加，不对全部三十六项做全局年代重排。
+  artifact_id: cn.song.artifact.jiaozi
+  side: center
+- id: cn.song.station.dongjing-menghua
+  order: 20
+  time_range:
+    start_year: 1127
+    end_year: 1160
+    precision: range
+    display_label: 南宋初期追忆
+    uncertainty: 书成于南宋对北宋东京的追忆，不能把每个场景当成作者精确亲历镜头。
+  placement_basis: 按主题画卷追加，不对全部三十六项做全局年代重排。
+  artifact_id: cn.song.artifact.dongjing-menghua
   side: center
