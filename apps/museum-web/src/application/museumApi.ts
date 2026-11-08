@@ -80,6 +80,9 @@ export type ArtifactProjection = Pick<
   | "asset_ids"
   | "fact_card_ids"
   | "story_entry_ids"
+  | "exhibit_type"
+  | "source_ids"
+  | "identity"
 > & {
   presentation?: ArtifactPresentation | null;
 };
@@ -105,6 +108,24 @@ export interface ActiveSession extends SessionCredentials {
   connection_id: string;
   control_ticket: string;
   context: SessionContext;
+}
+
+export interface SongHotspot {
+  station_id: string; x: number; y: number; width: number; height: number; label: string;
+}
+export interface SongScroll {
+  id: string; title: string; theme: string; background_asset_id: string;
+  interpretation_label: string; station_ids: string[]; hotspots: SongHotspot[];
+}
+export interface GalleryStation { id: string; order: number; artifact: ArtifactProjection; }
+export interface GalleryDocument {
+  id: string; title: string; status: string; presentation_kind?: string;
+  stations: GalleryStation[]; scrolls?: SongScroll[];
+}
+
+export async function loadGalleryDocument(session: ActiveSession, galleryId: string, signal?: AbortSignal): Promise<GalleryDocument> {
+  return request<GalleryDocument>(`/api/sessions/${session.session_id}/galleries/${encodeURIComponent(galleryId)}`,
+    { headers: boundHeaders(session), signal });
 }
 
 export async function loadGalleryArtifacts(
@@ -316,12 +337,14 @@ export async function openArtifact(
 export async function enterGallery(
   session: ActiveSession,
   galleryId: string,
+  pageSize?: 1 | 2 | 3 | 4,
 ): Promise<{ session: ActiveSession; receipt: CommandReceipt }> {
   const action = "enter_gallery" satisfies CommandAction;
   const dispatchKey = [
     session.session_id,
     action,
     galleryId,
+    pageSize ?? "default",
     session.state.revision,
     session.state.view_revision,
     session.state.interaction_epoch,
@@ -340,6 +363,7 @@ export async function enterGallery(
         control_ticket: session.control_ticket,
         action,
         target_id: galleryId,
+        ...(pageSize !== undefined ? { params: { page_size: pageSize } } : {}),
       }),
     },
     (status, body) => status === 409 && isCommandReceipt(body),
