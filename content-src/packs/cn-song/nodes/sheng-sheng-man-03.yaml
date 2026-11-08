@@ -1,0 +1,14 @@
+id: cn.song.node.sheng-sheng-man.03
+story_id: cn.song.story.sheng-sheng-man
+fact_grade: C
+narration: 一滴滴雨落在窗外，难以说尽的愁绪也留在词中。我们读到的是传世文字，不能把想象的窗户当作词人真实写作的地方。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.sheng-sheng-man.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.sheng-sheng-man.story-03
+return_checkpoint: true

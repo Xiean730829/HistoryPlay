@@ -1,0 +1,13 @@
+id: cn.song.node.yong-yu-le.01
+story_id: cn.song.story.yong-yu-le
+fact_grade: C
+narration: 千古江山，英雄无觅孙仲谋处。词从江山与历史人物写起，景色不只是眼前的风景，也引出了对往事的追问。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.yong-yu-le.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.yong-yu-le.story-01

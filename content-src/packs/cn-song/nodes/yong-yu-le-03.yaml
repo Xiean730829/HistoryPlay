@@ -1,0 +1,14 @@
+id: cn.song.node.yong-yu-le.03
+story_id: cn.song.story.yong-yu-le
+fact_grade: C
+narration: 怀古不仅是回头看，也是借过去思考自己的时代。读完这首词，我们仍能感受到词人心中的关切与感慨。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.yong-yu-le.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.yong-yu-le.story-03
+return_checkpoint: true

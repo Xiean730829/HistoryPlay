@@ -1,0 +1,9 @@
+id: cn.song.node.shui-diao-ge-tou.intro
+story_id: cn.song.story.shui-diao-ge-tou
+fact_grade: F
+narration: 苏轼的《水调歌头》从一轮明月写起，也写人与人之间的思念。我们把词句慢慢变成画面，好吗？
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.shui-diao-ge-tou.01

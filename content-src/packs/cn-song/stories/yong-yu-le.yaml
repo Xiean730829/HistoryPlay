@@ -1,0 +1,10 @@
+id: cn.song.story.yong-yu-le
+title: 登临怀古（本地候选）
+entry_node_id: cn.song.node.yong-yu-le.01
+node_ids:
+- cn.song.node.yong-yu-le.intro
+- cn.song.node.yong-yu-le.01
+- cn.song.node.yong-yu-le.02
+- cn.song.node.yong-yu-le.03
+artifact_id: cn.song.artifact.yong-yu-le
+return_to_exhibit: true

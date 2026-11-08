@@ -1,0 +1,13 @@
+id: cn.song.node.shui-diao-ge-tou.01
+story_id: cn.song.story.shui-diao-ge-tou
+fact_grade: C
+narration: 明月几时有？把酒问青天。词人仰望月亮，把一个问题送向天空；画面中的月夜，是我们对词意的想象。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.shui-diao-ge-tou.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.shui-diao-ge-tou.story-01

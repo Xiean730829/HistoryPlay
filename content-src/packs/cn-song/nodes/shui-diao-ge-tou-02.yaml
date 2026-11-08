@@ -1,0 +1,13 @@
+id: cn.song.node.shui-diao-ge-tou.02
+story_id: cn.song.story.shui-diao-ge-tou
+fact_grade: C
+narration: 词中想象天上的宫阙，也想起人间的身影。月光照向窗户，词里的想象从高远处慢慢落回人间。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.shui-diao-ge-tou.03
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.shui-diao-ge-tou.story-02
