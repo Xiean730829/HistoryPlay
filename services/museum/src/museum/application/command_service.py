@@ -11,6 +11,22 @@ from uuid import uuid4
 
 from museum.application.control_tickets import ControlTickets
 from museum.application.story_content import InvalidStoryContent, load_story
+from museum.domain.gallery.browse_view import (
+    OPEN_ERA_END,
+    OPEN_ERA_START,
+    PAGE_SIZES,
+    GalleryView,
+    TimeFilter,
+    apply_time_filter,
+    browse_group,
+    default_gallery_view,
+    filter_stations,
+    locate_station,
+    move_item,
+    parse_stations,
+    query_intersects_open_era,
+    window_start_for_index,
+)
 from museum.domain.gallery.navigation import InvalidGalleryRoute, adjacent_station
 from museum.domain.session.events import SessionEvent, SessionEventKind, TransitionResult
 from museum.domain.session.models import CameraPose, HistoricalTime, SessionMode, SessionState
@@ -44,6 +60,8 @@ COMMAND_ACTIONS = frozenset(
         "focus_detail",
         "set_view",
         "choose_action",
+        "browse_gallery",
+        "seek_time_range",
     }
 )
 
@@ -237,22 +255,65 @@ class CommandService:
                     event_seq=original.event_seq,
                     interaction_epoch=original.interaction_epoch,
                 )
-            return _enter_station(state, gallery, station)
+            view = state.gallery_view or default_gallery_view()
+            gallery_obj, _station = _find_artifact_station(packs, artifact_id)
+            stations = parse_stations(_gallery_stations(gallery_obj))
+            target, next_view, _cleared = locate_station(stations, artifact_id, view)
+            return _enter_station(state, gallery, station, gallery_view=next_view)
 
-        if command.action in {"enter_gallery", "move_next", "move_previous"}:
-            if state.mode.value != "explore":
-                raise InvalidTransition("只有长廊探索模式可以移动展位")
+        if command.action in {"enter_gallery", "move_next", "move_previous", "browse_gallery", "seek_time_range"}:
+            if state.mode != SessionMode.EXPLORE:
+                if command.action in {"browse_gallery", "seek_time_range"} and state.mode in {
+                    SessionMode.STORY,
+                    SessionMode.QA,
+                    SessionMode.HYPOTHESIS,
+                }:
+                    if state.exhibit_return_point is None and (state.gallery_id is None or state.station_id is None):
+                        raise InvalidTransition("当前故事没有可恢复的展台返回点")
+                    original = state
+                    state = return_to_exhibit(state).state
+                    state = replace(
+                        state,
+                        revision=original.revision,
+                        view_revision=original.view_revision,
+                        event_seq=original.event_seq,
+                        interaction_epoch=original.interaction_epoch,
+                    )
+                else:
+                    raise InvalidTransition("只有长廊探索模式可以移动展位")
             packs = self._pinned_packs(state)
             if command.action == "enter_gallery":
                 gallery_id = _required_target(command)
                 gallery = _find_gallery(packs, gallery_id)
                 if gallery.get("status") != "open":
                     raise InvalidTransition("该展厅尚未开放")
-                if state.gallery_id == gallery_id:
-                    if state.station_id == gallery.get("default_station_id"):
-                        raise InvalidTransition("当前已经位于展厅入口")
-                    raise InvalidTransition("已在该展厅，当前位置保持不变")
+                current_view = state.gallery_view or default_gallery_view()
+                page_size = _requested_page_size(command.params, current_view.page_size)
                 stations = _gallery_stations(gallery)
+                if state.gallery_id == gallery_id:
+                    if page_size == current_view.page_size:
+                        if state.station_id == gallery.get("default_station_id"):
+                            raise InvalidTransition("当前已经位于展厅入口")
+                        raise InvalidTransition("已在该展厅，当前位置保持不变")
+                    if state.station_id is None:
+                        raise InvalidTransition("请先进入展厅再移动展位")
+                    parsed = parse_stations(stations)
+                    visible = filter_stations(parsed, current_view.time_filter)
+                    ids = [item.station_id for item in visible]
+                    try:
+                        index = ids.index(state.station_id)
+                    except ValueError as error:
+                        raise InvalidGalleryRoute("当前展位不属于该展厅") from error
+                    return _enter_station(
+                        state,
+                        gallery,
+                        _station_payload(gallery, state.station_id),
+                        gallery_view=GalleryView(
+                            window_start=window_start_for_index(index, len(visible), page_size),
+                            page_size=page_size,
+                            time_filter=current_view.time_filter,
+                        ),
+                    )
                 default_id = gallery.get("default_station_id")
                 default_station = next(
                     (station for station in stations if station.get("id") == default_id), None
@@ -260,21 +321,43 @@ class CommandService:
                 if default_station is None:
                     raise InvalidTransition("开放展厅的默认展位无效")
                 adjacent_station(stations, default_id, "next")
-                return _enter_station(state, gallery, default_station)
+                return _enter_station(
+                    state,
+                    gallery,
+                    default_station,
+                    gallery_view=GalleryView(page_size=page_size),
+                )
 
             if state.gallery_id is None or state.station_id is None:
                 raise InvalidTransition("请先进入展厅再移动展位")
             gallery = _find_gallery(packs, state.gallery_id)
             if gallery.get("status") != "open":
                 raise InvalidTransition("当前展厅尚未开放")
+            view = state.gallery_view or default_gallery_view()
+            parsed = parse_stations(_gallery_stations(gallery))
+            if command.action == "seek_time_range":
+                return _seek_time_range(state, packs, gallery, parsed, view, command)
+            if command.action == "browse_gallery":
+                direction = command.params.get("direction")
+                if direction not in {"next", "previous"}:
+                    raise InvalidCommand("browse_gallery必须提供direction")
+                moved = browse_group(parsed, state.station_id, view, direction)
+                if moved is None:
+                    boundary = "最后一组" if direction == "next" else "第一组"
+                    raise InvalidTransition(f"已经到达{boundary}，不能继续翻看")
+                target, next_view = moved
+                return _enter_station(
+                    state, gallery, _station_payload(gallery, target.station_id), gallery_view=next_view
+                )
             direction = "next" if command.action == "move_next" else "previous"
-            target_station = adjacent_station(
-                _gallery_stations(gallery), state.station_id, direction
-            )
-            if target_station is None:
+            moved_item = move_item(parsed, state.station_id, view, direction)
+            if moved_item is None:
                 boundary = "末尾" if direction == "next" else "入口"
                 raise InvalidTransition(f"已经到达展厅{boundary}，不能继续移动")
-            return _enter_station(state, gallery, target_station)
+            target, next_view = moved_item
+            return _enter_station(
+                state, gallery, _station_payload(gallery, target.station_id), gallery_view=next_view
+            )
 
         if command.action == "open_artifact":
             artifact_id = _required_target(command)
@@ -293,7 +376,11 @@ class CommandService:
             return focus_entity(state, _required_target(command))
 
         if command.action == "enter_story":
-            story = load_story(self._pinned_packs(state), _required_target(command), _find_document)
+            story_id = _required_target(command)
+            story_document = _find_document(self._pinned_packs(state), story_id, "stories/")
+            if story_document.get("review_status") in {"draft", "unavailable"}:
+                raise InvalidStoryAction("故事尚未审核，不能打开")
+            story = load_story(self._pinned_packs(state), story_id, _find_document)
             result = start_story(state, story)
             return TransitionResult(result.state, result.event)
 
@@ -382,6 +469,8 @@ def _parse_command(payload: Mapping[str, Any]) -> _Command:
             "locate_artifact",
             "return_to_exhibit",
             "set_view",
+            "browse_gallery",
+            "seek_time_range",
         }
         and expected_view is None
     ):
@@ -414,8 +503,12 @@ def _parse_command(payload: Mapping[str, Any]) -> _Command:
     if not isinstance(params, Mapping):
         raise InvalidCommand("params必须是对象")
     _validate_params(params)
-    if action in {"set_view", "choose_action"} and "params" not in payload:
+    if action in {"set_view", "choose_action", "browse_gallery", "seek_time_range"} and "params" not in payload:
         raise InvalidCommand(f"{action}必须提供params")
+    if action == "browse_gallery" and params.get("direction") not in {"next", "previous"}:
+        raise InvalidCommand("browse_gallery必须提供direction")
+    if action == "seek_time_range":
+        _validate_seek_params(params)
     return _Command(
         request_id=request_id,
         expected_revision=expected_revision,
@@ -429,7 +522,7 @@ def _parse_command(payload: Mapping[str, Any]) -> _Command:
 
 
 def _validate_params(params: Mapping[str, Any]) -> None:
-    allowed = {"intent", "input_text", "camera"}
+    allowed = {"intent", "input_text", "camera", "direction", "start_year", "end_year", "clear", "page_size"}
     if set(params) - allowed:
         raise InvalidCommand("params包含协议未定义字段")
     intent = params.get("intent")
@@ -454,6 +547,19 @@ def _validate_params(params: Mapping[str, Any]) -> None:
             or not 0 < zoom <= 8
         ):
             raise InvalidCommand("params.camera取值超出协议范围")
+    direction = params.get("direction")
+    if direction is not None and direction not in {"next", "previous"}:
+        raise InvalidCommand("params.direction只能是next或previous")
+    page_size = params.get("page_size")
+    if page_size is not None and page_size not in PAGE_SIZES:
+        raise InvalidCommand("params.page_size只能是1、2、3或4")
+    for year_field in ("start_year", "end_year"):
+        year = params.get(year_field)
+        if year is not None and type(year) is not int:
+            raise InvalidCommand(f"params.{year_field}必须是整数")
+    clear = params.get("clear")
+    if clear is not None and type(clear) is not bool:
+        raise InvalidCommand("params.clear必须是布尔值")
 
 
 def _payload_digest(payload: Mapping[str, Any]) -> str:
@@ -480,6 +586,8 @@ def _stale_reason(state: SessionState, command: _Command) -> str | None:
             "move_previous",
             "locate_artifact",
             "return_to_exhibit",
+            "browse_gallery",
+            "seek_time_range",
         }
         and command.expected_view_revision != state.view_revision
     ):
@@ -590,10 +698,91 @@ def _gallery_stations(gallery: Mapping[str, Any]) -> list[Mapping[str, Any]]:
     return stations
 
 
+def _validate_seek_params(params: Mapping[str, Any]) -> None:
+    clear = params.get("clear")
+    start_year = params.get("start_year")
+    end_year = params.get("end_year")
+    if clear is True:
+        if start_year is not None or end_year is not None:
+            raise InvalidCommand("清除时间筛选时不能同时提供年份")
+        return
+    if start_year is None or end_year is None:
+        raise InvalidCommand("seek_time_range必须提供起止年份或clear")
+    if type(start_year) is not int or type(end_year) is not int:
+        raise InvalidCommand("年份必须是整数")
+
+
+def _requested_page_size(params: Mapping[str, Any], fallback: int) -> int:
+    page_size = params.get("page_size", fallback)
+    if page_size not in PAGE_SIZES:
+        raise InvalidCommand("params.page_size只能是1、2、3或4")
+    return page_size
+
+
+def _open_era_for_gallery(
+    packs: tuple[PublishedPack, ...], gallery: Mapping[str, Any]
+) -> tuple[int, int]:
+    gallery_id = gallery.get("id")
+    for pack in packs:
+        owns_gallery = any(
+            path.startswith("galleries/")
+            and isinstance(document, Mapping)
+            and document.get("id") == gallery_id
+            for path, document in pack.documents.items()
+        )
+        if not owns_gallery:
+            continue
+        manifest = pack.documents.get("manifest.json")
+        if isinstance(manifest, Mapping):
+            time_range = manifest.get("time_range")
+            if isinstance(time_range, Mapping):
+                start = time_range.get("start_year")
+                end = time_range.get("end_year")
+                if type(start) is int and type(end) is int:
+                    return min(start, end), max(start, end)
+        break
+    return OPEN_ERA_START, OPEN_ERA_END
+
+
+def _seek_time_range(
+    state: SessionState,
+    packs: tuple[PublishedPack, ...],
+    gallery: Mapping[str, Any],
+    parsed: tuple,
+    view: GalleryView,
+    command: _Command,
+) -> TransitionResult:
+    page_size = _requested_page_size(command.params, view.page_size)
+    current_view = GalleryView(window_start=view.window_start, page_size=page_size, time_filter=view.time_filter)
+    if command.params.get("clear") is True:
+        time_filter = None
+    else:
+        start_year = command.params["start_year"]
+        end_year = command.params["end_year"]
+        era_start, era_end = _open_era_for_gallery(packs, gallery)
+        if not query_intersects_open_era(start_year, end_year, era_start, era_end):
+            raise InvalidTransition("该年代尚未开放")
+        time_filter = TimeFilter(start_year, end_year)
+    target, next_view = apply_time_filter(parsed, state.station_id, current_view, time_filter)
+    if target is None:
+        raise InvalidTransition("当前开放展品中没有落在该年代范围的文物")
+    return _enter_station(
+        state, gallery, _station_payload(gallery, target.station_id), gallery_view=next_view
+    )
+
+
+def _station_payload(gallery: Mapping[str, Any], station_id: str) -> Mapping[str, Any]:
+    for station in _gallery_stations(gallery):
+        if station.get("id") == station_id:
+            return station
+    raise InvalidGalleryRoute("当前展位不属于该展厅")
+
+
 def _enter_station(
     state: SessionState,
     gallery: Mapping[str, Any],
     station: Mapping[str, Any],
+    gallery_view: GalleryView | None = None,
 ) -> TransitionResult:
     gallery_id = gallery.get("id")
     station_id = station.get("id")
@@ -618,17 +807,18 @@ def _enter_station(
         raise InvalidGalleryRoute(f"展位年代信息无效：{station_id}") from error
 
     visible_entities = state.visible_entities
-    display_order = state.display_order
+    next_view = gallery_view or state.gallery_view or default_gallery_view()
+    display_order = tuple(
+        item.artifact_id for item in filter_stations(parse_stations(_gallery_stations(gallery)), next_view.time_filter)
+    )
     comparison_ids = station.get("comparison_artifact_ids", [])
     if not isinstance(comparison_ids, list):
         raise InvalidGalleryRoute(f"展位对比文物清单无效：{station_id}")
-    for entity_id in (artifact_id, *comparison_ids):
+    for entity_id in (*display_order, artifact_id, *comparison_ids):
         if not isinstance(entity_id, str):
             raise InvalidGalleryRoute(f"展位关联文物标识无效：{station_id}")
         if entity_id not in visible_entities:
             visible_entities = (*visible_entities, entity_id)
-        if entity_id not in display_order:
-            display_order = (*display_order, entity_id)
     updated = _next_state(
         state,
         gallery_id=gallery_id,
@@ -638,6 +828,7 @@ def _enter_station(
         focused_entity_id=artifact_id,
         visible_entities=visible_entities,
         display_order=display_order,
+        gallery_view=next_view,
     )
     kind = (
         SessionEventKind.FOCUS_CHANGED

@@ -6,7 +6,7 @@ from dataclasses import replace
 import pytest
 from museum.adapters.sqlite.database import SQLiteDatabase
 from museum.adapters.sqlite.receipt_repository import IdempotencyConflict
-from museum.application.command_service import CommandService
+from museum.application.command_service import CommandService, InvalidCommand
 from museum.application.control_tickets import ControlTickets, InvalidControlTicket
 from museum.domain.session.models import SessionMode, SessionState
 from museum.ports.content_catalog import PublishedPack
@@ -108,9 +108,12 @@ class MemoryCatalog:
         raise AssertionError("命令只能使用会话固定版本")
 
     def get_published(self, pack_id: str, version: str) -> PublishedPack:
-        if (pack_id, version) != (PACK_ID, VERSION):
+        if (pack_id, version) != (self.pack.pack_id, self.pack.version):
             raise LookupError("内容包版本不可用")
         return self.pack
+
+    def replace_documents(self, documents: dict) -> None:
+        self.pack = replace(self.pack, documents=documents)
 
 
 def make_state() -> SessionState:
@@ -150,6 +153,8 @@ def make_service(tmp_path):
                 "enter_story",
                 "return_to_exhibit",
                 "set_view",
+                "browse_gallery",
+                "seek_time_range",
             }
         ),
     )
@@ -291,6 +296,7 @@ def _navigation_command(
     view_revision: int,
     request_id: str = "navigation-0001",
     target_id: str | None = None,
+    params: dict | None = None,
 ) -> dict:
     payload = {
         "schema_version": "1",
@@ -303,6 +309,8 @@ def _navigation_command(
     }
     if target_id is not None:
         payload["target_id"] = target_id
+    if params is not None:
+        payload["params"] = params
     return payload
 
 
@@ -716,6 +724,47 @@ def test_locate_artifact_rejects_comparison_only_artifacts_without_moving(tmp_pa
     assert story_saved.revision == story.revision
 
 
+def test_unreviewed_story_cannot_be_opened(tmp_path) -> None:
+    database, state, tickets, token, _service = make_service(tmp_path)
+    catalog = MemoryCatalog()
+    documents = dict(catalog.pack.documents)
+    documents["stories/observe.json"] = {
+        **documents["stories/observe.json"],
+        "review_status": "draft",
+    }
+    catalog.replace_documents(documents)
+    service = CommandService(database.transaction, catalog, tickets)
+    exploring = replace(
+        state,
+        mode=SessionMode.EXPLORE,
+        story_id=None,
+        node_id=None,
+        revision=state.revision + 1,
+    )
+    with database.transaction() as unit:
+        unit.sessions.save(exploring, expected_revision=state.revision)
+    receipt = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        {
+            "schema_version": "1",
+            "request_id": "blocked-unreviewed-story",
+            "expected_revision": exploring.revision,
+            "interaction_epoch": exploring.interaction_epoch,
+            "action": "enter_story",
+            "target_id": STORY_ID,
+            "control_ticket": token,
+        },
+    )
+    assert receipt.status == "rejected"
+    assert "尚未审核" in (receipt.reason or "")
+    with database.transaction() as unit:
+        saved = unit.sessions.get(state.session_id)
+    assert saved is not None
+    assert saved.mode == SessionMode.EXPLORE
+    assert saved.story_id is None
+
+
 def test_story_entry_captures_root_anchor_and_return_restores_station_and_camera(tmp_path) -> None:
     database, state, token, service = _exploration_service(tmp_path)
     entered_gallery = service.execute(
@@ -780,3 +829,579 @@ def test_story_entry_captures_root_anchor_and_return_restores_station_and_camera
     assert restored.focused_entity_id == "cn.tang.artifact.stele"
     assert restored.camera_pose.yaw == 32 and restored.camera_pose.zoom == 1.7
     assert restored.exhibit_return_point is None
+
+
+def _eight_station_catalog(catalog: MemoryCatalog) -> None:
+    documents = dict(catalog.pack.documents)
+    gallery = dict(documents["galleries/tang.json"])
+    stations = list(gallery["stations"])
+    extras = [
+        ("lute", 720, 740),
+        ("flute", 750, 770),
+        ("woman", 780, 800),
+        ("follower", 810, 830),
+        ("guardian", 850, 870),
+    ]
+    for index, (slug, start, end) in enumerate(extras, start=3):
+        artifact_id = f"cn.tang.artifact.{slug}"
+        documents[f"artifacts/{slug}.json"] = {"id": artifact_id}
+        stations.append(
+            {
+                "id": f"cn.tang.station.{slug}",
+                "order": index,
+                "artifact_id": artifact_id,
+                "time_range": {"start_year": start, "end_year": end, "precision": "range"},
+            }
+        )
+    gallery["stations"] = stations
+    documents["galleries/tang.json"] = gallery
+    catalog.pack = PublishedPack(PACK_ID, VERSION, "1", documents)
+
+
+def test_browse_gallery_moves_one_window_and_stays_in_overview(tmp_path) -> None:
+    database, state, token, service = _exploration_service(tmp_path)
+    _eight_station_catalog(service._catalog)
+    entered = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_gallery",
+            target_id="cn.tang.gallery.main",
+            revision=state.revision,
+            interaction_epoch=state.interaction_epoch,
+            view_revision=state.view_revision,
+            request_id="browse-enter",
+        ),
+    )
+    moved = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="browse_gallery",
+            params={"direction": "next"},
+            revision=entered.revision,
+            interaction_epoch=entered.interaction_epoch,
+            view_revision=entered.view_revision,
+            request_id="browse-next",
+        ),
+    )
+    assert moved.status == "committed"
+    with database.transaction() as unit:
+        saved = unit.sessions.get(state.session_id)
+    assert saved is not None
+    assert saved.station_id == "cn.tang.station.flute"
+    assert saved.gallery_view.window_start == 4
+    assert saved.focused_entity_id == "cn.tang.artifact.flute"
+
+    retry = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="browse_gallery",
+            params={"direction": "next"},
+            revision=entered.revision,
+            interaction_epoch=entered.interaction_epoch,
+            view_revision=entered.view_revision,
+            request_id="browse-next",
+        ),
+    )
+    assert retry == moved
+
+    boundary = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="browse_gallery",
+            params={"direction": "next"},
+            revision=moved.revision,
+            interaction_epoch=moved.interaction_epoch,
+            view_revision=moved.view_revision,
+            request_id="browse-next-boundary",
+        ),
+    )
+    assert boundary.status == "rejected"
+    assert "最后一组" in (boundary.reason or "")
+    with database.transaction() as unit:
+        unchanged = unit.sessions.get(state.session_id)
+    assert unchanged is not None
+    assert unchanged.station_id == "cn.tang.station.flute"
+    assert unchanged.revision == moved.revision
+
+
+def test_seek_time_range_filters_closed_interval_and_zero_hits_keep_page(tmp_path) -> None:
+    database, state, token, service = _exploration_service(tmp_path)
+    entered = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_gallery",
+            target_id="cn.tang.gallery.main",
+            revision=state.revision,
+            interaction_epoch=state.interaction_epoch,
+            view_revision=state.view_revision,
+            request_id="seek-enter",
+        ),
+    )
+    century = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="seek_time_range",
+            params={"start_year": 701, "end_year": 800},
+            revision=entered.revision,
+            interaction_epoch=entered.interaction_epoch,
+            view_revision=entered.view_revision,
+            request_id="seek-eighth-century",
+        ),
+    )
+    assert century.status == "committed"
+    with database.transaction() as unit:
+        saved = unit.sessions.get(state.session_id)
+    assert saved is not None
+    assert saved.focused_entity_id == "cn.tang.artifact.coin"
+    assert saved.display_order == ("cn.tang.artifact.coin", "cn.tang.artifact.ox")
+    assert saved.gallery_view.time_filter is not None
+    assert saved.gallery_view.time_filter.start_year == 701
+    assert saved.gallery_view.time_filter.end_year == 800
+
+    empty = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="seek_time_range",
+            params={"start_year": 620, "end_year": 630},
+            revision=century.revision,
+            interaction_epoch=century.interaction_epoch,
+            view_revision=century.view_revision,
+            request_id="seek-empty",
+        ),
+    )
+    assert empty.status == "rejected"
+    assert "没有落在该年代范围" in (empty.reason or "")
+    with database.transaction() as unit:
+        unchanged = unit.sessions.get(state.session_id)
+    assert unchanged is not None
+    assert unchanged.revision == century.revision
+    assert unchanged.display_order == ("cn.tang.artifact.coin", "cn.tang.artifact.ox")
+
+    song = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="seek_time_range",
+            params={"start_year": 960, "end_year": 1127},
+            revision=century.revision,
+            interaction_epoch=century.interaction_epoch,
+            view_revision=century.view_revision,
+            request_id="seek-song",
+        ),
+    )
+    assert song.status == "rejected"
+    assert "尚未开放" in (song.reason or "")
+
+    cleared = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="seek_time_range",
+            params={"clear": True},
+            revision=century.revision,
+            interaction_epoch=century.interaction_epoch,
+            view_revision=century.view_revision,
+            request_id="seek-clear",
+        ),
+    )
+    assert cleared.status == "committed"
+    with database.transaction() as unit:
+        restored = unit.sessions.get(state.session_id)
+    assert restored is not None
+    assert restored.gallery_view.time_filter is None
+    assert restored.display_order == (
+        "cn.tang.artifact.stele",
+        "cn.tang.artifact.coin",
+        "cn.tang.artifact.ox",
+    )
+
+
+def test_locate_outside_time_filter_clears_filter_in_one_transaction(tmp_path) -> None:
+    database, state, token, service = _exploration_service(tmp_path)
+    entered = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_gallery",
+            target_id="cn.tang.gallery.main",
+            revision=state.revision,
+            interaction_epoch=state.interaction_epoch,
+            view_revision=state.view_revision,
+            request_id="locate-filter-enter",
+        ),
+    )
+    filtered = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="seek_time_range",
+            params={"start_year": 713, "end_year": 741},
+            revision=entered.revision,
+            interaction_epoch=entered.interaction_epoch,
+            view_revision=entered.view_revision,
+            request_id="locate-filter-seek",
+        ),
+    )
+    located = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="locate_artifact",
+            target_id="cn.tang.artifact.stele",
+            revision=filtered.revision,
+            interaction_epoch=filtered.interaction_epoch,
+            view_revision=filtered.view_revision,
+            request_id="locate-filter-stele",
+        ),
+    )
+    assert located.status == "committed"
+    with database.transaction() as unit:
+        saved = unit.sessions.get(state.session_id)
+    assert saved is not None
+    assert saved.focused_entity_id == "cn.tang.artifact.stele"
+    assert saved.gallery_view.time_filter is None
+    assert saved.display_order[0] == "cn.tang.artifact.stele"
+
+
+def test_enter_gallery_consumes_requested_page_size_and_keeps_tang_default(tmp_path) -> None:
+    database, state, token, service = _exploration_service(tmp_path)
+    _eight_station_catalog(service._catalog)
+    entered = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_gallery",
+            target_id="cn.tang.gallery.main",
+            params={"page_size": 3},
+            revision=state.revision,
+            interaction_epoch=state.interaction_epoch,
+            view_revision=state.view_revision,
+            request_id="enter-page-3",
+        ),
+    )
+    assert entered.status == "committed"
+    with database.transaction() as unit:
+        saved = unit.sessions.get(state.session_id)
+    assert saved is not None
+    assert saved.gallery_view.page_size == 3
+    assert saved.gallery_view.window_start == 0
+    assert saved.display_order[:3] == (
+        "cn.tang.artifact.stele",
+        "cn.tang.artifact.coin",
+        "cn.tang.artifact.ox",
+    )
+
+    reloaded = CommandService(database.transaction, service._catalog, service._tickets)
+    restored = reloaded.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="browse_gallery",
+            params={"direction": "next"},
+            revision=entered.revision,
+            interaction_epoch=entered.interaction_epoch,
+            view_revision=entered.view_revision,
+            request_id="enter-page-3-next",
+        ),
+    )
+    assert restored.status == "committed"
+    with database.transaction() as unit:
+        paged = unit.sessions.get(state.session_id)
+    assert paged is not None
+    assert paged.gallery_view.page_size == 3
+    assert paged.gallery_view.window_start == 3
+    assert paged.station_id == "cn.tang.station.lute"
+
+    same_size = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_gallery",
+            target_id="cn.tang.gallery.main",
+            params={"page_size": 3},
+            revision=restored.revision,
+            interaction_epoch=restored.interaction_epoch,
+            view_revision=restored.view_revision,
+            request_id="enter-page-3-repeat",
+        ),
+    )
+    assert same_size.status == "rejected"
+    assert "已在该展厅" in (same_size.reason or "")
+    with database.transaction() as unit:
+        unchanged = unit.sessions.get(state.session_id)
+    assert unchanged is not None
+    assert unchanged.revision == restored.revision
+    assert unchanged.gallery_view.page_size == 3
+    assert unchanged.station_id == "cn.tang.station.lute"
+
+    resized = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_gallery",
+            target_id="cn.tang.gallery.main",
+            params={"page_size": 4},
+            revision=restored.revision,
+            interaction_epoch=restored.interaction_epoch,
+            view_revision=restored.view_revision,
+            request_id="enter-page-4-resize",
+        ),
+    )
+    assert resized.status == "committed"
+    with database.transaction() as unit:
+        four = unit.sessions.get(state.session_id)
+    assert four is not None
+    assert four.gallery_view.page_size == 4
+    assert four.station_id == "cn.tang.station.lute"
+    assert four.gallery_view.window_start == 0
+
+
+def test_enter_gallery_rejects_invalid_page_size_without_changing_state(tmp_path) -> None:
+    database, state, token, service = _exploration_service(tmp_path)
+    with pytest.raises(InvalidCommand, match="page_size"):
+        service.execute(
+            state.session_id,
+            ACTOR_ID,
+            _navigation_command(
+                token,
+                action="enter_gallery",
+                target_id="cn.tang.gallery.main",
+                params={"page_size": 5},
+                revision=state.revision,
+                interaction_epoch=state.interaction_epoch,
+                view_revision=state.view_revision,
+                request_id="enter-page-5",
+            ),
+        )
+    with pytest.raises(InvalidCommand, match="page_size"):
+        service.execute(
+            state.session_id,
+            ACTOR_ID,
+            _navigation_command(
+                token,
+                action="enter_gallery",
+                target_id="cn.tang.gallery.main",
+                params={"page_size": 0},
+                revision=state.revision,
+                interaction_epoch=state.interaction_epoch,
+                view_revision=state.view_revision,
+                request_id="enter-page-0",
+            ),
+        )
+    with database.transaction() as unit:
+        saved = unit.sessions.get(state.session_id)
+    assert saved is not None
+    assert saved.revision == state.revision
+    assert saved.gallery_id is None
+
+
+def test_enter_gallery_without_page_size_keeps_tang_four(tmp_path) -> None:
+    database, state, token, service = _exploration_service(tmp_path)
+    _eight_station_catalog(service._catalog)
+    entered = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_gallery",
+            target_id="cn.tang.gallery.main",
+            revision=state.revision,
+            interaction_epoch=state.interaction_epoch,
+            view_revision=state.view_revision,
+            request_id="enter-default-4",
+        ),
+    )
+    assert entered.status == "committed"
+    with database.transaction() as unit:
+        saved = unit.sessions.get(state.session_id)
+    assert saved is not None
+    assert saved.gallery_view.page_size == 4
+    moved = service.execute(
+        state.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="browse_gallery",
+            params={"direction": "next"},
+            revision=entered.revision,
+            interaction_epoch=entered.interaction_epoch,
+            view_revision=entered.view_revision,
+            request_id="enter-default-4-next",
+        ),
+    )
+    assert moved.status == "committed"
+    with database.transaction() as unit:
+        next_page = unit.sessions.get(state.session_id)
+    assert next_page is not None
+    assert next_page.gallery_view.page_size == 4
+    assert next_page.gallery_view.window_start == 4
+
+
+def _song_catalog(catalog: MemoryCatalog) -> None:
+    documents = {
+        "manifest.json": {
+            "id": "cn.song.core",
+            "version": "0.1.0",
+            "publication_status": "published",
+            "time_range": {"start_year": 960, "end_year": 1279, "precision": "range"},
+        },
+        "artifacts/ewer.json": {"id": "cn.song.artifact.qingbai-ewer"},
+        "artifacts/house.json": {"id": "cn.song.artifact.qingbai-house"},
+        "artifacts/tea.json": {"id": "cn.song.artifact.jian-tea-bowl"},
+        "artifacts/poem.json": {"id": "cn.song.artifact.shuidiao-getou"},
+        "galleries/song.json": {
+            "id": "cn.song.gallery.main",
+            "status": "open",
+            "default_station_id": "cn.song.station.ewer",
+            "stations": [
+                {
+                    "id": "cn.song.station.ewer",
+                    "order": 0,
+                    "artifact_id": "cn.song.artifact.qingbai-ewer",
+                    "time_range": {"start_year": 1100, "end_year": 1200, "precision": "century"},
+                },
+                {
+                    "id": "cn.song.station.house",
+                    "order": 1,
+                    "artifact_id": "cn.song.artifact.qingbai-house",
+                    "time_range": {"start_year": 960, "end_year": 1127, "precision": "range"},
+                },
+                {
+                    "id": "cn.song.station.tea",
+                    "order": 2,
+                    "artifact_id": "cn.song.artifact.jian-tea-bowl",
+                    "time_range": {"start_year": 1100, "end_year": 1279, "precision": "range"},
+                },
+                {
+                    "id": "cn.song.station.poem",
+                    "order": 3,
+                    "artifact_id": "cn.song.artifact.shuidiao-getou",
+                    "time_range": {
+                        "start_year": 960,
+                        "end_year": 1279,
+                        "precision": "unknown",
+                        "display_label": "时间不详",
+                    },
+                },
+            ],
+        },
+    }
+    catalog.pack = PublishedPack("cn.song.core", "0.1.0", "1", documents)
+
+
+def test_seek_time_range_uses_pinned_pack_era_and_skips_unknown_dates(tmp_path) -> None:
+    database, state, token, service = _exploration_service(tmp_path)
+    _song_catalog(service._catalog)
+    exploring = replace(state, pack_versions={"cn.song.core": "0.1.0"}, revision=state.revision + 1)
+    with database.transaction() as unit:
+        unit.sessions.save(exploring, expected_revision=state.revision)
+    entered = service.execute(
+        exploring.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="enter_gallery",
+            target_id="cn.song.gallery.main",
+            params={"page_size": 3},
+            revision=exploring.revision,
+            interaction_epoch=exploring.interaction_epoch,
+            view_revision=exploring.view_revision,
+            request_id="song-enter",
+        ),
+    )
+    assert entered.status == "committed"
+    with database.transaction() as unit:
+        saved = unit.sessions.get(exploring.session_id)
+    assert saved is not None
+    assert saved.gallery_view.page_size == 3
+    assert saved.display_order == (
+        "cn.song.artifact.qingbai-ewer",
+        "cn.song.artifact.qingbai-house",
+        "cn.song.artifact.jian-tea-bowl",
+        "cn.song.artifact.shuidiao-getou",
+    )
+
+    year_1100 = service.execute(
+        exploring.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="seek_time_range",
+            params={"start_year": 1100, "end_year": 1100},
+            revision=entered.revision,
+            interaction_epoch=entered.interaction_epoch,
+            view_revision=entered.view_revision,
+            request_id="song-seek-1100",
+        ),
+    )
+    assert year_1100.status == "committed"
+    with database.transaction() as unit:
+        filtered = unit.sessions.get(exploring.session_id)
+    assert filtered is not None
+    assert "cn.song.artifact.shuidiao-getou" not in filtered.display_order
+    assert filtered.display_order[0] == "cn.song.artifact.qingbai-ewer"
+
+    tang_year = service.execute(
+        exploring.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="seek_time_range",
+            params={"start_year": 701, "end_year": 701},
+            revision=year_1100.revision,
+            interaction_epoch=year_1100.interaction_epoch,
+            view_revision=year_1100.view_revision,
+            request_id="song-seek-tang",
+        ),
+    )
+    assert tang_year.status == "rejected"
+    assert "尚未开放" in (tang_year.reason or "")
+    assert "唐朝" not in (tang_year.reason or "")
+    with database.transaction() as unit:
+        unchanged = unit.sessions.get(exploring.session_id)
+    assert unchanged is not None
+    assert unchanged.revision == year_1100.revision
+
+    located = service.execute(
+        exploring.session_id,
+        ACTOR_ID,
+        _navigation_command(
+            token,
+            action="locate_artifact",
+            target_id="cn.song.artifact.shuidiao-getou",
+            revision=year_1100.revision,
+            interaction_epoch=year_1100.interaction_epoch,
+            view_revision=year_1100.view_revision,
+            request_id="song-locate-unknown",
+        ),
+    )
+    assert located.status == "committed"
+    with database.transaction() as unit:
+        revealed = unit.sessions.get(exploring.session_id)
+    assert revealed is not None
+    assert revealed.focused_entity_id == "cn.song.artifact.shuidiao-getou"
+    assert revealed.gallery_view.time_filter is None
+    assert revealed.gallery_view.page_size == 3
