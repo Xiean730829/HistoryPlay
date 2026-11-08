@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { VoiceClient } from "./VoiceClient";
 import type { PlaybackQueue } from "./PlaybackQueue";
+import { acquireSessionNarration, attachSessionNarrationTransport } from "../narration/sessionNarration";
+import { StoryAutoplayController } from "../story/StoryAutoplayController";
 
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
@@ -25,6 +27,116 @@ function fixture() {
 }
 
 describe("受控语音客户端", () => {
+  it("上一次语音连接已关闭后进入故事，会自动重连并在真实讲述完成后才推进", async () => {
+    const { client } = fixture();
+    const opening = client.connect(); const old = FakeSocket.sockets[0];
+    old.onmessage?.({ data: JSON.stringify({ type: "ready" }) }); await opening;
+    client.disconnect();
+    const runtime = acquireSessionNarration("story-reconnect");
+    const detach = attachSessionNarrationTransport("story-reconnect", { narrate: (...args) => client.speakFixedText(...args) });
+    const advance = vi.fn();
+    const story = new StoryAutoplayController(runtime.player, advance);
+    const identity = {
+      sessionId: "story-reconnect", artifactId: "cn.tang.artifact.kaiyuan-coin",
+      storyId: "coin-story", nodeId: "coin.01", revision: 2, interactionEpoch: 2,
+    };
+    const playing = story.start(identity, { packId: "cn.tang.core", version: "0.3.3", contentId: "coin.01", text: "这是故事第一幕。" }, true);
+    await vi.waitFor(() => expect(FakeSocket.sockets).toHaveLength(2));
+    const fresh = FakeSocket.sockets[1]; fresh.onmessage?.({ data: JSON.stringify({ type: "ready" }) });
+    await vi.waitFor(() => expect(fresh.send).toHaveBeenCalledOnce());
+    expect(advance).not.toHaveBeenCalled();
+    fresh.onmessage?.({ data: JSON.stringify({ type: "tts", state: "start" }) });
+    expect(runtime.player.getCheckpoint().state).toBe("preparing");
+    fresh.onmessage?.({ data: JSON.stringify({ type: "tts", state: "sentence_start", text: "这是故事第一幕。" }) });
+    fresh.onmessage?.({ data: new ArrayBuffer(644) });
+    fresh.onmessage?.({ data: JSON.stringify({ type: "tts", state: "stop" }) });
+    expect(await playing).toBe(true);
+    expect(advance).toHaveBeenCalledOnce();
+    story.dispose(); detach(); runtime.release(); client.disconnect();
+  });
+
+  it("上游明确拒绝讲稿时立即报告真实错误，不继续等到首音超时", async () => {
+    const { client } = fixture();
+    const opening = client.connect(); const socket = FakeSocket.sockets[0];
+    socket.onmessage?.({ data: JSON.stringify({ type: "ready" }) }); await opening;
+    const speaking = client.speakFixedText("请逐字朗读：当前讲稿。", "当前讲稿。", new AbortController().signal, vi.fn());
+    await Promise.resolve();
+    socket.onmessage?.({ data: JSON.stringify({ type: "narration_error", code: "wake_word_only" }) });
+    await expect(speaking).rejects.toThrow("上游拒绝把长正文作为唤醒词");
+    expect(socket.close).toHaveBeenCalledOnce();
+  });
+  it("游戏接管指令回复后丢弃云端猜牛的话，换新连接只读真实守门力士介绍", async () => {
+    const { client, callbacks } = fixture();
+    const opening = client.connect(); const old = FakeSocket.sockets[0];
+    old.onmessage?.({ data: JSON.stringify({ type: "ready" }) }); await opening;
+    old.onmessage?.({ data: JSON.stringify({ type: "control_policy", mode: "local" }) });
+    old.onmessage?.({ data: JSON.stringify({ type: "tts", state: "sentence_start", text: "好的，我带你看鎏金牛" }) });
+    expect(callbacks.onText).not.toHaveBeenCalled();
+    const speaking = client.speakFixedText("请重复下面这句话：这是寺院守门力士。", "这是寺院守门力士。", new AbortController().signal, vi.fn());
+    await vi.waitFor(() => expect(FakeSocket.sockets).toHaveLength(2));
+    const fresh = FakeSocket.sockets[1];
+    fresh.onmessage?.({ data: JSON.stringify({ type: "ready" }) });
+    await vi.waitFor(() => expect(fresh.send).toHaveBeenCalledOnce());
+    fresh.onmessage?.({ data: JSON.stringify({ type: "tts", state: "start" }) });
+    fresh.onmessage?.({ data: JSON.stringify({ type: "tts", state: "sentence_start", text: "这是寺院守门力士。" }) });
+    fresh.onmessage?.({ data: new ArrayBuffer(644) });
+    fresh.onmessage?.({ data: JSON.stringify({ type: "tts", state: "stop" }) });
+    await speaking;
+    expect(old.close).toHaveBeenCalledOnce();
+    client.disconnect();
+  });
+  it("两句合成一次请求，完整音频排空后才完成正文或邀请", async () => {
+    const { client, playback } = fixture();
+    const drained: Array<() => void> = [];
+    playback.onDrained.mockImplementation((_epoch, callback) => { drained.push(callback); });
+    const opening = client.connect();
+    const socket = FakeSocket.sockets[0];
+    socket.onmessage?.({ data: JSON.stringify({ type: "ready" }) }); await opening;
+    const runtime = acquireSessionNarration("two-real-sentences");
+    const detach = attachSessionNarrationTransport("two-real-sentences", {
+      narrate: (...args) => client.speakFixedText(...args),
+    });
+    let completed = false;
+    const speaking = runtime.player.play({
+      packId: "cn.tang.core", version: "0.3.3", contentId: "coin-background",
+      text: "这是一枚开元通宝。它见证了唐朝人的日常生活。", role: "answer",
+    }).then((result) => { completed = result; });
+    await vi.waitFor(() => expect(socket.send).toHaveBeenCalledTimes(1));
+    const reply = (sentences: string[]) => {
+      socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "start" }) });
+      for (const text of sentences) {
+        socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "sentence_start", text }) });
+        socket.onmessage?.({ data: new ArrayBuffer(644) });
+      }
+      socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "stop" }) });
+    };
+    reply(["这是一枚开元通宝。", "它见证了唐朝人的日常生活。"]);
+    await Promise.resolve();
+    expect(socket.send).toHaveBeenCalledTimes(1);
+    expect(completed).toBe(false);
+    drained.shift()!();
+    await speaking;
+    expect(completed).toBe(true);
+    expect(socket.send).toHaveBeenCalledTimes(1);
+    expect(socket.close).not.toHaveBeenCalled();
+    detach(); runtime.release(); client.disconnect();
+  });
+
+  it("旧句的播放排空回调不能把已开始的下一句标为空闲", async () => {
+    const { client, playback } = fixture();
+    const drained: Array<() => void> = [];
+    playback.onDrained.mockImplementation((_epoch, callback) => { drained.push(callback); });
+    const opening = client.connect(); const socket = FakeSocket.sockets[0];
+    socket.onmessage?.({ data: JSON.stringify({ type: "ready" }) }); await opening;
+    client.startListening(); client.endTurn();
+    const event = (state: string) => socket.onmessage?.({ data: JSON.stringify({ type: "tts", state }) });
+    event("start"); event("stop"); event("start");
+    drained.shift()!();
+    expect(client.originalAnswerState()).toBe("speaking");
+    event("stop"); drained.shift()!();
+    expect(client.originalAnswerState()).toBe("idle");
+    client.disconnect();
+  });
   it("显示本机WebSocket代理和脱敏桥接阶段，不泄露绑定信息", async () => {
     const { playback, callbacks } = fixture();
     const client = new VoiceClient(
@@ -91,6 +203,105 @@ describe("受控语音客户端", () => {
     client.stopListening();
     expect(socket.send.mock.calls.map(([item]) => typeof item)).toEqual(["string", "object", "string"]);
     expect(JSON.stringify(socket.send.mock.calls)).not.toContain("token");
+    socket.onmessage?.({ data: JSON.stringify({
+      type: "uplink_ack", event: "stop", received_frames: 1, opus_packets: 0,
+    }) });
+    client.disconnect();
+  });
+  it("访客提交后进入等待回答，固定稿必须等原问答排空才发送", async () => {
+    vi.useFakeTimers();
+    const { client } = fixture();
+    const opening = client.connect();
+    const socket = FakeSocket.sockets[0];
+    socket.onmessage?.({ data: JSON.stringify({ type: "ready" }) }); await opening;
+    client.startListening();
+    client.sendFrame(new ArrayBuffer(640));
+    client.endTurn();
+    expect(client.originalAnswerState()).toBe("awaiting_answer");
+    const started = vi.fn();
+    const narration = client.speakFixedText("请逐字朗读：唐代鎏金铜牛。", "唐代鎏金铜牛。", new AbortController().signal, started);
+    await Promise.resolve();
+    expect(JSON.stringify(socket.send.mock.calls)).not.toContain("op\":\"text");
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "start" }) });
+    expect(client.originalAnswerState()).toBe("speaking");
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "stop" }) });
+    await Promise.resolve();
+    expect(client.originalAnswerState()).toBe("idle");
+    await Promise.resolve();
+    expect(JSON.parse(socket.send.mock.calls.at(-1)?.[0] as string)).toMatchObject({
+      op: "text", text: "请逐字朗读：唐代鎏金铜牛。",
+    });
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "start" }) });
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "sentence_start", text: "唐代鎏金铜牛。" }) });
+    socket.onmessage?.({ data: new ArrayBuffer(644) });
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "stop" }) });
+    await narration;
+    expect(started).toHaveBeenCalledOnce();
+    client.disconnect();
+  });
+  it("原问答迟迟没有开始时换新通道，迟到旧回答不能掐断固定稿", async () => {
+    vi.useFakeTimers();
+    const { client } = fixture();
+    const opening = client.connect();
+    const socket = FakeSocket.sockets[0];
+    socket.onmessage?.({ data: JSON.stringify({ type: "ready" }) }); await opening;
+    client.startListening();
+    client.endTurn();
+    expect(client.originalAnswerState()).toBe("awaiting_answer");
+    const started = vi.fn();
+    const narration = client.speakFixedText("请逐字朗读：固定正文", "固定正文", new AbortController().signal, started);
+    await Promise.resolve();
+    expect(JSON.stringify(socket.send.mock.calls)).not.toContain("op\":\"text");
+    await vi.advanceTimersByTimeAsync(12000);
+    expect(socket.close).toHaveBeenCalledOnce();
+    const fresh = FakeSocket.sockets[1];
+    expect(fresh).toBeDefined();
+    fresh.onmessage?.({ data: JSON.stringify({ type: "ready" }) });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(client.originalAnswerState()).toBe("idle");
+    expect(JSON.parse(fresh.send.mock.calls.at(-1)?.[0] as string)).toMatchObject({
+      op: "text", text: "请逐字朗读：固定正文",
+    });
+    // Old network callbacks remain callable in the test, but cannot belong to
+    // the replacement transport's fixed paragraph.
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "start" }) });
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "sentence_start", text: "旧回答" }) });
+    socket.onmessage?.({ data: new ArrayBuffer(644) });
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "stop" }) });
+    expect(started).not.toHaveBeenCalled();
+    fresh.onmessage?.({ data: JSON.stringify({ type: "tts", state: "start" }) });
+    fresh.onmessage?.({ data: JSON.stringify({ type: "tts", state: "sentence_start", text: "固定正文" }) });
+    fresh.onmessage?.({ data: new ArrayBuffer(644) });
+    fresh.onmessage?.({ data: JSON.stringify({ type: "tts", state: "stop" }) });
+    await narration;
+    expect(started).toHaveBeenCalledOnce();
+    client.disconnect();
+  });
+  it("原问答尚未开始时迟到的 tts.start 不能挂到新固定稿上", async () => {
+    vi.useFakeTimers();
+    const { client } = fixture();
+    const opening = client.connect();
+    const socket = FakeSocket.sockets[0];
+    socket.onmessage?.({ data: JSON.stringify({ type: "ready" }) }); await opening;
+    client.startListening();
+    client.endTurn();
+    const narration = client.speakFixedText("请逐字朗读：固定正文", "固定正文", new AbortController().signal, vi.fn());
+    await Promise.resolve();
+    expect(JSON.stringify(socket.send.mock.calls)).not.toContain("op\":\"text");
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "start" }) });
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "sentence_start", text: "云端原回答" }) });
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "stop" }) });
+    await Promise.resolve();
+    await Promise.resolve();
+    const sent = socket.send.mock.calls.map(([item]) => {
+      try { return JSON.parse(item as string); } catch { return null; }
+    }).filter(Boolean);
+    expect(sent.at(-1)).toMatchObject({ op: "text", text: "请逐字朗读：固定正文" });
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "start" }) });
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "sentence_start", text: "固定正文" }) });
+    socket.onmessage?.({ data: new ArrayBuffer(644) });
+    socket.onmessage?.({ data: JSON.stringify({ type: "tts", state: "stop" }) });
+    await narration;
     client.disconnect();
   });
   it("固定稿只有收到匹配字幕、真实音频帧和播放停止后才完成", async () => {
@@ -102,7 +313,7 @@ describe("受控语音客户端", () => {
     const signal = new AbortController().signal;
     const narration = client.speakFixedText("请逐字朗读：唐代鎏金铜牛。", "唐代鎏金铜牛。", signal, started);
     await Promise.resolve();
-    expect(JSON.parse(socket.send.mock.calls.at(-1)?.[0] as string)).toEqual({
+    expect(JSON.parse(socket.send.mock.calls.at(-1)?.[0] as string)).toMatchObject({
       op: "text", text: "请逐字朗读：唐代鎏金铜牛。",
     });
     let settled = false; void narration.then(() => { settled = true; });
@@ -114,6 +325,34 @@ describe("受控语音客户端", () => {
     expect(started).toHaveBeenCalledOnce();
     expect(playback.onDrained).toHaveBeenCalledOnce();
     expect(settled).toBe(true);
+    client.disconnect();
+  });
+  it("固定稿实际首音超过30秒才超时，已播放的语音不受首音期限影响", async () => {
+    vi.useFakeTimers();
+    const { client } = fixture();
+    const opening = client.connect();
+    const socket = FakeSocket.sockets[0];
+    socket.onmessage?.({ data: JSON.stringify({ type: "ready" }) }); await opening;
+    const late = client.speakFixedText("请逐字朗读：固定正文", "固定正文", new AbortController().signal, vi.fn());
+    await Promise.resolve();
+    const timeout = expect(late).rejects.toThrow("首音超时");
+    await vi.advanceTimersByTimeAsync(30_000);
+    await timeout;
+
+    const next = client.connect();
+    const playingSocket = FakeSocket.sockets.at(-1);
+    playingSocket?.onmessage?.({ data: JSON.stringify({ type: "ready" }) });
+    await next;
+    const started = vi.fn();
+    const playing = client.speakFixedText("请逐字朗读：固定正文", "固定正文", new AbortController().signal, started);
+    await Promise.resolve();
+    playingSocket?.onmessage?.({ data: JSON.stringify({ type: "tts", state: "start" }) });
+    playingSocket?.onmessage?.({ data: JSON.stringify({ type: "tts", state: "sentence_start", text: "固定正文" }) });
+    playingSocket?.onmessage?.({ data: new ArrayBuffer(644) });
+    await vi.advanceTimersByTimeAsync(20_000);
+    playingSocket?.onmessage?.({ data: JSON.stringify({ type: "tts", state: "stop" }) });
+    await playing;
+    expect(started).toHaveBeenCalledOnce();
     client.disconnect();
   });
   it("小智改写固定字幕时拒绝完成，不能授权故事自动翻页", async () => {
@@ -160,20 +399,20 @@ describe("受控语音客户端", () => {
     expect(playback.enqueue).not.toHaveBeenCalled();
     client.disconnect();
   });
-  it("重连保留最近240ms预录，20ms帧顺序不变且显式关闭清空", async () => {
+  it("重连保留最近600ms预录，20ms帧顺序不变且显式关闭清空", async () => {
     const { client } = fixture();
     const opening = client.connect();
     const old = FakeSocket.sockets[0];
     old.onmessage?.({ data: JSON.stringify({ type: "ready" }) }); await opening;
-    for (let i = 0; i < 14; i++) client.sendFrame(new Uint8Array(640).fill(i).buffer);
+    for (let i = 0; i < 40; i++) client.sendFrame(new Uint8Array(640).fill(i).buffer);
     client.interrupt();
     const next = client.connect();
     const socket = FakeSocket.sockets[1];
     socket.onmessage?.({ data: JSON.stringify({ type: "ready" }) }); await next;
     client.startListening();
     const frames = socket.send.mock.calls.map(([item]) => item).filter((item) => typeof item !== "string");
-    expect(frames).toHaveLength(12);
-    expect(frames.map((item) => new Uint8Array(item as ArrayBuffer)[0])).toEqual([2,3,4,5,6,7,8,9,10,11,12,13]);
+    expect(frames).toHaveLength(30);
+    expect(frames.map((item) => new Uint8Array(item as ArrayBuffer)[0])).toEqual(Array.from({ length: 30 }, (_, index) => index + 10));
     client.disconnect();
   });
   it("用户说完早于ready时完整缓存本轮，连接后按start/音频/stop提交", async () => {
@@ -194,6 +433,24 @@ describe("受控语音客户端", () => {
     expect(frames).toHaveLength(56);
     expect(new Uint8Array(frames[0] as ArrayBuffer)[0]).toBe(0);
     expect(new Uint8Array(frames.at(-1) as ArrayBuffer)[0]).toBe(55);
+    client.disconnect();
+  });
+  it("后一句 beginTurn 不会让前一句晚到的 start 抢走本轮", async () => {
+    const { client } = fixture();
+    const first = client.beginTurn();
+    await Promise.resolve();
+    const firstSocket = FakeSocket.sockets[0];
+    const second = client.beginTurn();
+    await Promise.resolve();
+    const secondSocket = FakeSocket.sockets[1];
+    firstSocket.onmessage?.({ data: JSON.stringify({ type: "ready" }) });
+    await expect(first).resolves.toBeUndefined();
+    expect(firstSocket.send.mock.calls.map(([item]) => {
+      try { return JSON.parse(item as string).op; } catch { return null; }
+    })).not.toContain("start");
+    secondSocket.onmessage?.({ data: JSON.stringify({ type: "ready" }) });
+    await second;
+    expect(JSON.parse(secondSocket.send.mock.calls[0][0] as string).op).toBe("start");
     client.disconnect();
   });
 });

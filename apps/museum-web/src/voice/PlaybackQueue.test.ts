@@ -5,6 +5,7 @@ function fixture() {
   const sources: { stop: ReturnType<typeof vi.fn>; onended: (() => void) | null }[] = [];
   const context = {
     currentTime: 0, destination: {},
+    createGain: () => ({ gain: { value: 1 }, connect: vi.fn() }),
     createBuffer: (_channels: number, count: number, rate: number) => ({
       duration: count / rate, getChannelData: () => new Float32Array(count),
     }),
@@ -18,6 +19,14 @@ function fixture() {
 }
 
 describe("音频播放队列", () => {
+  it("候选噪声只降低音量，不推进播放代际", () => {
+    const { queue } = fixture();
+    const epoch = queue.epoch;
+    queue.duck(true);
+    expect(queue.epoch).toBe(epoch);
+    queue.duck(false);
+    expect(queue.epoch).toBe(epoch);
+  });
   it("停止先清空全部节点并拒绝所有旧代音频", () => {
     const { queue, sources } = fixture();
     const old = queue.epoch;

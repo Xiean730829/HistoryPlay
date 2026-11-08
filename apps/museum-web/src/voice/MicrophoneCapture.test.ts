@@ -33,4 +33,51 @@ describe("麦克风生命周期", () => {
     await expect(opening).rejects.toThrow("已取消");
     expect(stop).toHaveBeenCalledOnce();
   });
+
+  it("暂停后新建采集对象仍能恢复手动按住说话", () => {
+    const first = fixture();
+    first.capture.setMode("manual");
+    first.capture.setManualListening(true);
+    first.capture.setManualListening(false);
+    expect(first.callbacks.onSpeechStarted).toHaveBeenCalledOnce();
+    expect(first.callbacks.onSpeechEnded).toHaveBeenCalledOnce();
+    first.capture.stop();
+
+    const second = fixture();
+    expect(second.capture.getMode()).toBe("gate");
+    second.capture.setMode("manual");
+    second.capture.setManualListening(true);
+    second.capture.setManualListening(false);
+    expect(second.callbacks.onSpeechStarted).toHaveBeenCalledOnce();
+    expect(second.callbacks.onSpeechEnded).toHaveBeenCalledOnce();
+  });
+
+  it("切到手动模式会结束尚未收口的自动输入", () => {
+    const { capture, callbacks } = fixture();
+    capture.setMode("manual");
+    capture.setManualListening(true);
+    expect(callbacks.onSpeechStarted).toHaveBeenCalledOnce();
+    capture.setMode("gate");
+    expect(callbacks.onSpeechEnded).toHaveBeenCalledOnce();
+    expect(capture.getMode()).toBe("gate");
+  });
+
+  it("欢迎保护期间自动门控不发新轮次，按住仍可打断", () => {
+    const { capture, callbacks } = fixture();
+    capture.setWelcomeHoldOnly(true);
+    expect(capture.isWelcomeHoldOnly()).toBe(true);
+    capture.setHoldListening(true);
+    expect(callbacks.onSpeechStarted).toHaveBeenCalledOnce();
+    capture.setHoldListening(false);
+    expect(callbacks.onSpeechEnded).toHaveBeenCalledOnce();
+  });
+
+  it("欢迎结束后恢复原先手动模式，不擅自改回自动", () => {
+    const { capture } = fixture();
+    capture.setMode("manual");
+    capture.setWelcomeHoldOnly(true);
+    capture.rearmAfterWelcome();
+    expect(capture.getMode()).toBe("manual");
+    expect(capture.isWelcomeHoldOnly()).toBe(false);
+  });
 });
