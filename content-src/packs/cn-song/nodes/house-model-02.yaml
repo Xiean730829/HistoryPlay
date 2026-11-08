@@ -1,0 +1,13 @@
+id: cn.song.node.house-model.02
+story_id: cn.song.story.house-model
+fact_grade: F
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.house-model.story-02
+narration: 小屋虽小，屋顶和窗的形状却需要仔细安排。来数一数这件模型上的窗，再看看屋面怎样与墙面相接。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.house-model.03

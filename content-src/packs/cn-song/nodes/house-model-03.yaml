@@ -1,0 +1,14 @@
+id: cn.song.node.house-model.03
+story_id: cn.song.story.house-model
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.house-model.story-03
+narration: 完成的模型带着淡淡的青白釉。馆方把它归入墓葬陶器；至于具体工匠和制作经过，我们不能从这件模型中确定。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.house-model.01
+return_checkpoint: true

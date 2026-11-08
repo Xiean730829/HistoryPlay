@@ -1,0 +1,9 @@
+id: cn.song.node.jian-tea-bowl.intro
+story_id: cn.song.story.jian-tea-bowl
+fact_grade: F
+narration: 这只建窑茶盏的深色釉上有细长的纹路，像柔软的兔毫。它既是饮茶的器具，也藏着窑火中的变化。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.jian-tea-bowl.01

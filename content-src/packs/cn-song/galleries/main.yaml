@@ -7,29 +7,65 @@ status: open
 presentation_kind: song_scroll
 default_station_id: cn.song.station.qingbai-ewer
 scrolls:
-  - id: cn.song.scroll.life
-    title: 生活卷
-    theme: 生活
-    background_asset_id: cn.song.asset.scroll.life
-    interpretation_label: 艺术演绎，不是馆藏照片
-    station_ids:
-      - cn.song.station.qingbai-ewer
-    hotspots:
-      - station_id: cn.song.station.qingbai-ewer
-        x: 0.08
-        y: 0.22
-        width: 0.24
-        height: 0.4
-        label: 青白瓷注子
+- id: cn.song.scroll.life
+  title: 生活卷
+  theme: 生活
+  background_asset_id: cn.song.asset.scroll.life
+  interpretation_label: 艺术演绎，不是馆藏照片
+  station_ids:
+  - cn.song.station.qingbai-ewer
+  - cn.song.station.house-model
+  - cn.song.station.jian-tea-bowl
+  hotspots:
+  - station_id: cn.song.station.qingbai-ewer
+    x: 0.08
+    y: 0.22
+    width: 0.24
+    height: 0.4
+    label: 青白瓷注子
+  - station_id: cn.song.station.house-model
+    x: 0.3
+    y: 0.15
+    width: 0.2
+    height: 0.46
+    label: 青白瓷小屋模型
+  - station_id: cn.song.station.jian-tea-bowl
+    x: 0.79
+    y: 0.65
+    width: 0.09
+    height: 0.22
+    label: 建窑兔毫盏
 stations:
-  - id: cn.song.station.qingbai-ewer
-    order: 0
-    time_range:
-      start_year: 1000
-      end_year: 1099
-      precision: century
-      display_label: 北宋11世纪
-      uncertainty: 馆方给出世纪级断代，不推定具体年份。
-    placement_basis: 生活卷按主题陈列注子，不宣称制作先后；小屋与兔毫盏的稳定ID已预留，本批尚未装配。
-    artifact_id: cn.song.artifact.qingbai-ewer
-    side: center
+- id: cn.song.station.qingbai-ewer
+  order: 0
+  time_range:
+    start_year: 1000
+    end_year: 1099
+    precision: century
+    display_label: 北宋11世纪
+    uncertainty: 馆方给出世纪级断代，不推定具体年份。
+  placement_basis: 生活卷按主题陈列注子，不宣称制作先后；小屋与兔毫盏的稳定ID已预留，本批尚未装配。
+  artifact_id: cn.song.artifact.qingbai-ewer
+  side: center
+- id: cn.song.station.house-model
+  order: 1
+  time_range:
+    start_year: 1000
+    end_year: 1099
+    precision: century
+    display_label: 北宋11世纪
+    uncertainty: 馆方提供世纪范围，具体年份及人物经历未确认。
+  placement_basis: 生活卷按主题陈列；年代范围依馆方记录。
+  artifact_id: cn.song.artifact.house-model
+  side: center
+- id: cn.song.station.jian-tea-bowl
+  order: 2
+  time_range:
+    start_year: 1000
+    end_year: 1199
+    precision: range
+    display_label: 宋代11—12世纪
+    uncertainty: 馆方提供世纪范围，具体年份及人物经历未确认。
+  placement_basis: 生活卷按主题陈列；年代范围依馆方记录。
+  artifact_id: cn.song.artifact.jian-tea-bowl
+  side: center

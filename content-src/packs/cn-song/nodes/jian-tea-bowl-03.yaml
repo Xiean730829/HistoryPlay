@@ -1,0 +1,14 @@
+id: cn.song.node.jian-tea-bowl.03
+story_id: cn.song.story.jian-tea-bowl
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.jian-tea-bowl.story-03
+narration: 出现在釉上的细长纹路，被称为兔毫。馆方介绍，这类盏曾用于盛放搅拂出泡沫的茶；深色釉面让茶色更加醒目。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.jian-tea-bowl.01
+return_checkpoint: true
