@@ -1,0 +1,25 @@
+.story-cinematic .story-weather {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.story-weather-particle {
+  opacity: var(--weather-opacity);
+  animation: story-weather-fall var(--weather-duration) linear var(--weather-delay) infinite;
+}
+
+.story-weather-rain { stroke-linecap: round; }
+
+@keyframes story-weather-fall {
+  from { transform: translate(0, 0); }
+  to { transform: translate(var(--weather-drift), 1060px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-cinematic .story-weather { display: none; }
+}

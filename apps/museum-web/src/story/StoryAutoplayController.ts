@@ -2,6 +2,7 @@ import type { NarrationPlayer, NarrationSegment } from "../narration/NarrationPl
 
 export interface StoryPlaybackIdentity {
   sessionId: string;
+  artifactId: string;
   storyId: string;
   nodeId: string;
   revision: number;
@@ -17,7 +18,7 @@ interface ActiveNode {
   segment: NarrationSegment;
 }
 
-/** Advances only after the fixed narration adapter reports actual playback completion. */
+/** Advances only after the live narrator reports actual audio start and then completion. */
 export class StoryAutoplayController {
   private active: ActiveNode | null = null;
   private currentIdentityKey = "";
@@ -27,20 +28,26 @@ export class StoryAutoplayController {
     this.unsubscribe = narration.subscribe((checkpoint, segment) => {
       const active = this.active;
       if (!active) return;
-      if (checkpoint.state === "preparing" && segment?.role === "story" && segment.contentId === active.nodeId) {
-        active.key = this.currentIdentityKey;
-        active.authorized = true;
-        active.advanced = false;
+      if (checkpoint.state === "playing" && segment?.role === "story" && segment.contentId === active.nodeId) {
+        if (!active.advanced) {
+          active.key = this.currentIdentityKey;
+          active.authorized = true;
+        }
+        return;
+      }
+      if (checkpoint.state === "interrupted" || checkpoint.state === "error") {
+        active.authorized = false;
         return;
       }
       if (!active.authorized || active.advanced || !active.canContinue
-        || checkpoint.state !== "completed" || checkpoint.lastCompleted !== active.nodeId) return;
+        || checkpoint.state !== "completed" || checkpoint.lastCompleted !== active.nodeId
+        || active.key !== this.currentIdentityKey) return;
       active.advanced = true;
       this.onAdvance(active.key);
     });
   }
 
-  /** A revision/epoch change revokes the current playback's right to advance. */
+  /** A revision/epoch/exhibit change revokes the current playback's right to advance. */
   updateIdentity(identity: StoryPlaybackIdentity): void {
     const key = JSON.stringify(identity);
     if (key === this.currentIdentityKey) return;
@@ -53,6 +60,9 @@ export class StoryAutoplayController {
   }
 
   start(identity: StoryPlaybackIdentity, segment: NarrationSegment, canContinue: boolean): Promise<boolean> {
+    if (!identity.sessionId || !identity.artifactId || !identity.storyId || !identity.nodeId) {
+      return Promise.resolve(false);
+    }
     const key = JSON.stringify(identity);
     if (this.active?.key === key) return Promise.resolve(false);
     this.updateIdentity(identity);

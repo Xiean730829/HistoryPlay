@@ -36,6 +36,7 @@ describe("StoryFrame scene pages", () => {
     expect(markup).toContain(`data-node-id="${nodeId}"`);
     expect(markup).toContain(`data-asset-id="${assetId}"`);
     expect(markup).toContain("story-bleed");
+    expect(markup).not.toContain("story-bleed-main");
     expect(markup).toContain("正在读取本段场景图");
     expect(markup).toContain("下一段");
     expect(markup).toContain("返回展廊");
@@ -54,5 +55,21 @@ describe("StoryFrame scene pages", () => {
 
     expect(markup).toContain("正在同步已提交的故事段落");
     expect(markup).toContain("返回展廊");
+  });
+
+  it("does not render a second story image until the next node is committed", () => {
+    const markup = renderStory(["continue_story", "return_to_exhibit"]);
+    expect(markup.match(/data-asset-id="/g)).toHaveLength(1);
+    expect(markup).toContain(`data-asset-id="${assetId}"`);
+    expect(markup).not.toContain("story.02");
+  });
+
+  it("keeps honest image-failure copy and never substitutes another exhibit photo", async () => {
+    const nodeFs = "node:fs";
+    const { readFileSync } = await import(nodeFs);
+    const source = readFileSync(new URL("./StoryFrame.tsx", import.meta.url), "utf8") as string;
+    expect(source).toContain("本段绑定的场景图当前不可用，没有改用其他文物图片。");
+    expect(source).toContain("故事背景不能使用竖图；这张图片已拦截，没有显示。");
+    expect(source).toContain("这一段尚未绑定场景图；未用其他展品图片替代。");
   });
 });
