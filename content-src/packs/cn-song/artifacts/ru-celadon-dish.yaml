@@ -1,0 +1,35 @@
+id: cn.song.artifact.ru-celadon-dish
+title: 汝窑天青釉盘
+exhibit_type: object
+aliases:
+- 汝窑天青釉盘
+- 汝窑盘
+- 天青釉盘
+source_ids:
+- cn.song.source.reference-ru-celadon-dish
+time_range:
+  start_year: 1086
+  end_year: 1125
+  precision: range
+  display_label: 北宋汝窑
+  uncertainty: 馆方描述底部五个支钉痕；本包暂无本件授权照片或同件3D。
+category: 瓷器
+asset_ids:
+- cn.song.asset.ru-celadon-dish.interpretation
+presentation:
+  preview_asset_id: cn.song.asset.ru-celadon-dish.interpretation
+  display:
+    kind: interpretive_image
+    asset_id: cn.song.asset.ru-celadon-dish.interpretation
+    interpretation_label: 艺术演绎，外形参考馆方描述；本件授权照片与同件3D尚未取得。
+  teaser: 这只宋代汝窑盘看上去很素净。翻到盘底，还能发现烧制时留下的五个小痕迹。
+  background_node_id: cn.song.node.ru-celadon-dish.intro
+fact_card_ids:
+- cn.song.fact.ru-celadon-dish.reference
+story_entry_ids:
+- cn.song.story.ru-celadon-dish
+material: 瓷
+museum:
+  name: 故宫博物院
+  accession: 故宫藏宋代汝窑天青釉盘
+  collection_url: https://www.dpm.org.cn/collection/ceramic/227549.html

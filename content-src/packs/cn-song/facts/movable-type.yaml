@@ -1,0 +1,12 @@
+id: cn.song.fact.movable-type.reference
+claim: 北宋毕昇的胶泥活字技术见沈括《梦溪笔谈》记载；复原工具不能当成已确认原件。
+grade: F
+applicable_time:
+  start_year: 1041
+  end_year: 1048
+  precision: range
+  display_label: 约1040年代
+  uncertainty: 技术见沈括记载；复原工具和外貌不能当成已确认原件。
+source_ids:
+- cn.song.source.reference-movable-type
+evidence_note: 手册引用用于核事实；图像下载、再分发与展示权利另核。故事画面为艺术演绎。

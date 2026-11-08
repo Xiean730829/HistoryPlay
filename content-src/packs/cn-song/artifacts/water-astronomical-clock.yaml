@@ -1,0 +1,29 @@
+id: cn.song.artifact.water-astronomical-clock
+title: 水运仪象台
+exhibit_type: historical_record
+aliases:
+- 水运仪象台
+- 苏颂水运仪象台
+source_ids:
+- cn.song.source.reference-water-astronomical-clock
+time_range:
+  start_year: 1088
+  end_year: 1088
+  precision: year
+  display_label: 1088年
+  uncertainty: 原台没有实物流传，所见为文献与复原，不是原件。
+category: 技术复原
+asset_ids:
+- cn.song.asset.water-astronomical-clock.interpretation
+presentation:
+  preview_asset_id: cn.song.asset.water-astronomical-clock.interpretation
+  display:
+    kind: interpretive_image
+    asset_id: cn.song.asset.water-astronomical-clock.interpretation
+    interpretation_label: 文献与复原演绎，不是原台实物。
+  teaser: 宋代有人尝试用水推动复杂的机械，观察天象并报告时刻。它叫水运仪象台，像一座会运转的观星楼。
+  background_node_id: cn.song.node.water-astronomical-clock.intro
+fact_card_ids:
+- cn.song.fact.water-astronomical-clock.reference
+story_entry_ids:
+- cn.song.story.water-astronomical-clock

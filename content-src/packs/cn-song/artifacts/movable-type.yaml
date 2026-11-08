@@ -1,0 +1,30 @@
+id: cn.song.artifact.movable-type
+title: 泥活字
+exhibit_type: historical_record
+aliases:
+- 泥活字
+- 毕昇泥活字
+- 胶泥活字
+source_ids:
+- cn.song.source.reference-movable-type
+time_range:
+  start_year: 1041
+  end_year: 1048
+  precision: range
+  display_label: 约1040年代
+  uncertainty: 技术见沈括记载；复原工具和外貌不能当成已确认原件。
+category: 技术文献
+asset_ids:
+- cn.song.asset.movable-type.interpretation
+presentation:
+  preview_asset_id: cn.song.asset.movable-type.interpretation
+  display:
+    kind: interpretive_image
+    asset_id: cn.song.asset.movable-type.interpretation
+    interpretation_label: 文献教学演绎，不是已确认原件照片。
+  teaser: 如果一本书的字能够一个个重新排列，会发生什么？北宋有关泥活字的记载，为我们留下了一种巧妙的印书方法。
+  background_node_id: cn.song.node.movable-type.intro
+fact_card_ids:
+- cn.song.fact.movable-type.reference
+story_entry_ids:
+- cn.song.story.movable-type

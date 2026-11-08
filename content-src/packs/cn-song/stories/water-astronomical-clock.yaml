@@ -1,0 +1,10 @@
+id: cn.song.story.water-astronomical-clock
+title: 让水和星空一起转动
+entry_node_id: cn.song.node.water-astronomical-clock.01
+node_ids:
+- cn.song.node.water-astronomical-clock.intro
+- cn.song.node.water-astronomical-clock.01
+- cn.song.node.water-astronomical-clock.02
+- cn.song.node.water-astronomical-clock.03
+artifact_id: cn.song.artifact.water-astronomical-clock
+return_to_exhibit: true

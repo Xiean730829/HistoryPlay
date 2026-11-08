@@ -1,0 +1,10 @@
+id: cn.song.story.movable-type
+title: 一个字可以怎样印成一本书
+entry_node_id: cn.song.node.movable-type.01
+node_ids:
+- cn.song.node.movable-type.intro
+- cn.song.node.movable-type.01
+- cn.song.node.movable-type.02
+- cn.song.node.movable-type.03
+artifact_id: cn.song.artifact.movable-type
+return_to_exhibit: true

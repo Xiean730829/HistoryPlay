@@ -1,0 +1,13 @@
+id: cn.song.node.water-astronomical-clock.01
+story_id: cn.song.story.water-astronomical-clock
+fact_grade: C
+narration: 北宋时期，苏颂、韩公廉等人制作了水运仪象台。它结合了观察天体和报告时刻的装置。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.water-astronomical-clock.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.water-astronomical-clock.story-01
