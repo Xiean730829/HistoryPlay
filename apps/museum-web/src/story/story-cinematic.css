@@ -10,26 +10,32 @@
 .story-cinematic .story-bleed {
   position: absolute;
   inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #101416;
 }
 
-.story-cinematic .story-bleed img {
+.story-cinematic .story-bleed-fill {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 42%;
+  object-position: center;
+  filter: blur(28px) brightness(.38) saturate(.85);
+  transform: scale(1.08);
 }
 
-.story-cinematic .story-bleed::after {
+.story-cinematic .story-bleed-main {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgb(8 10 11 / 8%) 0%,
-    rgb(8 10 11 / 0%) 38%,
-    rgb(8 10 11 / 55%) 68%,
-    rgb(8 10 11 / 92%) 100%
-  );
-  content: "";
+  inset: 50% auto auto 50%;
+  z-index: 1;
+  display: block;
+  width: 94%;
+  height: 92%;
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+  object-position: center;
 }
 
 .story-cinematic .story-visual-empty,
@@ -47,13 +53,19 @@
 
 .story-cinematic .story-caption {
   position: absolute;
+  z-index: 2;
   right: 0;
-  bottom: 0;
+  bottom: clamp(14px, 3vh, 30px);
   left: 0;
-  z-index: 1;
   display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  width: min(calc(100% - 32px), 1000px);
   gap: 8px;
-  padding: clamp(18px, 3vw, 32px) clamp(18px, 4vw, 40px) 24px;
+  max-height: min(40svh, 340px);
+  margin-inline: auto;
+  overflow: hidden;
+  padding: clamp(14px, 2.4vw, 22px) clamp(18px, 4vw, 40px) 16px;
+  background: rgb(12 14 16 / 96%);
   text-align: left;
 }
 
@@ -73,19 +85,59 @@
 
 .story-cinematic .story-subtitle {
   max-width: 46em;
+  min-height: 0;
   margin: 0;
+  overflow: auto;
   color: #fff1d6;
   font: 500 clamp(16px, 2.2vw, 20px)/1.7 var(--serif);
 }
 
 .story-cinematic .story-load-error { margin: 0; color: #ffb8a8; }
-.story-cinematic .story-actions { justify-content: flex-start; }
+.story-cinematic .story-actions {
+  justify-content: flex-start;
+  flex-shrink: 0;
+}
 
 .museum-page-spatial .story-cinematic.story-stage { min-height: 100svh; }
+
+/* Song candidate: reserve a separate image region so the story caption does
+   not cover the artifact. The Tang stage retains its established layout. */
+.story-cinematic--song .story-bleed { bottom: 38%; }
+.story-cinematic--song .story-bleed-main { width: 100%; height: 100%; }
+.story-cinematic--song .story-caption {
+  bottom: 0;
+  max-height: 38%;
+  overflow: auto;
+}
+.story-cinematic--song .story-original-photo {
+  position: absolute;
+  z-index: 3;
+  left: 16px;
+  bottom: calc(38% + 12px);
+  display: grid;
+  gap: 4px;
+  width: min(150px, 22vw);
+  padding: 5px;
+  background: rgb(13 16 17 / 88%);
+  color: #fff1d6;
+  font-size: 11px;
+  text-align: center;
+}
+.story-cinematic--song .story-original-photo img {
+  width: 100%;
+  height: min(100px, 13vh);
+  object-fit: contain;
+  background: #ece7dc;
+}
 
 @media (max-width: 760px) {
   .story-cinematic.story-stage { min-height: min(86svh, 720px); }
   .museum-page-spatial .story-cinematic.story-stage { min-height: 100svh; }
-  .story-cinematic .story-caption { padding: 16px 16px 20px; }
+  .story-cinematic .story-caption {
+    bottom: 10px;
+    width: calc(100% - 20px);
+    max-height: min(46svh, 360px);
+    padding: 14px 16px 16px;
+  }
   .story-cinematic .story-subtitle { line-height: 1.65; }
 }

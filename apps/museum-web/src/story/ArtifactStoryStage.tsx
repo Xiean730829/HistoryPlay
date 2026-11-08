@@ -52,6 +52,7 @@ function StoryAutoplayStage(props: ArtifactStoryStageProps) {
   const node = session.context.story_node!;
   const identity = {
     sessionId: session.session_id,
+    artifactId: session.context.focused_artifact?.id ?? "",
     storyId: node.story_id,
     nodeId: node.node_id,
     revision: session.state.revision,
@@ -72,6 +73,7 @@ function StoryAutoplayStage(props: ArtifactStoryStageProps) {
   const canContinueRef = useRef(false);
   const [status, setStatus] = useState<NarrationStatus>("loading");
   const [canRetry, setCanRetry] = useState(false);
+  const [narrationError, setNarrationError] = useState("");
 
   useEffect(() => {
     if (previousKey.current === key) return;
@@ -93,11 +95,14 @@ function StoryAutoplayStage(props: ArtifactStoryStageProps) {
     canContinueRef.current = false;
     setStatus("loading");
     setCanRetry(false);
+    setNarrationError("");
     const abort = new AbortController();
     const unsubscribe = runtime.player.subscribe((checkpoint, segment) => {
       if (activeKey.current !== key) return;
       if (checkpoint.state === "preparing" && segment?.role === "story") { setStatus("loading"); setCanRetry(false); }
-      else if (checkpoint.state === "playing" && segment?.role === "story") { setStatus("playing"); setCanRetry(false); }
+      else if (checkpoint.state === "playing" && segment?.role === "story" && segment.contentId === node.node_id) {
+        setStatus("playing"); setCanRetry(false);
+      }
       else if ((checkpoint.state === "preparing" || checkpoint.state === "playing") && segment?.role !== "story") {
         setStatus("interrupted"); setCanRetry(false);
       }
@@ -113,6 +118,9 @@ function StoryAutoplayStage(props: ArtifactStoryStageProps) {
       const playbackKey = JSON.stringify(playbackIdentity);
       const page = await readStoryNode(session, node.node_id, abort.signal);
       if (abort.signal.aborted || activeKey.current !== playbackKey) return undefined;
+      if (!playbackIdentity.artifactId) {
+        throw new Error("当前故事没有绑定展品，不能开始讲述");
+      }
       const paragraph = page.paragraphs[0];
       if (page.content_id !== node.node_id || page.version !== session.version
         || paragraph?.content_id !== node.node_id
@@ -131,13 +139,20 @@ function StoryAutoplayStage(props: ArtifactStoryStageProps) {
     void loadAndPlay().then((played) => {
       if (abort.signal.aborted || activeKey.current !== key || played === undefined) return;
       if (played) {
+        if (!current.isPlaybackAuthorized(identityRef.current)) {
+          setStatus("error");
+          setCanRetry(true);
+          setNarrationError("本段固定讲述没有实际出声，故事不会自动跳段。");
+          return;
+        }
         setStatus(canContinueRef.current ? "advancing" : "complete");
         setCanRetry(false);
       }
-    }).catch(() => {
+    }).catch((error: unknown) => {
       if (!abort.signal.aborted && activeKey.current === key) {
         setStatus("error");
         setCanRetry(true);
+        setNarrationError(error instanceof Error ? error.message : "小智未能完成当前讲述");
       }
     });
     return () => {
@@ -150,7 +165,8 @@ function StoryAutoplayStage(props: ArtifactStoryStageProps) {
       if (controller.current === current) controller.current = null;
       runtime.release();
     };
-  }, [session.session_id, session.session_token, session.version, node.node_id, node.story_id]);
+  }, [session.session_id, session.session_token, session.version, node.node_id, node.story_id,
+    session.context.focused_artifact?.id]);
 
   async function retryNarration() {
     const current = controller.current;
@@ -164,8 +180,9 @@ function StoryAutoplayStage(props: ArtifactStoryStageProps) {
         setStatus("interrupted");
         setCanRetry(true);
       }
-    } catch {
+    } catch (error) {
       if (activeKey.current === key) { setStatus("error"); setCanRetry(true); }
+      setNarrationError(error instanceof Error ? error.message : "小智未能完成当前讲述");
     }
   }
 
@@ -182,7 +199,7 @@ function StoryAutoplayStage(props: ArtifactStoryStageProps) {
   const statusText = status === "loading" ? "正在准备本段固定讲述…"
     : status === "playing" ? "正在讲述本段内容；故事画面会在朗读结束后推进。"
       : status === "interrupted" ? "讲述已暂停，画面保持在当前段。说“继续”或重新播放本段。"
-        : status === "error" ? "本段固定讲述暂时不可用，故事不会自动跳段。"
+        : status === "error" ? (narrationError || "本段固定讲述暂时不可用，故事不会自动跳段。")
           : status === "advancing" ? "本段讲述完成，正在读取下一段…"
             : "本段讲述已完成。";
 
