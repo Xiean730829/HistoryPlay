@@ -10,7 +10,29 @@ from aiohttp import ClientResponseError, ClientSession, web
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "services/voice-bridge/src"))
 
 from museum_voice.config import DeviceConfig
-from museum_voice.main import bridge_failure, create_app, fixed_text_event, reject_redirect
+from museum_voice.main import (
+    bridge_failure,
+    create_app,
+    fixed_text_event,
+    reject_redirect,
+    wait_for_device_slot,
+)
+
+
+def test_device_slot_waits_for_cleanup_without_evicting_live_connection():
+    async def run():
+        old = object()
+        active = {old}
+        async def release():
+            await asyncio.sleep(0.02)
+            active.remove(old)
+        task = asyncio.create_task(release())
+        assert await wait_for_device_slot(active, timeout=0.2)
+        await task
+        active.add(old)
+        assert not await wait_for_device_slot(active, timeout=0.02)
+        assert active == {old}
+    asyncio.run(run())
 
 
 def test_bridge_failure_exposes_only_stage_and_bounded_upstream_http_status():
@@ -85,11 +107,11 @@ def test_redirect_callback_always_rejects_without_echoing_endpoint():
     asyncio.run(run())
 
 
-def test_fixed_text_input_uses_normal_text_turn_and_never_carries_museum_authority():
+def test_fixed_text_input_uses_short_wake_cue_and_never_puts_the_script_in_detect():
     assert fixed_text_event("  请逐字朗读：唐代铜牛。  ", "cloud-session") == {
         "type": "listen",
         "state": "detect",
-        "text": "请逐字朗读：唐代铜牛。",
+        "text": "读取当前讲稿",
         "session_id": "cloud-session",
     }
     with pytest.raises(ValueError):

@@ -3,6 +3,8 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import re
+import secrets
 from pathlib import Path
 
 from aiohttp import (
@@ -18,7 +20,7 @@ from aiohttp import (
 from av.error import FFmpegError
 from museum_mcp.action_tools import TrustedInput
 from museum_mcp.application_client import GatewayError
-from museum_mcp.binding_path import require_absolute_binding_path
+from museum_mcp.narration_cue import NARRATION_WAKE_CUE, NarrationCueStore, cue_path
 
 from museum_voice.codec import AudioCodec, pack_audio, unpack_audio
 from museum_voice.config import DeviceConfig
@@ -55,9 +57,16 @@ def fixed_text_event(text: object, session_id: str) -> dict[str, str]:
     return {
         "type": "listen",
         "state": "detect",
-        "text": text.strip(),
+        "text": NARRATION_WAKE_CUE,
         "session_id": session_id,
     }
+
+
+def is_tool_progress(event: dict) -> bool:
+    return (event.get("type") == "tts" and bool(re.fullmatch(
+        r"%\s+museum_(?:read_narration|get_context|search|read_content|act)\s*(?:\.{3}|…)?",
+        str(event.get("text", "")).strip(),
+    )))
 
 
 def bridge_failure(stage: str, error: Exception) -> dict[str, str]:
@@ -112,14 +121,28 @@ async def local_only(request: web.Request, handler):
     return response
 
 
+async def wait_for_device_slot(active: set, timeout: float = 2.0) -> bool:
+    """Allow a closing connection to finish without taking over a live one."""
+    loop = asyncio.get_running_loop()
+    deadline = loop.time() + timeout
+    while active:
+        remaining = deadline - loop.time()
+        if remaining <= 0:
+            return False
+        await asyncio.sleep(min(0.05, remaining))
+    return True
+
+
 async def bridge(request: web.Request) -> web.WebSocketResponse:
-    if request.app[ACTIVE]:
+    if not await wait_for_device_slot(request.app[ACTIVE]):
         raise web.HTTPConflict(text="固定设备已被当前语音连接使用，请先暂停旧页面")
     browser = web.WebSocketResponse(heartbeat=20, max_msg_size=16384)
     request.app[ACTIVE].add(browser)
     tasks: list[asyncio.Task] = []
     upstream = None
     orchestrator = None
+    active_narration_id: str | None = None
+    narration_store: NarrationCueStore | None = None
     stage = "browser_websocket_upgrade"
     try:
         await browser.prepare(request)
@@ -135,12 +158,13 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
         stage = "game_begin"
         granted = await bound.client.voice("begin", bridge_token=bound.bridge_token)
         orchestrator = InputOrchestrator(
-            bound.client, TrustedInput(bound.bridge_token, granted["input_token"])
+            bound.client, TrustedInput(bound.bridge_token, granted["input_token"]), bound.selection
         )
         bound.cancel_input = orchestrator.close
         input_started = False
         input_stopped = False
         pcm_frames = 0
+        opus_packets = 0
         render_gate_timer: asyncio.TimerHandle | None = None
         render_gate = RenderReplyGate()
         device = request.app[DEVICE]
@@ -174,16 +198,51 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
             stage = "browser_ready"
             await browser.send_json({"type": "ready", "sample_rate": 24000})
             stage = "active_voice_session"
+            pending_stt: str | None = None
+            dispatch_lock = asyncio.Lock()
+            local_reply_owned = False
+
+            def prepare_render(control: dict) -> None:
+                nonlocal render_gate_timer
+                request_id = render_request_id(control)
+                if request_id is not None:
+                    render_gate.begin(request_id)
+                    render_gate_timer = asyncio.get_running_loop().call_later(
+                        10, render_gate.expire, request_id
+                    )
+
+            async def dispatch_completed_input() -> None:
+                nonlocal pending_stt, local_reply_owned
+                async with dispatch_lock:
+                    if (not input_started or not input_stopped or pcm_frames < 3
+                            or orchestrator.handled or pending_stt is None):
+                        return
+                    text, pending_stt = pending_stt, None
+                    local_reply_owned = orchestrator.owns_reply(text)
+                    if local_reply_owned:
+                        # Command acknowledgements come from actual game results,
+                        # never the independent cloud guess (“I'll show the bull”).
+                        await browser.send_json({"type": "control_policy", "mode": "local"})
+                    await browser.send_json({"type": "stt", "text": text})
+                    try:
+                        await dispatch_local_control(orchestrator, browser, text, prepare_render)
+                    except GatewayError as error:
+                        await browser.send_json({"type": "control", "result": {
+                            "kind": "error", "message": str(error),
+                        }})
 
             async def send_microphone() -> None:
-                nonlocal input_started, input_stopped, pcm_frames
+                nonlocal input_started, input_stopped, pcm_frames, opus_packets
                 nonlocal render_gate_timer
+                nonlocal narration_store, active_narration_id
                 async for message in browser:
                     if message.type == WSMsgType.BINARY:
                         if not input_started or input_stopped:
                             raise ValueError("音频不属于当前输入范围")
                         pcm_frames += 1
-                        for packet in codec.encode(message.data):
+                        packets = codec.encode(message.data)
+                        opus_packets += len(packets)
+                        for packet in packets:
                             await upstream.send_bytes(pack_audio(packet, device.version))
                     elif message.type == WSMsgType.TEXT:
                         command = json.loads(message.data)
@@ -205,13 +264,29 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
                                     "session_id": session_id,
                                 }
                             )
+                            await browser.send_json(
+                                {
+                                    "type": "uplink_ack",
+                                    "event": "start",
+                                    "received_frames": 0,
+                                    "opus_packets": 0,
+                                }
+                            )
                         elif op == "text":
                             text = command.get("text")
+                            wake_event = fixed_text_event(text, session_id)
                             if input_started and not input_stopped:
                                 raise ValueError("固定文本必须是当前会话内不超过80字的完整片段")
-                            # This is an ordinary upstream text input, never a trusted museum action.
-                            # dispatch_local_control remains gated by a real, completed PCM turn.
-                            await upstream.send_json(fixed_text_event(text, session_id))
+                            binding_file = request.app.get(BINDING_FILE)
+                            if binding_file is None:
+                                raise ValueError("固定讲稿缺少本机MCP讲稿配置")
+                            context = await bound.client.get("context")
+                            request_id = command.get("request_id") or secrets.token_hex(12)
+                            narration_store = NarrationCueStore(cue_path(binding_file))
+                            narration_store.stage(bound.client.binding, text, request_id, context)
+                            active_narration_id = request_id
+                            await browser.send_json({"type": "narration_ack", "request_id": request_id, "stage": "staged"})
+                            await upstream.send_json(wake_event)
                         elif op == "stop":
                             input_stopped = True
                             await upstream.send_json(
@@ -221,6 +296,15 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
                                     "session_id": session_id,
                                 }
                             )
+                            await browser.send_json(
+                                {
+                                    "type": "uplink_ack",
+                                    "event": "stop",
+                                    "received_frames": pcm_frames,
+                                    "opus_packets": opus_packets,
+                                }
+                            )
+                            await dispatch_completed_input()
                         elif op == "abort":
                             await upstream.send_json({"type": "abort", "session_id": session_id})
                             # No reliable cloud per-turn ID was verified. Retire this transport;
@@ -249,9 +333,10 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
 
             async def receive_reply() -> None:
                 nonlocal render_gate_timer
+                nonlocal pending_stt
                 async for message in upstream:
                     if message.type == WSMsgType.BINARY:
-                        if render_gate.drop:
+                        if local_reply_owned or (input_started and not orchestrator.handled) or render_gate.drop:
                             continue
                         for pcm in codec.decode(unpack_audio(message.data, device.version)):
                             if not render_gate.hold("audio", pcm, len(pcm)):
@@ -262,35 +347,29 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
                         event = json.loads(message.data)
                         if not isinstance(event, dict):
                             raise ValueError("云端语音事件必须是JSON对象")
-                        if (
-                            event.get("type") == "stt"
-                            and input_started
-                            and input_stopped
-                            and pcm_frames >= 3
-                            and not orchestrator.handled
-                        ):
-                            text = event.get("text", "")
-                            await browser.send_json({"type": "stt", "text": text})
-                            try:
-                                control = await dispatch_local_control(orchestrator, browser, text)
-                                request_id = render_request_id(control)
-                                if request_id is not None:
-                                    render_gate.begin(request_id)
-                                    render_gate_timer = asyncio.get_running_loop().call_later(
-                                        10, render_gate.expire, request_id
-                                    )
-                            except GatewayError as error:
-                                await browser.send_json(
-                                    {
-                                        "type": "control",
-                                        "result": {"kind": "error", "message": str(error)},
-                                    }
-                                )
-                            continue
-                        if event.get("type") == "stt" and orchestrator.handled:
+                        if event.get("type") == "stt":
+                            # Providers can emit final STT just before the local
+                            # stop arrives. Keep it until this real PCM turn is
+                            # completed; never forward it as an unhandled command.
+                            # Text-only synthesis echoes cannot authorize actions.
+                            if input_started and not orchestrator.handled:
+                                text = event.get("text")
+                                if isinstance(text, str) and 0 < len(text.strip()) <= 500:
+                                    pending_stt = text.strip()
+                                    await dispatch_completed_input()
                             continue
                         if event.get("type") == "tts" and event.get("state") == "start":
                             codec.reset_decoder()
+                        if active_narration_id and is_tool_progress(event):
+                            await browser.send_json({"type": "narration_ack", "request_id": active_narration_id, "stage": "fetching"})
+                            continue
+                        if event.get("type") == "alert" and active_narration_id:
+                            message = str(event.get("message", ""))
+                            code = "wake_word_only" if "Detect is only for wake words" in message else "upstream_narration_rejected"
+                            await browser.send_json({"type": "narration_error", "code": code})
+                            continue
+                        if (local_reply_owned or (input_started and not orchestrator.handled)) and event.get("type") in {"tts", "llm"}:
+                            continue
                         if event.get("type") in {"stt", "tts", "llm", "alert", "goodbye"}:
                             safe = {
                                 key: event[key] for key in ("type", "state", "text") if key in event
@@ -313,6 +392,8 @@ async def bridge(request: web.Request) -> web.WebSocketResponse:
         if browser.prepared and not browser.closed:
             await browser.send_json(bridge_failure(stage, error))
     finally:
+        if narration_store is not None and active_narration_id is not None:
+            narration_store.retire(active_narration_id)
         if "render_gate_timer" in locals() and render_gate_timer is not None:
             render_gate_timer.cancel()
         for task in tasks:
@@ -407,11 +488,6 @@ def main() -> None:
         if item.strip()
     )
     binding_file = os.environ.get("MUSEUM_MCP_BINDING_FILE")
-    if binding_file:
-        try:
-            binding_file = str(require_absolute_binding_path(binding_file))
-        except ValueError as error:
-            raise SystemExit(str(error)) from None
     web.run_app(
         create_app(
             device,

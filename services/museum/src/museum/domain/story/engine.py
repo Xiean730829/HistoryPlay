@@ -36,6 +36,7 @@ def start_story(state: SessionState, story: StoryDefinition) -> StoryTransition:
             focused_entity_id=state.focused_entity_id,
             view=state.camera_pose,
             view_revision=state.view_revision,
+            gallery_view=state.gallery_view,
         )
     started = replace(
         state,
