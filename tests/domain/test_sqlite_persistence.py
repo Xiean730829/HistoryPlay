@@ -10,6 +10,7 @@ from museum.adapters.sqlite.session_repository import (
     _decode_state,
     _encode_state,
 )
+from museum.domain.gallery.browse_view import GalleryView, TimeFilter, default_gallery_view
 from museum.domain.session.events import SessionEvent, SessionEventKind
 from museum.domain.session.models import (
     CameraPose,
@@ -78,6 +79,41 @@ def test_session_snapshot_round_trips_immutable_nested_state(tmp_path) -> None:
     assert loaded is not None
     assert loaded.pack_versions == state.pack_versions
     assert loaded.return_stack[0].narration_checkpoint == state.return_stack[0].narration_checkpoint
+    assert loaded.gallery_view == default_gallery_view()
+
+
+def test_legacy_session_without_gallery_view_defaults_to_first_window() -> None:
+    payload = json.loads(_encode_state(make_state()))
+    del payload["gallery_view"]
+    restored = _decode_state(json.dumps(payload, ensure_ascii=False))
+    assert restored.gallery_view == default_gallery_view()
+
+
+def test_gallery_view_and_exhibit_return_snapshot_round_trip() -> None:
+    state = replace(
+        make_state(),
+        gallery_view=GalleryView(window_start=4, page_size=4, time_filter=TimeFilter(701, 800)),
+        exhibit_return_point=ExhibitReturnPoint(
+            gallery_id="cn.tang.gallery.main",
+            station_id="cn.tang.station.ox",
+            focused_entity_id="artifact.stele",
+            view=CameraPose(yaw=12, pitch=-4, zoom=1.2),
+            view_revision=2,
+            gallery_view=GalleryView(window_start=4, page_size=4, time_filter=TimeFilter(701, 800)),
+        ),
+    )
+    restored = _decode_state(_encode_state(state))
+    assert restored.gallery_view.window_start == 4
+    assert restored.gallery_view.time_filter == TimeFilter(701, 800)
+    assert restored.exhibit_return_point is not None
+    assert restored.exhibit_return_point.gallery_view == restored.gallery_view
+
+
+def test_gallery_view_page_size_three_round_trips_through_sqlite() -> None:
+    state = replace(make_state(), gallery_view=GalleryView(window_start=3, page_size=3))
+    restored = _decode_state(_encode_state(state))
+    assert restored.gallery_view.page_size == 3
+    assert restored.gallery_view.window_start == 3
 
 
 def test_session_snapshot_persists_root_exhibit_anchor_and_reads_legacy_json() -> None:

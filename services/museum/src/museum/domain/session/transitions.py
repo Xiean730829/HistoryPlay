@@ -105,7 +105,9 @@ def return_to_exhibit(state: SessionState) -> TransitionResult:
             focused_entity_id=state.focused_entity_id,
             view=state.camera_pose,
             view_revision=state.view_revision,
+            gallery_view=state.gallery_view,
         )
+    restored_view = point.gallery_view or state.gallery_view
     updated = replace(
         state,
         mode=SessionMode.EXPLORE,
@@ -120,6 +122,7 @@ def return_to_exhibit(state: SessionState) -> TransitionResult:
         focused_entity_id=point.focused_entity_id,
         camera_pose=point.view,
         exhibit_return_point=None,
+        gallery_view=restored_view,
         revision=state.revision + 1,
         view_revision=state.view_revision + 1,
         event_seq=state.event_seq + 1,

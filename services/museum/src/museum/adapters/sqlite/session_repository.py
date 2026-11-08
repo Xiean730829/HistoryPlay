@@ -5,6 +5,7 @@ import sqlite3
 from collections.abc import Mapping
 from typing import Any
 
+from museum.domain.gallery.browse_view import GalleryView, TimeFilter, default_gallery_view
 from museum.domain.session.models import (
     CameraPose,
     ExhibitReturnPoint,
@@ -97,6 +98,7 @@ def _encode_state(state: SessionState) -> str:
         "narration_checkpoint": _encode_checkpoint(state.narration_checkpoint),
         "camera_pose": _encode_camera(state.camera_pose),
         "exhibit_return_point": _encode_exhibit_return_point(state.exhibit_return_point),
+        "gallery_view": _encode_gallery_view(state.gallery_view),
     }
     return json.dumps(payload, ensure_ascii=False, allow_nan=False, separators=(",", ":"))
 
@@ -140,6 +142,7 @@ def _decode_state(raw: str) -> SessionState:
             if payload.get("exhibit_return_point")
             else None
         ),
+        gallery_view=_decode_gallery_view(payload.get("gallery_view")),
     )
 
 
@@ -163,13 +166,16 @@ def _encode_camera(value: CameraPose) -> Mapping[str, float]:
 def _encode_exhibit_return_point(value: ExhibitReturnPoint | None) -> Mapping[str, Any] | None:
     if value is None:
         return None
-    return {
+    encoded: dict[str, Any] = {
         "gallery_id": value.gallery_id,
         "station_id": value.station_id,
         "focused_entity_id": value.focused_entity_id,
         "view": _encode_camera(value.view),
         "view_revision": value.view_revision,
     }
+    if value.gallery_view is not None:
+        encoded["gallery_view"] = _encode_gallery_view(value.gallery_view)
+    return encoded
 
 
 def _decode_exhibit_return_point(value: Mapping[str, Any]) -> ExhibitReturnPoint:
@@ -179,4 +185,32 @@ def _decode_exhibit_return_point(value: Mapping[str, Any]) -> ExhibitReturnPoint
         focused_entity_id=value.get("focused_entity_id"),
         view=CameraPose(**value["view"]),
         view_revision=value["view_revision"],
+        gallery_view=_decode_gallery_view(value.get("gallery_view")) if value.get("gallery_view") else None,
+    )
+
+
+def _encode_gallery_view(value: GalleryView) -> Mapping[str, Any]:
+    payload: dict[str, Any] = {
+        "window_start": value.window_start,
+        "page_size": value.page_size,
+    }
+    if value.time_filter is not None:
+        payload["time_filter"] = {
+            "start_year": value.time_filter.start_year,
+            "end_year": value.time_filter.end_year,
+        }
+    return payload
+
+
+def _decode_gallery_view(value: Mapping[str, Any] | None) -> GalleryView:
+    if not value:
+        return default_gallery_view()
+    raw_filter = value.get("time_filter")
+    time_filter = None
+    if isinstance(raw_filter, Mapping):
+        time_filter = TimeFilter(int(raw_filter["start_year"]), int(raw_filter["end_year"]))
+    return GalleryView(
+        window_start=int(value.get("window_start", 0)),
+        page_size=int(value.get("page_size", 4)),
+        time_filter=time_filter,
     )
