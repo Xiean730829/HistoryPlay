@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import secrets
 from dataclasses import dataclass, field
 from urllib.parse import quote
 
@@ -79,7 +80,14 @@ class ActionTools:
     ):
         self.client, self.scope = client, scope
 
-    async def act(self, action: str, target_id: str | None = None) -> dict:
+    async def act(
+        self,
+        action: str,
+        target_id: str | None = None,
+        *,
+        start_year: int | None = None,
+        end_year: int | None = None,
+    ) -> dict:
         if self.scope is None or self.client is None:
             raise GatewayError("该云端调用没有可信输入来源，保持只读；请通过已绑定网页语音输入")
         context = await self.client.get("context")
@@ -87,7 +95,30 @@ class ActionTools:
         body: dict = {}
         if action in {"next", "previous"}:
             body["action"] = "move_next" if action == "next" else "move_previous"
+        elif action in {"browse_next", "browse_previous"}:
+            body = {
+                "action": "browse_gallery",
+                "params": {"direction": "next" if action == "browse_next" else "previous"},
+            }
+        elif action == "seek_time":
+            if start_year is None or end_year is None:
+                raise GatewayError("时间筛选缺少年份")
+            body = {
+                "action": "seek_time_range",
+                "params": {"start_year": start_year, "end_year": end_year},
+            }
+        elif action == "seek_clear":
+            body = {"action": "seek_time_range", "params": {"clear": True}}
         elif action == "locate" and target_id:
+            if context.get("mode") == "explore" and focused.get("id") == target_id:
+                return {
+                    "presentation_action": "focus_current",
+                    "presentation_request_id": secrets.token_hex(16),
+                    "presentation_expected_focus_id": focused.get("id"),
+                    "presentation_expected_revision": context.get("revision"),
+                    "render_status": "pending",
+                    "message": "这件文物就在眼前，正在重新走近",
+                }
             body = {"action": "locate_artifact", "target_id": target_id}
         elif action in {"back", "front", "zoom_in", "zoom_out"}:
             applied = await self.client.voice("view", scope=self.scope)
@@ -109,6 +140,15 @@ class ActionTools:
                 raise GatewayError("当前文物还没有开放故事")
             body = {"action": "enter_story", "target_id": stories[0]}
         elif action == "return":
+            if context.get("mode") == "explore":
+                return {
+                    "presentation_action": "return_to_overview",
+                    "presentation_request_id": secrets.token_hex(16),
+                    "presentation_expected_focus_id": focused.get("id"),
+                    "presentation_expected_revision": context.get("revision"),
+                    "render_status": "pending",
+                    "message": "正在回到展厅全景",
+                }
             body = {"action": "return_to_exhibit"}
         elif action == "next_segment":
             body = {"action": "continue_story"}
