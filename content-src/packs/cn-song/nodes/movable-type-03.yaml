@@ -1,0 +1,14 @@
+id: cn.song.node.movable-type.03
+story_id: cn.song.story.movable-type
+fact_grade: C
+narration: 印完之后，字块可以重新整理，为下一次排版做准备。技术的巧思，就藏在“重复使用”里。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.movable-type.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.movable-type.story-03
+return_checkpoint: true

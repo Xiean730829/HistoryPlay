@@ -1,0 +1,9 @@
+id: cn.song.node.movable-type.intro
+story_id: cn.song.story.movable-type
+fact_grade: F
+narration: 如果一本书的字能够一个个重新排列，会发生什么？北宋有关泥活字的记载，为我们留下了一种巧妙的印书方法。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.movable-type.01

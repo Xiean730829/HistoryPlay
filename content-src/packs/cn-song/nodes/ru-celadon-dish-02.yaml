@@ -1,0 +1,13 @@
+id: cn.song.node.ru-celadon-dish.02
+story_id: cn.song.story.ru-celadon-dish
+fact_grade: C
+narration: 馆方介绍，盘底留有五个支钉痕。它们是烧制过程留下的线索，帮助我们认识工艺。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.ru-celadon-dish.03
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.ru-celadon-dish.story-02
