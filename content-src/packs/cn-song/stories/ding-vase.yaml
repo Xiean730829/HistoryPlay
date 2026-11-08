@@ -1,0 +1,10 @@
+id: cn.song.story.ding-vase
+title: 一条舒展的曲线（本地候选）
+entry_node_id: cn.song.node.ding-vase.01
+node_ids:
+- cn.song.node.ding-vase.intro
+- cn.song.node.ding-vase.01
+- cn.song.node.ding-vase.02
+- cn.song.node.ding-vase.03
+artifact_id: cn.song.artifact.ding-vase
+return_to_exhibit: true

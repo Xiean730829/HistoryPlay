@@ -1,0 +1,13 @@
+id: cn.song.node.ding-vase.02
+story_id: cn.song.story.ding-vase
+fact_grade: C
+narration: 目光从瓶口向下，经过细长的颈，到达饱满的腹部，再收向瓶足。曲线相连，让它既轻盈又稳当。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.ding-vase.03
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.ding-vase.story-02

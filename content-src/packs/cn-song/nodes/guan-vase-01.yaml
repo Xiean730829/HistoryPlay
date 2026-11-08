@@ -1,0 +1,13 @@
+id: cn.song.node.guan-vase.01
+story_id: cn.song.story.guan-vase
+fact_grade: C
+narration: 先看整件瓶子。它的颜色安静柔和，光落在釉面上时，瓶身会显出不同的明暗。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.guan-vase.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.guan-vase.story-01

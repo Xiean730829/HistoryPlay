@@ -1,0 +1,33 @@
+id: cn.song.artifact.bowl-mold
+title: 陶瓷碗模
+exhibit_type: object
+aliases:
+- 陶瓷碗模
+- 碗模
+- 陶瓷模具
+source_ids:
+- cn.song.source.reference-bowl-mold
+time_range:
+  start_year: 1000
+  end_year: 1199
+  precision: range
+  display_label: 11—12世纪
+  uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+category: 器物
+asset_ids:
+- cn.song.asset.bowl-mold.photo
+presentation:
+  preview_asset_id: cn.song.asset.bowl-mold.photo
+  display:
+    kind: photo
+    asset_id: cn.song.asset.bowl-mold.photo
+  teaser: 这件器物不是一只普通的碗，而是制作碗时使用的模具。馆藏照片旁还有现代复原碗，方便我们理解纹样怎样形成。
+  background_node_id: cn.song.node.bowl-mold.intro
+fact_card_ids:
+- cn.song.fact.bowl-mold.reference
+story_entry_ids:
+- cn.song.story.bowl-mold
+museum:
+  name: The Metropolitan Museum of Art
+  accession: 16.149.1
+  collection_url: https://www.metmuseum.org/art/collection/search/49202

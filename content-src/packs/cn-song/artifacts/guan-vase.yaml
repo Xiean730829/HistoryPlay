@@ -1,0 +1,33 @@
+id: cn.song.artifact.guan-vase
+title: 官窑青瓷直颈瓶
+exhibit_type: object
+aliases:
+- 官窑青瓷直颈瓶
+- 官窑青瓷瓶
+- 官窑瓶
+source_ids:
+- cn.song.source.reference-guan-vase
+time_range:
+  start_year: 1100
+  end_year: 1299
+  precision: range
+  display_label: 12—13世纪
+  uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+category: 器物
+asset_ids:
+- cn.song.asset.guan-vase.photo
+presentation:
+  preview_asset_id: cn.song.asset.guan-vase.photo
+  display:
+    kind: photo
+    asset_id: cn.song.asset.guan-vase.photo
+  teaser: 这件南宋官窑青瓷瓶，值得慢慢看的不仅是外形，还有青色釉面上的光与细纹。
+  background_node_id: cn.song.node.guan-vase.intro
+fact_card_ids:
+- cn.song.fact.guan-vase.reference
+story_entry_ids:
+- cn.song.story.guan-vase
+museum:
+  name: The Metropolitan Museum of Art
+  accession: 26.292.81
+  collection_url: https://www.metmuseum.org/art/collection/search/52611

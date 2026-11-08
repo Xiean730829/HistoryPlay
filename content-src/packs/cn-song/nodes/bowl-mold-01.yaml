@@ -1,0 +1,13 @@
+id: cn.song.node.bowl-mold.01
+story_id: cn.song.story.bowl-mold
+fact_grade: C
+narration: 模具上刻有纹饰。它帮助陶工在制作碗坯时，把需要的纹样留在器物上。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.bowl-mold.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.bowl-mold.story-01

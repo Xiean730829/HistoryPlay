@@ -1,0 +1,12 @@
+id: cn.song.fact.bowl-mold.reference
+claim: 北方陶瓷制作曾使用模具帮助塑造纹饰。馆方图片同时展示了原模具及依它制作的现代复原碗，二者应区分。
+grade: F
+applicable_time:
+  start_year: 1000
+  end_year: 1199
+  precision: range
+  display_label: 11—12世纪
+  uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+source_ids:
+- cn.song.source.reference-bowl-mold
+evidence_note: 候选文字待历史与馆藏逐件复核；故事画面为艺术演绎。

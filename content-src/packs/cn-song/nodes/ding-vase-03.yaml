@@ -1,0 +1,14 @@
+id: cn.song.node.ding-vase.03
+story_id: cn.song.story.ding-vase
+fact_grade: C
+narration: 馆方指出，这件瓶的细长颈部制作并不容易。如今它安静地留在馆藏中，让我们看到宋代工艺对线条的关注。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.ding-vase.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.ding-vase.story-03
+return_checkpoint: true
