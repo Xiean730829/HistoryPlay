@@ -59,6 +59,7 @@ class ProbeEvidence:
                 "museum_get_context",
                 "museum_search",
                 "museum_read_content",
+                "museum_read_narration",
             }:
                 self.tool_calls[name] = self.tool_calls.get(name, 0) + 1
 

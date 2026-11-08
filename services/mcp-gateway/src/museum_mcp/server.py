@@ -3,16 +3,17 @@ from __future__ import annotations
 import json
 import os
 import sys
+from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
 
 from museum_mcp.action_tools import ActionTools
 from museum_mcp.application_client import ApplicationClient, BoundSession, GatewayError
-from museum_mcp.binding_path import require_absolute_binding_path
+from museum_mcp.narration_cue import NarrationCueStore, cue_path
 from museum_mcp.tools import ReadTools
 
 
-def create_server(tools: ReadTools, actions: ActionTools | None = None) -> FastMCP:
+def create_server(tools: ReadTools, actions: ActionTools | None = None, *, narration_reader=None) -> FastMCP:
     server = FastMCP("时空博物馆")
 
     @server.tool()
@@ -34,6 +35,13 @@ def create_server(tools: ReadTools, actions: ActionTools | None = None) -> FastM
         """读取指定文物或故事的一段固定正文和资料出处；有next_cursor时可继续读。"""
         return await tools.read_content(pack_id, version, content_id, cursor)
 
+    if narration_reader is not None:
+
+        @server.tool()
+        async def museum_read_narration() -> dict:
+            """收到“读取当前讲稿”时调用。取游戏当前文物介绍、故事或操作结果的固定讲稿；只逐字朗读prepared_text，不加开场白、不改写、不另取别的资料。"""
+            return await narration_reader()
+
     if actions is not None:
 
         @server.tool()
@@ -49,7 +57,7 @@ def load_binding() -> BoundSession:
     if not path:
         raise GatewayError("请先由当前展台提供本机私密绑定文件MUSEUM_MCP_BINDING_FILE")
     try:
-        data = json.loads(require_absolute_binding_path(path).read_text(encoding="utf-8"))
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
         return BoundSession(**data)
     except (OSError, TypeError, ValueError):
         raise GatewayError("本机展台绑定文件缺失或格式无效") from None
@@ -62,16 +70,18 @@ class CurrentBindingClient:
         return await ApplicationClient(load_binding()).get(route, params)
 
 
+async def read_current_narration() -> dict:
+    binding = load_binding()
+    context = await ApplicationClient(binding).get("context")
+    path = cue_path(Path(os.environ["MUSEUM_MCP_BINDING_FILE"]))
+    return NarrationCueStore(path).read(binding, context)
+
+
 def main() -> None:
-    binding_file = os.environ.get("MUSEUM_MCP_BINDING_FILE")
-    if not binding_file:
+    if not os.environ.get("MUSEUM_MCP_BINDING_FILE"):
         print("请设置MUSEUM_MCP_BINDING_FILE，页面开启语音后自动登记当前展台", file=sys.stderr)
         raise SystemExit(2) from None
-    try:
-        os.environ["MUSEUM_MCP_BINDING_FILE"] = str(require_absolute_binding_path(binding_file))
-    except ValueError as error:
-        raise SystemExit(str(error)) from None
-    create_server(ReadTools(CurrentBindingClient()), ActionTools()).run(transport="stdio")
+    create_server(ReadTools(CurrentBindingClient()), ActionTools(), narration_reader=read_current_narration).run(transport="stdio")
 
 
 if __name__ == "__main__":
