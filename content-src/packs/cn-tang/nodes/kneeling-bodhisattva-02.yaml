@@ -1,0 +1,13 @@
+id: cn.tang.node.kneeling-bodhisattva.02
+story_id: cn.tang.story.kneeling-bodhisattva
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.tang.asset.kneeling-bodhisattva.story-02
+narration: 它并不是石雕，也不是烧成的陶俑。造像使用木骨架、未烧黏土、纤维和草，表面还有彩绘与贴金。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.node.kneeling-bodhisattva.03

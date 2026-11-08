@@ -1,0 +1,39 @@
+id: cn.tang.artifact.kneeling-bodhisattva
+title: 跪姿胁侍菩萨
+aliases:
+  - 跪姿菩萨
+  - 跪着的菩萨
+  - 跪姿胁侍菩萨
+  - 供养菩萨
+  - R04
+museum:
+  name: Harvard Art Museums
+  accession: "1924.70"
+  collection_url: https://hvrd.art/o/303672
+time_range:
+  start_year: 601
+  end_year: 700
+  precision: century
+  display_label: 7世纪晚期
+  uncertainty: 馆方给出七世纪晚期断代，不推定具体年份，也不指认本件作者。
+material: 未烧黏土、纤维和草，木骨架、彩绘与贴金
+category: 佛教造像
+asset_ids:
+  - cn.tang.asset.kneeling-bodhisattva.glb
+  - cn.tang.asset.kneeling-bodhisattva.preview
+  - cn.tang.asset.kneeling-bodhisattva.display
+presentation:
+  preview_asset_id: cn.tang.asset.kneeling-bodhisattva.preview
+  display:
+    kind: model3d
+    asset_id: cn.tang.asset.kneeling-bodhisattva.display
+  default_camera:
+    orbit: front-upright
+    target_note: 跪姿胁侍菩萨正面直立，面部与合掌朝向观众；不裁切头冠或衣裾。
+  teaser: 安静的表面之下，有哪些材料和劳动？
+  background_node_id: cn.tang.node.kneeling-bodhisattva.01
+fact_card_ids:
+  - cn.tang.fact.kneeling-bodhisattva.date
+  - cn.tang.fact.kneeling-bodhisattva.identity
+story_entry_ids:
+  - cn.tang.story.kneeling-bodhisattva

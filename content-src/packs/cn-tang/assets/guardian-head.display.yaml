@@ -1,0 +1,14 @@
+id: cn.tang.asset.guardian-head.display
+kind: model3d
+format: glb
+sha256: 788c8bf68d4f6095ae89f98b8e97ae634fe34377bf3e93ba84baccda994c2262
+byte_size: 2956508
+derived_from: cn.tang.asset.guardian-head.glb
+license:
+  spdx: CC-BY-4.0
+  attribution: Harvard Art Museums; 1943.53.40 Head of a Guardian Figure, Tianlongshan Cave 17; model courtesy of Tianlongshan Caves Project, CAEA, University of Chicago
+  url: https://sketchfab.com/3d-models/19435340-model-caea-university-of-chicago-560ed9728cca419cbee18277a1c4fd36
+lod: display
+framing:
+  camera_orbit: front-upright
+  orientation_note: 天龙山力士头像正面直立，面部朝向观众（模型 −Y），不补造身体。

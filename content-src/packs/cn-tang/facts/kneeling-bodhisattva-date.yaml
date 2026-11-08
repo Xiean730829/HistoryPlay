@@ -1,0 +1,11 @@
+id: cn.tang.fact.kneeling-bodhisattva.date
+claim: 馆方将这件跪姿胁侍菩萨断代为7世纪晚期。
+grade: F
+applicable_time:
+  start_year: 601
+  end_year: 700
+  precision: century
+  display_label: 7世纪晚期
+source_ids:
+  - cn.tang.source.r04-catalog
+evidence_note: 保留馆方的世纪级断代与“晚期”限定语，不推定具体年份。

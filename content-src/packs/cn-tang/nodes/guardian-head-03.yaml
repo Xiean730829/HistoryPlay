@@ -1,0 +1,13 @@
+id: cn.tang.node.guardian-head.03
+story_id: cn.tang.story.guardian-head
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.tang.asset.guardian-head.story-03
+narration: 靠近看看，石面上还留有底层和颜色的痕迹。我们看到的浅色，不一定就是它制作完成时全部的样子。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.node.guardian-head.04

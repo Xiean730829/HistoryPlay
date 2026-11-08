@@ -1,0 +1,10 @@
+id: cn.tang.asset.kneeling-bodhisattva.glb
+kind: model3d
+format: glb
+sha256: 880fc13b98ba18958b56bf6eef91c9a20ceec98f9c5bc176ca0a4c6ffc314cc3
+byte_size: 52521960
+license:
+  spdx: CC-BY-4.0
+  attribution: Harvard Art Museums; 1924.70 Kneeling Attendant Bodhisattva
+  url: https://sketchfab.com/3d-models/kneeling-attendant-bodhisattva-129635ad396947a7975c9e5ba6095f32
+lod: source

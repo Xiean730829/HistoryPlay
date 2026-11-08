@@ -1,0 +1,10 @@
+id: cn.tang.fact.seated-buddha-tianlongshan.identity
+claim: 馆方称这是天龙山第21窟坐佛，砂岩并残留色彩痕迹；馆藏号1943.53.22，现存残件不可补全冒充原件。
+grade: F
+applicable_time:
+  start_year: 701
+  end_year: 800
+  precision: century
+source_ids:
+  - cn.tang.source.r01-catalog
+evidence_note: 洞窟与身份按馆方记录限定；石远是创作人物，不是本件可证实的劳动者生平。

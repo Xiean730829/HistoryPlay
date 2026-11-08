@@ -1,0 +1,13 @@
+id: cn.tang.node.kneeling-bodhisattva.03
+story_id: cn.tang.story.kneeling-bodhisattva
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.tang.asset.kneeling-bodhisattva.story-03
+narration: 合拢的双手和跪姿，让这尊造像显得专注而恭敬。它原本处于石窟的宗教空间中，和那里的其他造像共同构成庄重的场景。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.node.kneeling-bodhisattva.04

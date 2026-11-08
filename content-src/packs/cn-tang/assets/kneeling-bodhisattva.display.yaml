@@ -1,0 +1,14 @@
+id: cn.tang.asset.kneeling-bodhisattva.display
+kind: model3d
+format: glb
+sha256: af8c3d7e3d08e9a1b05a4093ce2b4049fea216e01c17badbd460386120d5c560
+byte_size: 6666632
+derived_from: cn.tang.asset.kneeling-bodhisattva.glb
+license:
+  spdx: CC-BY-4.0
+  attribution: Harvard Art Museums; 1924.70 Kneeling Attendant Bodhisattva
+  url: https://sketchfab.com/3d-models/kneeling-attendant-bodhisattva-129635ad396947a7975c9e5ba6095f32
+lod: display
+framing:
+  camera_orbit: front-upright
+  orientation_note: 跪姿胁侍菩萨正面直立，面部与合掌朝向观众（模型 +X），不裁切头冠或衣裾。

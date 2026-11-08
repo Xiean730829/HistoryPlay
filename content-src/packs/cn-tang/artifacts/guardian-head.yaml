@@ -1,0 +1,39 @@
+id: cn.tang.artifact.guardian-head
+title: 天龙山力士头像
+aliases:
+  - 力士头像
+  - 天龙山力士头像
+  - 守门人头像
+  - 石雕头像
+  - R08
+museum:
+  name: Harvard Art Museums
+  accession: "1943.53.40"
+  collection_url: https://hvrd.art/o/204426
+time_range:
+  start_year: 735
+  end_year: 735
+  precision: year
+  display_label: 约735年
+  uncertainty: 采用馆方约735年记录，不把本件缩成某一天，也不与Mia守门力士串号。
+material: 浅色石材，残存底层与颜料痕迹
+category: 佛教造像
+asset_ids:
+  - cn.tang.asset.guardian-head.glb
+  - cn.tang.asset.guardian-head.preview
+  - cn.tang.asset.guardian-head.display
+presentation:
+  preview_asset_id: cn.tang.asset.guardian-head.preview
+  display:
+    kind: model3d
+    asset_id: cn.tang.asset.guardian-head.display
+  default_camera:
+    orbit: front-upright
+    target_note: 天龙山力士头像正面直立，面部朝向观众；不补造身体。
+  teaser: 一张强烈的表情，足够让我们了解一个人吗？
+  background_node_id: cn.tang.node.guardian-head.01
+fact_card_ids:
+  - cn.tang.fact.guardian-head.date
+  - cn.tang.fact.guardian-head.identity
+story_entry_ids:
+  - cn.tang.story.guardian-head

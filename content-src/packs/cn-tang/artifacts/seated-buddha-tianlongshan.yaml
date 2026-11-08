@@ -1,0 +1,38 @@
+id: cn.tang.artifact.seated-buddha-tianlongshan
+title: 天龙山坐佛
+aliases:
+  - 天龙山坐佛
+  - 坐佛
+  - 坐着的佛像
+  - R01
+museum:
+  name: Harvard Art Museums
+  accession: "1943.53.22"
+  collection_url: https://hvrd.art/o/204140
+time_range:
+  start_year: 701
+  end_year: 800
+  precision: century
+  display_label: 8世纪
+  uncertainty: 馆方给出八世纪断代，不推定具体年份，也不补全残件冒充原件。
+material: 砂岩，残存色彩痕迹
+category: 佛教造像
+asset_ids:
+  - cn.tang.asset.seated-buddha-tianlongshan.glb
+  - cn.tang.asset.seated-buddha-tianlongshan.preview
+  - cn.tang.asset.seated-buddha-tianlongshan.display
+presentation:
+  preview_asset_id: cn.tang.asset.seated-buddha-tianlongshan.preview
+  display:
+    kind: model3d
+    asset_id: cn.tang.asset.seated-buddha-tianlongshan.display
+  default_camera:
+    orbit: front-upright
+    target_note: 天龙山坐佛正面直立，面容与结跏趺坐朝向观众；不补全残件。
+  teaser: 从残存的石面，想到宏大作品周围的人。
+  background_node_id: cn.tang.node.seated-buddha-tianlongshan.01
+fact_card_ids:
+  - cn.tang.fact.seated-buddha-tianlongshan.date
+  - cn.tang.fact.seated-buddha-tianlongshan.identity
+story_entry_ids:
+  - cn.tang.story.seated-buddha-tianlongshan

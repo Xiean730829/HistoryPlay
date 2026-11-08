@@ -1,0 +1,13 @@
+id: cn.tang.node.standing-woman-mhc.01
+story_id: cn.tang.story.standing-woman-mhc
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.tang.asset.standing-woman-mhc.story-01
+narration: 这是一件唐代女立俑。工匠用陶土塑出一个站立的人物，衣着和姿态被保留在小小的形象里。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.node.standing-woman-mhc.02

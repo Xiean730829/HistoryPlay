@@ -1,0 +1,10 @@
+id: cn.tang.fact.standing-woman-mhc.identity
+claim: 馆方称这是一件陶质女立俑，带釉及彩色痕迹；馆藏号MH1991.4.40，与明尼阿波利斯女俑50.46.182不是同一件实物。
+grade: F
+applicable_time:
+  start_year: 618
+  end_year: 906
+  precision: range
+source_ids:
+  - cn.tang.source.a01-catalog
+evidence_note: 衣着和姿态可以观察，不能称为已知宫女、同一人或真实云枝。
