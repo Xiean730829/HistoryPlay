@@ -138,7 +138,8 @@ def test_real_http_action_uses_original_pair_and_old_scope_stays_invalid_after_c
     asyncio.run(run())
 
 
-def test_browser_pcm_to_current_transport_stt_to_real_game_http(tmp_path, monkeypatch):
+@pytest.mark.parametrize("early_stt", [False, True])
+def test_browser_pcm_to_current_transport_stt_to_real_game_http(tmp_path, monkeypatch, early_stt):
     from dataclasses import asdict
     from types import SimpleNamespace
 
@@ -150,19 +151,30 @@ def test_browser_pcm_to_current_transport_stt_to_real_game_http(tmp_path, monkey
         game, binding, _ = await game_fixture(tmp_path)
         queue = asyncio.Queue()
         encoded = []
+        early_received = asyncio.Event()
 
         class Upstream:
             async def send_json(self, data):
-                if data.get("state") == "stop":
+                if data.get("state") == "stop" and not early_stt:
                     await queue.put(
                         SimpleNamespace(type=WSMsgType.TEXT, data='{"type":"stt","text":"往前走"}')
                     )
+                if data.get("state") == "stop":
+                    for state, text in [("start", ""), ("sentence_start", "好的，我带你去看鎏金牛"), ("stop", "")]:
+                        import json
+                        await queue.put(SimpleNamespace(type=WSMsgType.TEXT, data=json.dumps({
+                            "type": "tts", "state": state, "text": text,
+                        })))
 
             async def receive_json(self):
                 return {"type": "hello", "transport": "websocket", "session_id": "fake-upstream"}
 
             async def send_bytes(self, data):
                 encoded.append(data)
+                if early_stt and len(encoded) == 1:
+                    await queue.put(SimpleNamespace(
+                        type=WSMsgType.TEXT, data='{"type":"stt","text":"往前走"}'
+                    ))
 
             def __aiter__(self):
                 return self
@@ -171,6 +183,7 @@ def test_browser_pcm_to_current_transport_stt_to_real_game_http(tmp_path, monkey
                 message = await queue.get()
                 if message is None:
                     raise StopAsyncIteration
+                early_received.set()
                 return message
 
             async def close(self):
@@ -221,6 +234,10 @@ def test_browser_pcm_to_current_transport_stt_to_real_game_http(tmp_path, monkey
             await ws.send_json({"op": "start", "mode": "manual"})
             for _ in range(3):
                 await ws.send_bytes(bytes(640))
+            if early_stt:
+                await asyncio.wait_for(early_received.wait(), 2)
+                client = VoiceApplicationClient(binding, origin=ORIGIN)
+                assert (await client.state())["focused_entity_id"] == "cn.tang.artifact.coin"
             await ws.send_json({"op": "stop"})
             while True:
                 event = await asyncio.wait_for(ws.receive_json(), 5)
@@ -236,6 +253,10 @@ def test_browser_pcm_to_current_transport_stt_to_real_game_http(tmp_path, monkey
             )
             await asyncio.sleep(0.02)
             assert (await client.state())["revision"] == revision
+            # The independent cloud response is not a reliable acknowledgement
+            # of a real navigation command and must not reach the browser.
+            with pytest.raises(asyncio.TimeoutError):
+                await asyncio.wait_for(ws.receive_json(), 0.05)
             await ws.close()
         finally:
             await browser.close()

@@ -10,6 +10,8 @@ from aiohttp import web
 from museum_mcp.action_tools import VoiceApplicationClient
 from museum_mcp.application_client import BoundSession, GatewayError
 
+from museum_voice.control_orchestrator import SpokenSelection
+
 
 @dataclass
 class GameBinding:
@@ -17,6 +19,7 @@ class GameBinding:
     client: VoiceApplicationClient
     bridge_token: str = field(repr=False)
     cancel_input: Callable[[], Awaitable[None]] | None = field(default=None, repr=False)
+    selection: SpokenSelection = field(default_factory=SpokenSelection)
 
 
 GAME_BINDINGS = web.AppKey("game_bindings", dict)
