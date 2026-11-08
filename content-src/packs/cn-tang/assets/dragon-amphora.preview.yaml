@@ -1,0 +1,13 @@
+id: cn.tang.asset.dragon-amphora.preview
+kind: preview
+format: png
+sha256: 1663b759a0eb5f0aeacbf5dd7c9d2d63d3ca32b12f13e0e626079d6224b89620
+byte_size: 900476
+derived_from: cn.tang.asset.dragon-amphora.glb
+license:
+  spdx: CC-BY-4.0
+  attribution: Art Institute of Chicago; Dragon-Handled Amphora 三彩双龙耳瓶
+  url: https://sketchfab.com/3d-models/dragon-handled-amphora-3cf1aa27d46a4ab9948527c6c57e4416
+framing:
+  camera_orbit: front-upright
+  orientation_note: 三彩双龙耳瓶正面直立，两侧龙形耳朝向观众；Blender 4.2.16 透明1024预览。

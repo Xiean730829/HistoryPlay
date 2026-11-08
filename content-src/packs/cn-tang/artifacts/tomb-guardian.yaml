@@ -1,0 +1,37 @@
+id: cn.tang.artifact.tomb-guardian
+title: 镇墓兽
+aliases:
+  - 镇墓俑
+  - 守墓兽
+  - A03
+museum:
+  name: Mount Holyoke College Art Museum
+  accession: MH1960.5.J.OI
+  collection_url: https://sketchfab.com/3d-models/tang-dynasty-tomb-guardian-zhenmushou-46a7591d54a443248d95a6fa394ac210
+time_range:
+  start_year: 618
+  end_year: 906
+  precision: range
+  display_label: 唐代，618—906年
+  uncertainty: 馆方给出唐朝区间，不推定具体年份，也不指认窑口或墓主人。
+material: 带釉陶质器及彩色痕迹
+category: 陶制镇墓俑
+asset_ids:
+  - cn.tang.asset.tomb-guardian.glb
+  - cn.tang.asset.tomb-guardian.preview
+  - cn.tang.asset.tomb-guardian.display
+presentation:
+  preview_asset_id: cn.tang.asset.tomb-guardian.preview
+  display:
+    kind: model3d
+    asset_id: cn.tang.asset.tomb-guardian.display
+  default_camera:
+    orbit: front-upright
+    target_note: 镇墓兽正面直立，兽面、獠牙与前爪朝向观众。
+  teaser: 唐代带釉陶质镇墓兽；守护形象寄托墓葬愿望，不是会显灵的神兽。
+  background_node_id: cn.tang.node.tomb-guardian.01
+fact_card_ids:
+  - cn.tang.fact.tomb-guardian.date
+  - cn.tang.fact.tomb-guardian.identity
+story_entry_ids:
+  - cn.tang.story.tomb-guardian

@@ -1,0 +1,13 @@
+id: cn.tang.node.dragon-amphora.02
+story_id: cn.tang.story.dragon-amphora
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.tang.asset.dragon-amphora.story-02
+narration: 仔细看瓶口两边，龙形耳沿着瓶身弯曲。它们既是器物造型的一部分，也让这件瓶子拥有容易辨认的轮廓。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.node.dragon-amphora.03

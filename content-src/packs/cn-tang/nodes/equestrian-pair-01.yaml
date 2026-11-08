@@ -1,0 +1,13 @@
+id: cn.tang.node.equestrian-pair.01
+story_id: cn.tang.story.equestrian-pair
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.tang.asset.equestrian-pair.story-01
+narration: 眼前是一组唐代骑马俑。人和马被塑在一起，骑乘的姿态让我们看见唐代人怎样表现马与骑行。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.node.equestrian-pair.02

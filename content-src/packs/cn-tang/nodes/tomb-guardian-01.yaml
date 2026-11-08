@@ -1,0 +1,13 @@
+id: cn.tang.node.tomb-guardian.01
+story_id: cn.tang.story.tomb-guardian
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.tang.asset.tomb-guardian.story-01
+narration: 这是一只唐代镇墓兽。它由陶土塑成，身上还能看见釉色留下的痕迹。别被它的模样吓到，它并不是活着的怪兽。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.node.tomb-guardian.02

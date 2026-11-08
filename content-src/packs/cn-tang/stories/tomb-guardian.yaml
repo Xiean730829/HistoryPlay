@@ -1,0 +1,10 @@
+id: cn.tang.story.tomb-guardian
+title: 一只镇墓兽
+entry_node_id: cn.tang.node.tomb-guardian.01
+node_ids:
+- cn.tang.node.tomb-guardian.01
+- cn.tang.node.tomb-guardian.02
+- cn.tang.node.tomb-guardian.03
+- cn.tang.node.tomb-guardian.04
+artifact_id: cn.tang.artifact.tomb-guardian
+return_to_exhibit: true

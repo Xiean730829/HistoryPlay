@@ -1,0 +1,14 @@
+id: cn.tang.node.tomb-guardian.04
+story_id: cn.tang.story.tomb-guardian
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.tang.asset.tomb-guardian.story-04
+narration: 今天，我们从它的形状和釉色，认识唐代人的审美与愿望。至于这件镇墓兽为谁制作、曾放在哪里，现有资料还没有确认。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.tang.node.tomb-guardian.01
+return_checkpoint: true

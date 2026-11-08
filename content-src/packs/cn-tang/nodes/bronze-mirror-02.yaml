@@ -1,0 +1,13 @@
+id: cn.tang.node.bronze-mirror.02
+story_id: cn.tang.story.bronze-mirror
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.tang.asset.bronze-mirror.story-02
+narration: 把它转过来，镜背的狮子、葡萄和鸟纹就出现了。中央有一个穿孔的钮，可以帮助系绳、拿取或悬挂。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.node.bronze-mirror.03

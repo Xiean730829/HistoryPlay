@@ -1,0 +1,13 @@
+id: cn.tang.asset.equestrian-pair.preview
+kind: preview
+format: png
+sha256: 9216b622ed51178e66b52c5872db545bd42ffb8d99cf190f106444857ceddda3
+byte_size: 938552
+derived_from: cn.tang.asset.equestrian-pair.glb
+license:
+  spdx: CC-BY-4.0
+  attribution: Mount Holyoke College Art Museum; MH1964.5A-B.J.C Chinese equestrian figures Tang dynasty; photogrammetry by Laura Shea
+  url: https://sketchfab.com/3d-models/chinese-equestrian-figures-tang-dynasty-55e4c6ae757b455d970debc51a742e6c
+framing:
+  camera_orbit: front-upright
+  orientation_note: 两骑正面直立，人脸与马首朝向观众；Blender 4.2.16 透明1024预览。

@@ -1,0 +1,13 @@
+id: cn.tang.asset.tomb-guardian.preview
+kind: preview
+format: png
+sha256: 1683b1bc5460a4e86a394a46037fc94e690a1739dccbcc0be326454c4e6866cd
+byte_size: 904605
+derived_from: cn.tang.asset.tomb-guardian.glb
+license:
+  spdx: CC-BY-4.0
+  attribution: Mount Holyoke College Art Museum; MH1960.5.J.OI Tang Dynasty Tomb Guardian (Zhenmushou); photogrammetry by Laura Shea
+  url: https://sketchfab.com/3d-models/tang-dynasty-tomb-guardian-zhenmushou-46a7591d54a443248d95a6fa394ac210
+framing:
+  camera_orbit: front-upright
+  orientation_note: 镇墓兽正面直立，兽面、獠牙与前爪朝向观众；Blender 4.2.16 透明1024预览。

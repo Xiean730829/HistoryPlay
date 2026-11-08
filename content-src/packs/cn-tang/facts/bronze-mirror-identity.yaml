@@ -1,0 +1,10 @@
+id: cn.tang.fact.bronze-mirror.identity
+claim: 馆方称这是一面铜合金狮葡萄纹铜镜；照面与纹饰镜背须分开观察，未知本件真正照过谁。
+grade: F
+applicable_time:
+  start_year: 705
+  end_year: 907
+  precision: range
+source_ids:
+  - cn.tang.source.r03-catalog
+evidence_note: 不能因纹饰推定远方经历；衍生模型须保留 CC BY-SA 4.0 署名与相同许可。
