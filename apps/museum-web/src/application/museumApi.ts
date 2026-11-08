@@ -8,6 +8,8 @@ import type {
 import { CommandDispatcher } from "../state/commandDispatcher";
 
 const commandDispatcher = new CommandDispatcher();
+const renewedTickets = new Map<string, string>();
+const pendingTicketRenewals = new Map<string, Promise<string>>();
 
 export class ApiRequestError extends Error {
   constructor(
@@ -111,30 +113,55 @@ export interface ActiveSession extends SessionCredentials {
 }
 
 export interface SongHotspot {
-  station_id: string; x: number; y: number; width: number; height: number; label: string;
+  station_id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  label: string;
 }
 export interface SongScroll {
-  id: string; title: string; theme: string; background_asset_id: string;
-  interpretation_label: string; station_ids: string[]; hotspots: SongHotspot[];
+  id: string;
+  title: string;
+  theme: string;
+  background_asset_id: string;
+  interpretation_label: string;
+  station_ids: string[];
+  hotspots: SongHotspot[];
 }
-export interface GalleryStation { id: string; order: number; artifact: ArtifactProjection; }
+export interface GalleryStation {
+  id: string;
+  order: number;
+  artifact: ArtifactProjection;
+}
 export interface GalleryDocument {
-  id: string; title: string; status: string; presentation_kind?: string;
-  stations: GalleryStation[]; scrolls?: SongScroll[];
+  id: string;
+  title: string;
+  status: string;
+  presentation_kind?: string;
+  stations: GalleryStation[];
+  scrolls?: SongScroll[];
 }
 
-export async function loadGalleryDocument(session: ActiveSession, galleryId: string, signal?: AbortSignal): Promise<GalleryDocument> {
-  return request<GalleryDocument>(`/api/sessions/${session.session_id}/galleries/${encodeURIComponent(galleryId)}`,
-    { headers: boundHeaders(session), signal });
+export async function loadGalleryDocument(
+  session: ActiveSession,
+  galleryId: string,
+  signal?: AbortSignal,
+): Promise<GalleryDocument> {
+  return request<GalleryDocument>(
+    `/api/sessions/${session.session_id}/galleries/${encodeURIComponent(galleryId)}`,
+    { headers: boundHeaders(session), signal },
+  );
 }
 
 export async function loadGalleryArtifacts(
   session: ActiveSession,
   galleryId: string,
+  signal?: AbortSignal,
 ): Promise<ArtifactProjection[]> {
   const response = await request<{ stations: Array<{ artifact: ArtifactProjection }> }>(
     `/api/sessions/${session.session_id}/galleries/${encodeURIComponent(galleryId)}`,
-    { headers: boundHeaders(session) },
+    { headers: boundHeaders(session), signal },
   );
   return response.stations.map((station) => station.artifact);
 }
@@ -305,6 +332,7 @@ export async function unpairSession(session: ActiveSession): Promise<void> {
     method: "DELETE",
     headers: boundHeaders(session),
   });
+  renewedTickets.delete(`${session.session_id}:${session.connection_id}`);
 }
 
 export async function openArtifact(
@@ -403,6 +431,75 @@ export async function moveGalleryStation(
   return { session: await refreshSession(session), receipt: response };
 }
 
+export async function browseGalleryWindow(
+  session: ActiveSession,
+  direction: "next" | "previous",
+): Promise<{ session: ActiveSession; receipt: CommandReceipt }> {
+  const action = "browse_gallery" satisfies CommandAction;
+  const dispatchKey = [
+    session.session_id,
+    action,
+    direction,
+    session.state.revision,
+    session.state.view_revision,
+    session.state.interaction_epoch,
+  ].join(":");
+  const response = await commandDispatcher.dispatch(dispatchKey, (requestId) => request<CommandReceipt>(
+    `/api/sessions/${session.session_id}/commands`,
+    {
+      method: "POST",
+      headers: boundHeaders(session),
+      body: JSON.stringify({
+        schema_version: "1",
+        request_id: requestId,
+        expected_revision: session.state.revision,
+        expected_view_revision: session.state.view_revision,
+        interaction_epoch: session.state.interaction_epoch,
+        control_ticket: session.control_ticket,
+        action,
+        params: { direction },
+      }),
+    },
+    (status, body) => status === 409 && isCommandReceipt(body),
+  ));
+  return { session: await refreshSession(session), receipt: response };
+}
+
+export async function seekGalleryTimeRange(
+  session: ActiveSession,
+  range: { start_year: number; end_year: number } | { clear: true },
+): Promise<{ session: ActiveSession; receipt: CommandReceipt }> {
+  const action = "seek_time_range" satisfies CommandAction;
+  const params = "clear" in range ? { clear: true } : { start_year: range.start_year, end_year: range.end_year };
+  const dispatchKey = [
+    session.session_id,
+    action,
+    JSON.stringify(params),
+    session.state.revision,
+    session.state.view_revision,
+    session.state.interaction_epoch,
+  ].join(":");
+  const response = await commandDispatcher.dispatch(dispatchKey, (requestId) => request<CommandReceipt>(
+    `/api/sessions/${session.session_id}/commands`,
+    {
+      method: "POST",
+      headers: boundHeaders(session),
+      body: JSON.stringify({
+        schema_version: "1",
+        request_id: requestId,
+        expected_revision: session.state.revision,
+        expected_view_revision: session.state.view_revision,
+        interaction_epoch: session.state.interaction_epoch,
+        control_ticket: session.control_ticket,
+        action,
+        params,
+      }),
+    },
+    (status, body) => status === 409 && isCommandReceipt(body),
+  ));
+  return { session: await refreshSession(session), receipt: response };
+}
+
 export interface RenderReceiptPayload {
   request_id: string;
   payload_digest: string;
@@ -470,14 +567,39 @@ async function request<T>(
   init: RequestInit = {},
   acceptError?: (status: number, body: unknown) => boolean,
 ): Promise<T> {
-  const response = await fetch(path, {
+  const headers = { "Content-Type": "application/json", ...init.headers };
+  const command = /^\/api\/sessions\/([^/]+)\/commands$/.exec(path);
+  const connection = new Headers(headers).get("X-Museum-Connection");
+  const scope = command && connection ? `${command[1]}:${connection}` : null;
+  let payload: Record<string, unknown> | null = null;
+  if (scope && typeof init.body === "string") {
+    try { payload = JSON.parse(init.body) as Record<string, unknown>; } catch { payload = null; }
+  }
+  const send = (ticket?: string) => fetch(path, {
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...init.headers,
-    },
+    headers,
+    body: ticket && payload ? JSON.stringify({ ...payload, control_ticket: ticket }) : init.body,
   });
-  const text = await response.text();
+  let response = await send(scope ? renewedTickets.get(scope) : undefined);
+  let text = await response.text();
+  // An expired grant fails before the command can commit. Renew only for the
+  // same authenticated, still-bound connection, then replay the same request id.
+  if (response.status === 403 && text.trim() === "控制票据已过期" && command && scope && payload) {
+    let pending = pendingTicketRenewals.get(scope);
+    if (!pending) {
+      pending = request<{ control_ticket: string }>(`/api/sessions/${command[1]}/control-ticket`, {
+        method: "POST", headers,
+      }).then((result) => {
+        if (!result.control_ticket) throw new Error("服务未返回新的控制票据");
+        if (renewedTickets.size >= 32) renewedTickets.clear();
+        renewedTickets.set(scope, result.control_ticket);
+        return result.control_ticket;
+      }).finally(() => { pendingTicketRenewals.delete(scope); });
+      pendingTicketRenewals.set(scope, pending);
+    }
+    response = await send(await pending);
+    text = await response.text();
+  }
   let body: unknown;
   try {
     body = text ? JSON.parse(text) : null;
@@ -488,6 +610,12 @@ async function request<T>(
     const detail = typeof body === "object" && body !== null && "message" in body
       ? String(body.message)
       : text || `服务返回 ${response.status}`;
+    if (response.status === 403 && /未绑定|配对替代|绑定失效/.test(detail)) {
+      throw new ApiRequestError(
+        403,
+        "展台绑定已失效，请在当前页面重新开启语音后再试。这不是文物缺少资料。",
+      );
+    }
     throw new ApiRequestError(response.status, detail);
   }
   return body as T;
