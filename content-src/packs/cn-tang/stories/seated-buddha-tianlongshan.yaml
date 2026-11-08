@@ -1,0 +1,10 @@
+id: cn.tang.story.seated-buddha-tianlongshan
+title: 一件坐佛残件
+entry_node_id: cn.tang.node.seated-buddha-tianlongshan.01
+node_ids:
+- cn.tang.node.seated-buddha-tianlongshan.01
+- cn.tang.node.seated-buddha-tianlongshan.02
+- cn.tang.node.seated-buddha-tianlongshan.03
+- cn.tang.node.seated-buddha-tianlongshan.04
+artifact_id: cn.tang.artifact.seated-buddha-tianlongshan
+return_to_exhibit: true

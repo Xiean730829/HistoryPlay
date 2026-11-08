@@ -1,0 +1,13 @@
+id: cn.tang.node.standing-woman-mhc.02
+story_id: cn.tang.story.standing-woman-mhc
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.tang.asset.standing-woman-mhc.story-02
+narration: 仔细看她的衣服和衣褶。一个陶俑可以帮助我们观察当时人们如何表现衣着，但并不等于一张真实人物的照片。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.node.standing-woman-mhc.03

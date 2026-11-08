@@ -1,0 +1,13 @@
+id: cn.tang.asset.kneeling-bodhisattva.preview
+kind: preview
+format: png
+sha256: 1fedf110bb0c973d6fcc3bbbce115b7adcbdc91a88a57af07f8d5098e8e32eee
+byte_size: 913891
+derived_from: cn.tang.asset.kneeling-bodhisattva.glb
+license:
+  spdx: CC-BY-4.0
+  attribution: Harvard Art Museums; 1924.70 Kneeling Attendant Bodhisattva
+  url: https://sketchfab.com/3d-models/kneeling-attendant-bodhisattva-129635ad396947a7975c9e5ba6095f32
+framing:
+  camera_orbit: front-upright
+  orientation_note: 跪姿与合掌朝向观众；Blender 4.2.16 透明1024预览。

@@ -136,3 +136,47 @@ stations:
   placement_basis: 骑马俑之后安排一件三彩龙柄双耳瓶，从出行主题转到器形与工艺；馆藏号暂标不详，后续再改，这是策展顺序，不是制作年代排序。
   artifact_id: cn.tang.artifact.dragon-amphora
   side: center
+- id: cn.tang.station.standing-woman-mhc
+  order: 12
+  time_range:
+    start_year: 618
+    end_year: 906
+    precision: range
+    display_label: 唐代，618—906年
+    uncertainty: 馆方给出唐朝区间，不推定具体年份，也不指认已知宫女。
+  placement_basis: 双龙耳瓶之后观察另一件馆藏号不同的女立俑；不与明尼阿波利斯女俑串号，也不称已知宫女，这是策展顺序。
+  artifact_id: cn.tang.artifact.standing-woman-mhc
+  side: right
+- id: cn.tang.station.kneeling-bodhisattva
+  order: 13
+  time_range:
+    start_year: 601
+    end_year: 700
+    precision: century
+    display_label: 7世纪晚期
+    uncertainty: 馆方给出七世纪晚期断代，不推定具体年份，也不指认本件作者。
+  placement_basis: 女立俑之后观察未烧泥与纤维做成的跪姿胁侍菩萨；不与寺院守门力士或天龙山坐佛混称，这是策展顺序。
+  artifact_id: cn.tang.artifact.kneeling-bodhisattva
+  side: center
+- id: cn.tang.station.seated-buddha-tianlongshan
+  order: 14
+  time_range:
+    start_year: 701
+    end_year: 800
+    precision: century
+    display_label: 8世纪
+    uncertainty: 馆方给出八世纪断代，不推定具体年份，也不补全残件冒充原件。
+  placement_basis: 跪姿胁侍菩萨之后观察天龙山坐佛残件；不能占用造像碑的“佛像”口令，也不补全未知身体，这是策展顺序。
+  artifact_id: cn.tang.artifact.seated-buddha-tianlongshan
+  side: left
+- id: cn.tang.station.guardian-head
+  order: 15
+  time_range:
+    start_year: 735
+    end_year: 735
+    precision: year
+    display_label: 约735年
+    uncertainty: 采用馆方约735年记录，不把本件缩成某一天，也不与Mia守门力士串号。
+  placement_basis: 天龙山坐佛之后观察天龙山力士头像残件；不与寺院守门力士混为同一尊，也不补造身体冒充原件，这是策展顺序。
+  artifact_id: cn.tang.artifact.guardian-head
+  side: right

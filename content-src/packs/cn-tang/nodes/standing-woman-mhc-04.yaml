@@ -1,0 +1,14 @@
+id: cn.tang.node.standing-woman-mhc.04
+story_id: cn.tang.story.standing-woman-mhc
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.tang.asset.standing-woman-mhc.story-04
+narration: 她究竟代表什么身份，有没有对应的真实人物，现有资料没有确认。让我们先记住她的站姿与衣着，而不是替她编造一生。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.tang.node.standing-woman-mhc.01
+return_checkpoint: true

@@ -1,0 +1,13 @@
+id: cn.tang.asset.standing-woman-mhc.preview
+kind: preview
+format: png
+sha256: cc017f6a54e2f5a1c67ba97f47c2d736fce9c9c1957eb78ecc9c919b6b590cd5
+byte_size: 761803
+derived_from: cn.tang.asset.standing-woman-mhc.glb
+license:
+  spdx: CC-BY-4.0
+  attribution: Mount Holyoke College Art Museum; MH1991.4.40 Standing Chinese Woman Figure (Tang Dynasty); photogrammetry by Laura Shea
+  url: https://sketchfab.com/3d-models/standing-chinese-woman-figure-tang-dynasty-d2118efe2b8d4df28661e4ff0501b75e
+framing:
+  camera_orbit: front-upright
+  orientation_note: 女立俑正面直立，面部朝向观众；Blender 4.2.16 透明1024预览。

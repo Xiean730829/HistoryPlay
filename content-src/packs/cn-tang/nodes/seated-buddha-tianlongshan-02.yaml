@@ -1,0 +1,13 @@
+id: cn.tang.node.seated-buddha-tianlongshan.02
+story_id: cn.tang.story.seated-buddha-tianlongshan
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.tang.asset.seated-buddha-tianlongshan.story-02
+narration: 佛像是佛教艺术中的重要形象。人们在石窟中塑造和礼敬佛像，也借由它表达信仰与对平静的追求。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.node.seated-buddha-tianlongshan.03

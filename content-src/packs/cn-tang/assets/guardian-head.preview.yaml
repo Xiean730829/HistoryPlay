@@ -1,0 +1,13 @@
+id: cn.tang.asset.guardian-head.preview
+kind: preview
+format: png
+sha256: 180d4f7ec61efd155505e61abc3f217bfdec4a794399b36bd65281aa5bc1d001
+byte_size: 831318
+derived_from: cn.tang.asset.guardian-head.glb
+license:
+  spdx: CC-BY-4.0
+  attribution: Harvard Art Museums; 1943.53.40 Head of a Guardian Figure, Tianlongshan Cave 17; model courtesy of Tianlongshan Caves Project, CAEA, University of Chicago
+  url: https://sketchfab.com/3d-models/19435340-model-caea-university-of-chicago-560ed9728cca419cbee18277a1c4fd36
+framing:
+  camera_orbit: front-upright
+  orientation_note: 面部朝向观众，不补造身体；Blender 4.2.16 透明1024预览。

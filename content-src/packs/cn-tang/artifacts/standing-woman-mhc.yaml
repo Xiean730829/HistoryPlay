@@ -1,0 +1,38 @@
+id: cn.tang.artifact.standing-woman-mhc
+title: 女立俑
+aliases:
+  - 女立俑
+  - 站立女俑
+  - 站着的女俑
+  - A01
+museum:
+  name: Mount Holyoke College Art Museum
+  accession: MH1991.4.40
+  collection_url: http://museums.fivecolleges.edu/detail.php?museum=all&t=objects&type=all&f=&s=mh_1991_4_40&record=0
+time_range:
+  start_year: 618
+  end_year: 906
+  precision: range
+  display_label: 唐代，618—906年
+  uncertainty: 馆方给出唐朝区间，不推定具体年份，也不指认已知宫女。
+material: 陶，带釉及彩色痕迹
+category: 陶俑
+asset_ids:
+  - cn.tang.asset.standing-woman-mhc.glb
+  - cn.tang.asset.standing-woman-mhc.preview
+  - cn.tang.asset.standing-woman-mhc.display
+presentation:
+  preview_asset_id: cn.tang.asset.standing-woman-mhc.preview
+  display:
+    kind: model3d
+    asset_id: cn.tang.asset.standing-woman-mhc.display
+  default_camera:
+    orbit: front-upright
+    target_note: 女立俑正面直立，面部与站姿朝向观众；不裁切发髻或裙摆。
+  teaser: 一个站立的姿态，可以引出怎样的普通人生？
+  background_node_id: cn.tang.node.standing-woman-mhc.01
+fact_card_ids:
+  - cn.tang.fact.standing-woman-mhc.date
+  - cn.tang.fact.standing-woman-mhc.identity
+story_entry_ids:
+  - cn.tang.story.standing-woman-mhc

@@ -1,0 +1,13 @@
+id: cn.tang.asset.seated-buddha-tianlongshan.preview
+kind: preview
+format: png
+sha256: 42b8ec1340555e92f282057a0b4cdab506b79af4aa0f549e761a0c3ac97c8cef
+byte_size: 1029932
+derived_from: cn.tang.asset.seated-buddha-tianlongshan.glb
+license:
+  spdx: CC-BY-4.0
+  attribution: Harvard Art Museums; 1943.53.22 Seated Buddha, Tianlongshan Cave 21; model courtesy of Tianlongshan Caves Project, CAEA, University of Chicago
+  url: https://sketchfab.com/3d-models/19435322-model-caea-university-of-chicago-047235675c0242bb90398a1f333042ed
+framing:
+  camera_orbit: front-upright
+  orientation_note: 面容与结跏趺坐朝向观众，残件不补全；Blender 4.2.16 透明1024预览。

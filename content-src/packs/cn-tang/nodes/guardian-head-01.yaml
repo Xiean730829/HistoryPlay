@@ -1,0 +1,13 @@
+id: cn.tang.node.guardian-head.01
+story_id: cn.tang.story.guardian-head
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.tang.asset.guardian-head.story-01
+narration: 这是一件天龙山力士头像，大约制作于唐代。它是一件石雕残件，今天保存下来的是头像，而不是一尊完整的力士。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.node.guardian-head.02

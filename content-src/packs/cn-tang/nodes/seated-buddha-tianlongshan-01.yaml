@@ -1,0 +1,13 @@
+id: cn.tang.node.seated-buddha-tianlongshan.01
+story_id: cn.tang.story.seated-buddha-tianlongshan
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.tang.asset.seated-buddha-tianlongshan.story-01
+narration: 这是一件来自天龙山石窟的坐佛造像，距今已有一千多年。它用砂岩雕成，表面还留有色彩的痕迹。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.node.seated-buddha-tianlongshan.02

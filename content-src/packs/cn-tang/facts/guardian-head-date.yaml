@@ -1,0 +1,12 @@
+id: cn.tang.fact.guardian-head.date
+claim: 馆方将这件天龙山力士头像断代为约735年，唐朝618—907年范围内。
+grade: F
+applicable_time:
+  start_year: 735
+  end_year: 735
+  precision: year
+  display_label: 约735年
+  calendar_note: 馆方原文为 c. 735，精确到年是展示约定，不是新增鉴定。
+source_ids:
+  - cn.tang.source.r08-catalog
+evidence_note: 采用馆方约735年记录，不把本件缩成某一天，也不与Mia守门力士串号。

@@ -1,0 +1,11 @@
+id: cn.tang.fact.seated-buddha-tianlongshan.date
+claim: 馆方将这件天龙山坐佛断代为8世纪。
+grade: F
+applicable_time:
+  start_year: 701
+  end_year: 800
+  precision: century
+  display_label: 8世纪
+source_ids:
+  - cn.tang.source.r01-catalog
+evidence_note: 保留馆方的世纪级断代，不推定具体年份，也不补全残件冒充原件。
