@@ -1,0 +1,35 @@
+id: cn.song.artifact.jian-tea-bowl
+title: 建窑兔毫盏
+exhibit_type: object
+aliases:
+- 建窑兔毫盏
+- 兔毫盏
+- 建窑茶盏
+- 黑釉茶盏
+museum:
+  name: The Metropolitan Museum of Art
+  accession: 79.2.1358
+  collection_url: https://www.metmuseum.org/art/collection/search/48117
+source_ids:
+- cn.song.source.met-jian-tea-bowl
+time_range:
+  start_year: 1000
+  end_year: 1199
+  precision: range
+  display_label: 宋代11—12世纪
+  uncertainty: 馆方提供世纪范围，具体年份及人物经历未确认。
+material: 陶瓷
+category: 茶盏
+asset_ids:
+- cn.song.asset.jian-tea-bowl.photo
+presentation:
+  preview_asset_id: cn.song.asset.jian-tea-bowl.photo
+  display:
+    kind: photo
+    asset_id: cn.song.asset.jian-tea-bowl.photo
+  teaser: 这只建窑茶盏的深色釉上有细长的纹路，像柔软的兔毫。它既是饮茶的器具，也藏着窑火中的变化。
+  background_node_id: cn.song.node.jian-tea-bowl.intro
+fact_card_ids:
+- cn.song.fact.jian-tea-bowl.date
+story_entry_ids:
+- cn.song.story.jian-tea-bowl

@@ -3,7 +3,11 @@ story_id: cn.song.story.qingbai-ewer
 fact_grade: C
 narration: 暮色落进屋里，家宴的桌案上摆着一只青白瓷注子。我们不知道这件藏品曾在哪里使用，眼前的家宴，是想象中的宋人生活。
 allowed_actions:
-  - continue_story
+- continue_story
 exits:
-  - action: continue_story
-    target_node_id: cn.song.node.qingbai-ewer.02
+- action: continue_story
+  target_node_id: cn.song.node.qingbai-ewer.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.qingbai-ewer.story-01

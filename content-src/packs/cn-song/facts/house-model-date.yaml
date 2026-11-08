@@ -1,0 +1,12 @@
+id: cn.song.fact.house-model.date
+claim: 大都会艺术博物馆将这件青白瓷小屋模型断代为11世纪，并将其归为墓葬器物。
+grade: F
+applicable_time:
+  start_year: 1000
+  end_year: 1099
+  precision: century
+  display_label: 北宋11世纪
+  uncertainty: 馆方提供世纪范围，具体年份及人物经历未确认。
+source_ids:
+- cn.song.source.met-house-model
+evidence_note: 世纪断代，不推断具体年份；图片和故事场景为演绎。

@@ -1,0 +1,10 @@
+id: cn.song.story.house-model
+title: 掌心里的工坊（本地画面候选）
+entry_node_id: cn.song.node.house-model.01
+node_ids:
+- cn.song.node.house-model.intro
+- cn.song.node.house-model.01
+- cn.song.node.house-model.02
+- cn.song.node.house-model.03
+artifact_id: cn.song.artifact.house-model
+return_to_exhibit: true

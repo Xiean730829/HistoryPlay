@@ -1,0 +1,35 @@
+id: cn.song.artifact.house-model
+title: 青白瓷小屋模型
+exhibit_type: object
+aliases:
+- 青白瓷小屋模型
+- 小屋模型
+- 小房子
+- 小屋
+museum:
+  name: The Metropolitan Museum of Art
+  accession: 1994.605.76
+  collection_url: https://www.metmuseum.org/art/collection/search/44377
+source_ids:
+- cn.song.source.met-house-model
+time_range:
+  start_year: 1000
+  end_year: 1099
+  precision: century
+  display_label: 北宋11世纪
+  uncertainty: 馆方提供世纪范围，具体年份及人物经历未确认。
+material: 瓷
+category: 墓葬模型
+asset_ids:
+- cn.song.asset.house-model.photo
+presentation:
+  preview_asset_id: cn.song.asset.house-model.photo
+  display:
+    kind: photo
+    asset_id: cn.song.asset.house-model.photo
+  teaser: 这是一件青白瓷小屋模型。它不是供人居住的房子，而是一件墓葬器物；馆方图片是多件器物合照，具体小屋位置仍需核对。我们可以从屋顶和门窗了解工匠的巧思。
+  background_node_id: cn.song.node.house-model.intro
+fact_card_ids:
+- cn.song.fact.house-model.date
+story_entry_ids:
+- cn.song.story.house-model

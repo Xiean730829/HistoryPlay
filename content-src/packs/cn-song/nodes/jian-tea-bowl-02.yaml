@@ -1,0 +1,13 @@
+id: cn.song.node.jian-tea-bowl.02
+story_id: cn.song.story.jian-tea-bowl
+fact_grade: F
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.jian-tea-bowl.story-02
+narration: 烧造时，温度和釉料共同影响最后的釉面。我们可以想象窑火的热度，但这只盏当年的具体烧制过程，现有资料无法复原。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.jian-tea-bowl.03
