@@ -1,0 +1,10 @@
+id: cn.song.story.listening-qin
+title: 看一幅没有声音的画
+entry_node_id: cn.song.node.listening-qin.01
+node_ids:
+- cn.song.node.listening-qin.intro
+- cn.song.node.listening-qin.01
+- cn.song.node.listening-qin.02
+- cn.song.node.listening-qin.03
+artifact_id: cn.song.artifact.listening-qin
+return_to_exhibit: true

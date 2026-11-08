@@ -1,0 +1,38 @@
+id: cn.song.artifact.fan-kuan-travelers
+title: 范宽《溪山行旅图》
+exhibit_type: painting
+aliases:
+- 溪山行旅图
+- 谿山行旅图
+- 范宽《溪山行旅图》
+source_ids:
+- cn.song.source.reference-fan-kuan-travelers
+time_range:
+  start_year: 1000
+  end_year: 1000
+  precision: year
+  display_label: 约1000年
+  uncertainty: 与现有“仿范宽山水图”不是同一件作品，馆藏与作者不可混用。
+category: 馆藏画作
+asset_ids:
+- cn.song.asset.fan-kuan-travelers.interpretation
+presentation:
+  preview_asset_id: cn.song.asset.fan-kuan-travelers.interpretation
+  display:
+    kind: interpretive_image
+    asset_id: cn.song.asset.fan-kuan-travelers.interpretation
+    interpretation_label: 艺术演绎，非馆藏原图。原作请见台北故宫。
+  teaser: 这幅画里，巍峨的山几乎占满了画面。我们要找的行旅队伍，却小得像是藏在山里。
+  background_node_id: cn.song.node.fan-kuan-travelers.intro
+fact_card_ids:
+- cn.song.fact.fan-kuan-travelers.reference
+story_entry_ids:
+- cn.song.story.fan-kuan-travelers
+museum:
+  name: 台北故宫博物院
+  accession: 台北故宫藏《谿山行旅图》
+  collection_url: https://south.npm.gov.tw/SelectionsDetailC004100.aspx?Cond=a7cab28b-d08e-4071-8fea-db45e88604ad
+identity:
+  kind: original
+  label: 台北故宫藏范宽作品。与本馆已有“仿范宽山水图”不是同一件。
+  attribution_note: 约1000年；不得与大都会仿范宽山水混用馆藏号。

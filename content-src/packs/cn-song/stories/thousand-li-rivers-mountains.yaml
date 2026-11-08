@@ -1,0 +1,10 @@
+id: cn.song.story.thousand-li-rivers-mountains
+title: 一卷青绿山水
+entry_node_id: cn.song.node.thousand-li-rivers-mountains.01
+node_ids:
+- cn.song.node.thousand-li-rivers-mountains.intro
+- cn.song.node.thousand-li-rivers-mountains.01
+- cn.song.node.thousand-li-rivers-mountains.02
+- cn.song.node.thousand-li-rivers-mountains.03
+artifact_id: cn.song.artifact.thousand-li-rivers-mountains
+return_to_exhibit: true

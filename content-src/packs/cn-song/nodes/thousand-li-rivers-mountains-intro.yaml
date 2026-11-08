@@ -1,0 +1,9 @@
+id: cn.song.node.thousand-li-rivers-mountains.intro
+story_id: cn.song.story.thousand-li-rivers-mountains
+fact_grade: F
+narration: 这幅长卷把高山、江水、村舍和桥梁连成一片青绿色的世界。我们一起沿着山水慢慢走。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.thousand-li-rivers-mountains.01

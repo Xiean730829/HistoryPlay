@@ -1,0 +1,13 @@
+id: cn.song.node.thousand-li-rivers-mountains.02
+story_id: cn.song.story.thousand-li-rivers-mountains
+fact_grade: C
+narration: 仔细看，山路、水边和房舍里还有很小的人。山很大，人很小，却让画中的生活有了温度。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.thousand-li-rivers-mountains.03
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.thousand-li-rivers-mountains.story-02

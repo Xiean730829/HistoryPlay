@@ -1,0 +1,13 @@
+id: cn.song.node.listening-qin.02
+story_id: cn.song.story.listening-qin
+fact_grade: C
+narration: 弹琴的人专注于琴，听的人有的仰望，有的低头。画家没有画出声音，却用姿态让我们感觉到它。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.listening-qin.03
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.listening-qin.story-02

@@ -1,0 +1,12 @@
+id: cn.song.fact.thousand-li-rivers-mountains.reference
+claim: 故宫藏王希孟《千里江山图》，完成时间一般据题跋推测约1113年。
+grade: F
+applicable_time:
+  start_year: 1113
+  end_year: 1113
+  precision: year
+  display_label: 约1113年
+  uncertainty: 完成时间一般据蔡京题跋推测约1113年；作者生平资料有限。
+source_ids:
+- cn.song.source.reference-thousand-li-rivers-mountains
+evidence_note: 手册引用用于核事实；图像下载、再分发与展示权利另核。故事画面为艺术演绎。

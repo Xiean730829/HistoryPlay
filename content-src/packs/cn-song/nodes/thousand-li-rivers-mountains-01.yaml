@@ -1,0 +1,13 @@
+id: cn.song.node.thousand-li-rivers-mountains.01
+story_id: cn.song.story.thousand-li-rivers-mountains
+fact_grade: C
+narration: 长长的画卷展开，山与水一段接着一段。它并不是一张照片，而是画家安排出来的山河世界。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.thousand-li-rivers-mountains.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.thousand-li-rivers-mountains.story-01

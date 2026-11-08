@@ -1,0 +1,14 @@
+id: cn.song.node.fan-kuan-travelers.03
+story_id: cn.song.story.fan-kuan-travelers
+fact_grade: C
+narration: 从脚下的石头、山路到远处主峰，画家一层层安排景物。我们不是在找一张地图，而是在读画家怎样看山。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.fan-kuan-travelers.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.fan-kuan-travelers.story-03
+return_checkpoint: true

@@ -1,0 +1,14 @@
+id: cn.song.node.listening-qin.03
+story_id: cn.song.story.listening-qin
+fact_grade: C
+narration: 这幅画的作者归属仍有讨论。了解这些不同看法，也是在学习怎样认真看待历史作品。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.listening-qin.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.listening-qin.story-03
+return_checkpoint: true
