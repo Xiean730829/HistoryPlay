@@ -68,6 +68,7 @@ def state_projection(state: SessionState) -> dict[str, Any]:
         "interaction_epoch": state.interaction_epoch,
         "discoveries": sorted(state.discoveries),
         "camera_pose": _camera(state.camera_pose),
+        "gallery_view": _gallery_view(state.gallery_view),
     }
     if state.world_time is not None:
         result["world_time"] = _world_time(state)
@@ -93,6 +94,7 @@ def state_projection(state: SessionState) -> dict[str, Any]:
             "view": _camera(point.view),
             "view_revision": point.view_revision,
             **({"focused_entity_id": point.focused_entity_id} if point.focused_entity_id else {}),
+            **({"gallery_view": _gallery_view(point.gallery_view)} if point.gallery_view else {}),
         }
     return result
 
@@ -129,7 +131,7 @@ def context_projection(context: Any) -> dict[str, Any]:
 
 
 def gallery_projection(gallery: Any) -> dict[str, Any]:
-    return {
+    result: dict[str, Any] = {
         "id": gallery.id,
         "title": gallery.title,
         "region": gallery.region,
@@ -153,6 +155,13 @@ def gallery_projection(gallery: Any) -> dict[str, Any]:
         ],
         "visible_artifacts": [_artifact(item) for item in gallery.visible_artifacts],
     }
+    presentation_kind = getattr(gallery, "presentation_kind", None)
+    if presentation_kind is not None:
+        result["presentation_kind"] = presentation_kind
+    scrolls = getattr(gallery, "scrolls", ())
+    if scrolls:
+        result["scrolls"] = list(scrolls)
+    return result
 
 
 def _artifact(value: Any) -> dict[str, Any] | None:
@@ -169,6 +178,15 @@ def _artifact(value: Any) -> dict[str, Any] | None:
         "fact_card_ids": list(value.fact_card_ids),
         "story_entry_ids": list(value.story_entry_ids),
     }
+    exhibit_type = getattr(value, "exhibit_type", None)
+    if exhibit_type is not None:
+        result["exhibit_type"] = exhibit_type
+    source_ids = getattr(value, "source_ids", ())
+    if source_ids:
+        result["source_ids"] = list(source_ids)
+    identity = getattr(value, "identity", None)
+    if identity is not None:
+        result["identity"] = identity
     presentation = getattr(value, "presentation", None)
     if presentation is not None:
         result["presentation"] = presentation
@@ -199,6 +217,19 @@ def _checkpoint(value: Any) -> dict[str, str | None] | None:
 
 def _camera(value: Any) -> dict[str, float]:
     return {"yaw": value.yaw, "pitch": value.pitch, "zoom": value.zoom}
+
+
+def _gallery_view(value: Any) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "window_start": value.window_start,
+        "page_size": value.page_size,
+    }
+    if value.time_filter is not None:
+        payload["time_filter"] = {
+            "start_year": value.time_filter.start_year,
+            "end_year": value.time_filter.end_year,
+        }
+    return payload
 
 
 def _return_point(value: Any) -> dict[str, Any]:

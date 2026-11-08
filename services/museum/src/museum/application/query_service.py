@@ -96,12 +96,15 @@ class QueryService:
         kind: str | None = None,
         cursor: str | None = None,
         limit: int = 20,
+        mode: str | None = None,
     ) -> SearchPage:
         query = _normalize(query)
         if not query or len(query) > self.MAX_QUERY_LENGTH:
             raise ValueError("搜索词不能为空且不能超过120个字符")
         if kind not in {None, "artifact", "event", "fact", "story"}:
             raise ValueError("不支持的内容类型")
+        if mode not in {None, "knowledge", "spoken"}:
+            raise ValueError("不支持的搜索模式")
         if not 1 <= limit <= self.MAX_PAGE_SIZE:
             raise ValueError("分页大小必须在1到50之间")
         packs = self._load_pinned_packs(state)
@@ -118,7 +121,11 @@ class QueryService:
                     version=document.version,
                 )
                 for pack in packs
-                for document in PublishedSearchIndex(pack).search(query, kind=kind)
+                for document in (
+                    PublishedSearchIndex(pack).spoken_lookup(query, kind=kind)
+                    if mode == "spoken"
+                    else PublishedSearchIndex(pack).search(query, kind=kind)
+                )
             ),
             key=lambda hit: (hit.title, hit.id, hit.pack_id, hit.version),
         )

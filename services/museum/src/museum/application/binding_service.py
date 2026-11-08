@@ -52,6 +52,14 @@ class BindingService:
                 raise InvalidBinding("展台连接未绑定或已被新的配对替代")
             return active
 
+    def renew_ticket(self, session_id: str, connection_id: str) -> str:
+        """Issue a fresh short-lived grant without replacing the active connection."""
+        with self._lock:
+            actor_id = self.require_active(session_id, connection_id)
+            return self._tickets.issue(
+                session_id=session_id, actor_id=actor_id, actions=COMMAND_ACTIONS
+            )
+
     def revoke(self, session_id: str, connection_id: str) -> None:
         with self._lock:
             active = self._active.get(session_id)
