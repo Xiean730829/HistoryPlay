@@ -1,0 +1,10 @@
+id: cn.song.story.jingkang-change
+title: 离开汴京的人们
+entry_node_id: cn.song.node.jingkang-change.01
+node_ids:
+- cn.song.node.jingkang-change.intro
+- cn.song.node.jingkang-change.01
+- cn.song.node.jingkang-change.02
+- cn.song.node.jingkang-change.03
+artifact_id: cn.song.artifact.jingkang-change
+return_to_exhibit: true

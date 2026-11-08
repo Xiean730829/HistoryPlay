@@ -1,0 +1,29 @@
+id: cn.song.artifact.jingkang-change
+title: 靖康之变
+exhibit_type: historical_record
+aliases:
+- 靖康之变
+- 靖康之难
+source_ids:
+- cn.song.source.reference-jingkang-change
+time_range:
+  start_year: 1127
+  end_year: 1127
+  precision: year
+  display_label: 1127年
+  uncertainty: 具体亲历者故事需资料支持；画面是历史概念演绎，不是照片。
+category: 历史事件
+asset_ids:
+- cn.song.asset.jingkang-change.interpretation
+presentation:
+  preview_asset_id: cn.song.asset.jingkang-change.interpretation
+  display:
+    kind: interpretive_image
+    asset_id: cn.song.asset.jingkang-change.interpretation
+    interpretation_label: 历史事件概念演绎，不是实物照片。
+  teaser: 1127年前后，汴京经历剧烈变故，北宋结束，许多人也因此离开原来的生活。我们从城市和人的变化来理解这段历史。
+  background_node_id: cn.song.node.jingkang-change.intro
+fact_card_ids:
+- cn.song.fact.jingkang-change.reference
+story_entry_ids:
+- cn.song.story.jingkang-change

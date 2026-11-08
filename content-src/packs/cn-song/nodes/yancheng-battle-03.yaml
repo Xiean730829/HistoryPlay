@@ -1,0 +1,14 @@
+id: cn.song.node.yancheng-battle.03
+story_id: cn.song.story.yancheng-battle
+fact_grade: C
+narration: 一次胜利并不意味着战争立刻结束。理解一场战役，也要看到当时人们仍面临的长期动荡。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.yancheng-battle.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.yancheng-battle.story-03
+return_checkpoint: true

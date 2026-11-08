@@ -1,0 +1,13 @@
+id: cn.song.node.jingkang-change.01
+story_id: cn.song.story.jingkang-change
+fact_grade: C
+narration: 北宋的都城汴京曾经繁忙。战争到来，让这座城市和许多人的生活发生了巨大变化。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.jingkang-change.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.jingkang-change.story-01

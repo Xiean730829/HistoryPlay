@@ -1,0 +1,9 @@
+id: cn.song.node.jingkang-change.intro
+story_id: cn.song.story.jingkang-change
+fact_grade: F
+narration: 1127年前后，汴京经历剧烈变故，北宋结束，许多人也因此离开原来的生活。我们从城市和人的变化来理解这段历史。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.jingkang-change.01

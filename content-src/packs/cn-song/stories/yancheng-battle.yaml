@@ -1,0 +1,10 @@
+id: cn.song.story.yancheng-battle
+title: 一次战场上的转折
+entry_node_id: cn.song.node.yancheng-battle.01
+node_ids:
+- cn.song.node.yancheng-battle.intro
+- cn.song.node.yancheng-battle.01
+- cn.song.node.yancheng-battle.02
+- cn.song.node.yancheng-battle.03
+artifact_id: cn.song.artifact.yancheng-battle
+return_to_exhibit: true

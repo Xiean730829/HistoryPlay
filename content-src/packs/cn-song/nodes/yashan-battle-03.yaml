@@ -1,0 +1,14 @@
+id: cn.song.node.yashan-battle.03
+story_id: cn.song.story.yashan-battle
+fact_grade: C
+narration: 战后南宋结束。我们记住的不只是一个王朝的终点，还有那些在时代变化中经历离散的人。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.yashan-battle.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.yashan-battle.story-03
+return_checkpoint: true
