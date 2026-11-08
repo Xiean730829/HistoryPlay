@@ -1,0 +1,14 @@
+id: cn.tang.node.bronze-mirror.04
+story_id: cn.tang.story.bronze-mirror
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.tang.asset.bronze-mirror.story-04
+narration: 经过漫长岁月，铜镜表面发生了变化。我们可以仔细看它的锈蚀和纹样，但不知道它曾经属于谁，也不能替它编一个主人。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.tang.node.bronze-mirror.01
+return_checkpoint: true

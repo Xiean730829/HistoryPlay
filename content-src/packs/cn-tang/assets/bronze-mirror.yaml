@@ -1,0 +1,10 @@
+id: cn.tang.asset.bronze-mirror.glb
+kind: model3d
+format: glb
+sha256: e863dd1126613ad75c8029739d916d887375f2e178b6b0f34e099e438afeba32
+byte_size: 44626444
+license:
+  spdx: CC-BY-SA-4.0
+  attribution: St. Cloud State University, William M. Lindgren Collection; Item 2037 Chinese bronze mirror
+  url: https://sketchfab.com/3d-models/chinese-bronze-mirror-81e693050be345dd9db8ace54fea5de5
+lod: source

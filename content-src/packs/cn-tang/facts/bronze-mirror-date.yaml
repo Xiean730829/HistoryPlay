@@ -1,0 +1,11 @@
+id: cn.tang.fact.bronze-mirror.date
+claim: 馆方条目将这面狮葡萄纹铜镜断代为705—907年。
+grade: F
+applicable_time:
+  start_year: 705
+  end_year: 907
+  precision: range
+  display_label: 馆方条目705—907年
+source_ids:
+  - cn.tang.source.r03-catalog
+evidence_note: 采用馆方条目给出的区间，不推定本件具体年份，也不猜本件物主。

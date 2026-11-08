@@ -1,0 +1,14 @@
+id: cn.tang.asset.bronze-mirror.display
+kind: model3d
+format: glb
+sha256: 762ad2ddbbfd2b778218201c7b5f020177942252f94ac32d5520d428fac5b178
+byte_size: 4969228
+derived_from: cn.tang.asset.bronze-mirror.glb
+license:
+  spdx: CC-BY-SA-4.0
+  attribution: St. Cloud State University, William M. Lindgren Collection; Item 2037 Chinese bronze mirror
+  url: https://sketchfab.com/3d-models/chinese-bronze-mirror-81e693050be345dd9db8ace54fea5de5
+lod: display
+framing:
+  camera_orbit: front-upright
+  orientation_note: 狮葡萄纹铜镜正面直立；纹饰镜背朝向观众，不裁切镜缘与钮。

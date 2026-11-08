@@ -1,0 +1,10 @@
+id: cn.tang.fact.equestrian-pair.identity
+claim: 馆方称这是一对陶质骑马俑；真模型是组合，须两件一起观察，未知骑者姓名与真实任务。
+grade: F
+applicable_time:
+  start_year: 618
+  end_year: 906
+  precision: range
+source_ids:
+  - cn.tang.source.a02-catalog
+evidence_note: 驿卒和旅途是创作，不能断言真俑是驿使，也不能把两件拆成无关单俑。

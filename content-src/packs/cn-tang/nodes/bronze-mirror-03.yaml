@@ -1,0 +1,13 @@
+id: cn.tang.node.bronze-mirror.03
+story_id: cn.tang.story.bronze-mirror
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.tang.asset.bronze-mirror.story-03
+narration: 这些纹饰让日常照容的器具，也成为值得欣赏的作品。镜子的花纹呈现出唐代工艺与审美的丰富变化。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.node.bronze-mirror.04

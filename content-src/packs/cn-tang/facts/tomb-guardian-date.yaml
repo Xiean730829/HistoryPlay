@@ -1,0 +1,11 @@
+id: cn.tang.fact.tomb-guardian.date
+claim: 馆方将这件镇墓兽断代为唐代，618—906年。
+grade: F
+applicable_time:
+  start_year: 618
+  end_year: 906
+  precision: range
+  display_label: 唐代，618—906年
+source_ids:
+  - cn.tang.source.a03-catalog
+evidence_note: 采用馆方给出的唐朝区间，不把本件缩成某一年，也不推定窑口。

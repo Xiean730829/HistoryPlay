@@ -1,0 +1,39 @@
+id: cn.tang.artifact.dragon-amphora
+title: 三彩双龙耳瓶
+aliases:
+  - 双龙耳瓶
+  - 三彩瓶
+  - 龙柄瓶
+  - 三彩龙柄瓶
+  - A12
+museum:
+  name: Art Institute of Chicago
+  accession: 不详
+  collection_url: https://www.artic.edu/artworks/12229/dragon-handled-amphora
+time_range:
+  start_year: 700
+  end_year: 750
+  precision: range
+  display_label: 8世纪前半叶
+  uncertainty: 采用现有资料给出的八世纪前半叶；馆藏号暂标不详，不推定窑口、物主或本件装过什么。
+material: 三彩陶
+category: 陶瓷器
+asset_ids:
+  - cn.tang.asset.dragon-amphora.glb
+  - cn.tang.asset.dragon-amphora.preview
+  - cn.tang.asset.dragon-amphora.display
+presentation:
+  preview_asset_id: cn.tang.asset.dragon-amphora.preview
+  display:
+    kind: model3d
+    asset_id: cn.tang.asset.dragon-amphora.display
+  default_camera:
+    orbit: front-upright
+    target_note: 三彩双龙耳瓶正面直立，两侧龙形耳完整朝向观众。
+  teaser: 两条龙形耳把瓶口衔住；我们能看见器形，却还不知道它真正装过什么。
+  background_node_id: cn.tang.node.dragon-amphora.01
+fact_card_ids:
+  - cn.tang.fact.dragon-amphora.date
+  - cn.tang.fact.dragon-amphora.identity
+story_entry_ids:
+  - cn.tang.story.dragon-amphora

@@ -1,0 +1,10 @@
+id: cn.tang.asset.tomb-guardian.glb
+kind: model3d
+format: glb
+sha256: b7a34467917992f6bd52b1f39e35a3fde905d114a8eb3bf729d3a136cb9cb47a
+byte_size: 195334184
+license:
+  spdx: CC-BY-4.0
+  attribution: Mount Holyoke College Art Museum; MH1960.5.J.OI Tang Dynasty Tomb Guardian (Zhenmushou); photogrammetry by Laura Shea
+  url: https://sketchfab.com/3d-models/tang-dynasty-tomb-guardian-zhenmushou-46a7591d54a443248d95a6fa394ac210
+lod: source

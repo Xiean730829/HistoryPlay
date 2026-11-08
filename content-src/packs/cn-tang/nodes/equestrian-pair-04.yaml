@@ -1,0 +1,14 @@
+id: cn.tang.node.equestrian-pair.04
+story_id: cn.tang.story.equestrian-pair
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.tang.asset.equestrian-pair.story-04
+narration: 唐代有许多为墓葬制作的陶俑，以不同形象表达当时人们的观念。关于这一组的具体主人与经历，现有资料没有确认。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.tang.node.equestrian-pair.01
+return_checkpoint: true

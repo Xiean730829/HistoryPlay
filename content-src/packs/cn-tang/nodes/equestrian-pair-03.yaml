@@ -1,0 +1,13 @@
+id: cn.tang.node.equestrian-pair.03
+story_id: cn.tang.story.equestrian-pair
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.tang.asset.equestrian-pair.story-03
+narration: 再看马上的人物。衣着、姿态与人马之间的关系，都是观察唐代骑乘形象的线索；我们不能凭外形认定他们的真实姓名。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.tang.node.equestrian-pair.04
