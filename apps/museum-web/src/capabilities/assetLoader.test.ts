@@ -102,4 +102,13 @@ describe("展品资产加载", () => {
     leases[0].release();
     leases[1].release();
   });
+
+  it("releases the last Song exhibit lease so a later hall does not keep the old blob", async () => {
+    const { loader, revoked } = fixture(8, 16);
+    const first = await loader.acquire(session, "qingbai-photo", "preview", signal());
+    expect(loader.snapshot().preview.active).toBe(1);
+    first.release();
+    expect(loader.snapshot().preview).toMatchObject({ active: 0 });
+    expect(revoked).toContain(first.url);
+  });
 });

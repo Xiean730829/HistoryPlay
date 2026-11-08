@@ -32,8 +32,23 @@ describe("RenderReceiptReporter", () => {
       interaction_epoch: 2,
       status: "rendered",
     });
-    expect(await reporter.report(session, command, "rendered")).toBe(false);
+    expect(await reporter.report(session, command, "rendered")).toBe(true);
     expect(send).toHaveBeenCalledTimes(1);
+  });
+
+  it("SSE先呈现后语音才等待时复用同一回执，并合并在途报告", async () => {
+    let finish!: () => void;
+    const send = vi.fn(() => new Promise<void>((resolve) => { finish = resolve; }));
+    const reporter = new RenderReceiptReporter(send);
+    const early = reporter.report(session, command, "rendered");
+    const voice = reporter.report(session, command, "rendered");
+    finish();
+    expect(await early).toBe(true);
+    expect(await voice).toBe(true);
+    expect(await reporter.report(session, command, "rendered")).toBe(true);
+    expect(send).toHaveBeenCalledOnce();
+    expect(await reporter.report({ ...session, state: { ...session.state, revision: 8 } }, command, "rendered"))
+      .toBe(false);
   });
 
   it("ignores rejected, stale, incomplete and command-less receipts", async () => {

@@ -7,6 +7,7 @@ type SendReceipt = (session: ActiveSession, payload: RenderReceiptPayload) => Pr
 /** Associates visible-frame evidence with one still-current committed command. */
 export class RenderReceiptReporter {
   private readonly sent = new Set<string>();
+  private readonly sending = new Map<string, Promise<void>>();
 
   constructor(private readonly send: SendReceipt) {}
 
@@ -36,8 +37,16 @@ export class RenderReceiptReporter {
       ...(status === "degraded" ? { reason: Array.from(safeReason!).slice(0, 200).join("") } : {}),
     };
     const key = [session.session_id, session.connection_id, command.request_id, status].join(":");
-    if (this.sent.has(key)) return false;
-    await this.send(session, payload);
+    // A later voice waiter can subscribe after SSE has already rendered and
+    // reported this exact command. Reuse that evidence instead of timing out.
+    if (this.sent.has(key)) return true;
+    let pending = this.sending.get(key);
+    if (!pending) {
+      pending = this.send(session, payload);
+      this.sending.set(key, pending);
+    }
+    try { await pending; }
+    finally { if (this.sending.get(key) === pending) this.sending.delete(key); }
     this.sent.add(key);
     if (this.sent.size > 256) this.sent.delete(this.sent.values().next().value!);
     return true;
