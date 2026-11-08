@@ -1,0 +1,14 @@
+id: cn.tang.node.dvarapala.03
+story_id: cn.tang.story.dvarapala
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+    - cn.tang.asset.dvarapala.story-01
+narration: 回到真像，力量感不只是肌肉的大小，也来自动作、体量和观看位置。前面的寺院入口是创作示意，空门廊也不是本件原始安置现场。具体原始空间，仍要看本件的来源证据。现在返回长廊继续参观。
+allowed_actions:
+  - return_to_exhibit
+exits:
+  - action: return_to_exhibit
+    target_node_id: cn.tang.node.dvarapala.01
+return_checkpoint: true

@@ -22,14 +22,14 @@ def test_draft_tang_gallery_pack_validates_and_builds(tmp_path: Path) -> None:
 def test_gallery_keeps_three_distinct_primary_artifacts() -> None:
     gallery = load_yaml("galleries/main.yaml")
     stations = gallery["stations"]
-    assert [station["order"] for station in stations] == [0, 1, 2]
-    assert [station["artifact_id"] for station in stations] == [
+    assert [station["order"] for station in stations] == list(range(len(stations)))
+    assert [station["artifact_id"] for station in stations[:3]] == [
         "cn.tang.artifact.votive-stele",
         "cn.tang.artifact.kaiyuan-coin",
         "cn.tang.artifact.gilt-bronze-bull",
     ]
-    assert len({station["artifact_id"] for station in stations}) == 3
-    assert len({station["side"] for station in stations}) == 3
+    assert len({station["artifact_id"] for station in stations}) == len(stations)
+    assert len({station["side"] for station in stations[:3]}) == 3
     assert "制作先后" in stations[1]["placement_basis"]
     assert "策展顺序" in stations[2]["placement_basis"]
 

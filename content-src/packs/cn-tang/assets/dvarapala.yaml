@@ -1,0 +1,10 @@
+id: cn.tang.asset.dvarapala.glb
+kind: model3d
+format: glb
+sha256: 17cbc67a70ce5ca4d7c0b6d9c38a0f32d339309cb8673d1b9e57fffa35210d3a
+byte_size: 3625192
+license:
+  spdx: CC0-1.0
+  attribution: Minneapolis Institute of Art; Dvarapala (Guardian Figure), 8th century CE
+  url: https://sketchfab.com/3d-models/dvarapala-guardian-figure-8th-century-ce-9b2c5e718b714964afb8482cc702d386
+lod: source

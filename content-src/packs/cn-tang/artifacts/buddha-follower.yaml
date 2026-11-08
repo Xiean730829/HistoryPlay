@@ -1,0 +1,37 @@
+id: cn.tang.artifact.buddha-follower
+title: 佛陀抚顶浮雕
+aliases:
+  - 抚顶浮雕
+  - 佛陀抚触随从头部浮雕
+  - R06
+museum:
+  name: Minneapolis Institute of Art
+  accession: "99.174.3"
+  collection_url: https://collections.artsmia.org/art/31223/buddha-stroking-the-head-of-a-follower-china
+time_range:
+  start_year: 701
+  end_year: 800
+  precision: century
+  display_label: 8世纪晚期
+  uncertainty: 馆方断代为八世纪晚期，不推定具体年份。
+material: 砂岩
+category: 佛教造像浮雕
+asset_ids:
+  - cn.tang.asset.buddha-follower.glb
+  - cn.tang.asset.buddha-follower.preview
+  - cn.tang.asset.buddha-follower.display
+presentation:
+  preview_asset_id: cn.tang.asset.buddha-follower.preview
+  display:
+    kind: model3d
+    asset_id: cn.tang.asset.buddha-follower.display
+  default_camera:
+    orbit: front-relief
+    target_note: 浮雕叙事面朝前，佛与随从动作可见。
+  teaser: 八世纪晚期砂岩浮雕，可见抚顶动作；残损保留，不占用“佛像”口令。
+  background_node_id: cn.tang.node.buddha-follower.01
+fact_card_ids:
+  - cn.tang.fact.buddha-follower.date
+  - cn.tang.fact.buddha-follower.gesture
+story_entry_ids:
+  - cn.tang.story.buddha-follower

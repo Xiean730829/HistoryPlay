@@ -1,0 +1,38 @@
+id: cn.tang.artifact.dvarapala
+title: 寺院守门力士
+aliases:
+  - 守门力士
+  - 寺院力士
+  - 佛教门卫守护像
+  - R07
+museum:
+  name: Minneapolis Institute of Art
+  accession: "2006.79"
+  collection_url: https://collections.artsmia.org/art/100842/dvarapala-china
+time_range:
+  start_year: 701
+  end_year: 800
+  precision: century
+  display_label: 8世纪
+  uncertainty: 馆方断代为八世纪，不推定具体年份。
+material: 石
+category: 佛教造像
+asset_ids:
+  - cn.tang.asset.dvarapala.glb
+  - cn.tang.asset.dvarapala.preview
+  - cn.tang.asset.dvarapala.display
+presentation:
+  preview_asset_id: cn.tang.asset.dvarapala.preview
+  display:
+    kind: model3d
+    asset_id: cn.tang.asset.dvarapala.display
+  default_camera:
+    orbit: front-upright
+    target_note: 守门力士正面直立，威严姿态朝向观众。
+  teaser: 八世纪石质守门力士；不是唐军士兵，本件原寺院位置未知。
+  background_node_id: cn.tang.node.dvarapala.01
+fact_card_ids:
+  - cn.tang.fact.dvarapala.date
+  - cn.tang.fact.dvarapala.role
+story_entry_ids:
+  - cn.tang.story.dvarapala

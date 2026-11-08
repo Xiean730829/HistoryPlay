@@ -1,0 +1,38 @@
+id: cn.tang.artifact.lute-musician
+title: 弹拨乐俑
+aliases:
+  - 弹拨乐器俑
+  - 弹拨乐器乐俑
+  - 弹拨乐俑
+  - A11a
+museum:
+  name: Minneapolis Institute of Art
+  accession: "50.46.180"
+  collection_url: https://collections.artsmia.org/art/866/tomb-figure-representing-a-musician-playing-a-lute-china
+time_range:
+  start_year: 618
+  end_year: 906
+  precision: range
+  display_label: 唐代，618—906年
+  uncertainty: 馆方给出唐朝区间，不推定具体年份，也不指认真实宫廷乐师。
+material: 彩绘陶及白色化妆土
+category: 乐俑
+asset_ids:
+  - cn.tang.asset.lute-musician.glb
+  - cn.tang.asset.lute-musician.preview
+  - cn.tang.asset.lute-musician.display
+presentation:
+  preview_asset_id: cn.tang.asset.lute-musician.preview
+  display:
+    kind: model3d
+    asset_id: cn.tang.asset.lute-musician.display
+  default_camera:
+    orbit: front-upright
+    target_note: 乐俑正面直立，持拨弦乐器朝向观众。
+  teaser: 唐代彩绘陶乐俑，双手持拨弦乐器；馆方未给出曲目或演奏者姓名。
+  background_node_id: cn.tang.node.lute-musician.01
+fact_card_ids:
+  - cn.tang.fact.lute-musician.date
+  - cn.tang.fact.lute-musician.identity
+story_entry_ids:
+  - cn.tang.story.lute-musician

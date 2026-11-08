@@ -1,0 +1,10 @@
+id: cn.tang.fact.flute-musician.identity
+claim: 馆方称这件彩绘陶俑为演奏竹笛的乐俑，未给出真实演奏者姓名。
+grade: F
+applicable_time:
+  start_year: 618
+  end_year: 906
+  precision: range
+source_ids:
+  - cn.tang.source.a11b-catalog
+evidence_note: 馆藏标题说明乐器类型为bamboo flute/竹笛；不能据此认定具体曲目或与弹拨乐俑同坑合奏的史实。

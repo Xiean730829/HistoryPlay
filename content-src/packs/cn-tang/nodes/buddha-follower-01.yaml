@@ -1,0 +1,13 @@
+id: cn.tang.node.buddha-follower.01
+story_id: cn.tang.story.buddha-follower
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+    - cn.tang.asset.buddha-follower.story-01
+narration: 先看这件砂岩浮雕上还能辨认的动作。馆方将它断代为八世纪晚期，馆藏号99.174.3，并说明画面表现佛陀抚触随从头部。画面是创作的观察情境：讲解员指出坐佛姿态，并用手势示意距离，不是把残石补全后的原貌。残损要保留，不要把缺失的部分画回去当成真物。
+allowed_actions:
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.buddha-follower.02

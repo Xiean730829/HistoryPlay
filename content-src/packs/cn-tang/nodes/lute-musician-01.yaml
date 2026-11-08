@@ -1,0 +1,13 @@
+id: cn.tang.node.lute-musician.01
+story_id: cn.tang.story.lute-musician
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+    - cn.tang.asset.lute-musician.story-01
+narration: 先看这件彩绘陶乐俑。馆方把它断代为唐代，618到906年，并说明它正在演奏一件弹拨乐器。画面是创作的观察情境：两位虚构的女子在排练间里，一人轻抱概括的拨弦乐器，一人侧耳听着。这不是馆藏50.46.180的真实墓葬现场，也不指认某一位宫廷乐师。你可以先记住俑上双手停住的姿态，再听后面的创作排练故事。
+allowed_actions:
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.lute-musician.02

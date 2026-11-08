@@ -1,0 +1,10 @@
+id: cn.tang.fact.woman-figure-mia.identity
+claim: 馆方称这是一件女性人物俑，没有记录她的姓名或宫廷身份。
+grade: F
+applicable_time:
+  start_year: 618
+  end_year: 906
+  precision: range
+source_ids:
+  - cn.tang.source.r05-catalog
+evidence_note: 姿态和衣着可以观察，不能据此指认已知宫女；馆藏号50.46.182，不与其他女俑串号。

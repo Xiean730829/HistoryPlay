@@ -1,0 +1,13 @@
+id: cn.tang.asset.woman-figure-mia.preview
+kind: preview
+format: png
+sha256: 494049433e0f36d98ff6def2040bdf4df6947d22e07343cf008d796368152955
+byte_size: 893692
+derived_from: cn.tang.asset.woman-figure-mia.glb
+license:
+  spdx: CC0-1.0
+  attribution: Minneapolis Institute of Art; Figure of a Woman, 618-906 CE
+  url: https://sketchfab.com/3d-models/figure-of-a-woman-618-906-ce-e3eb229a400f4f21ac069c3ce947954c
+framing:
+  camera_orbit: front-upright
+  orientation_note: 女俑正面直立，与预览同一朝向；Blender 4.2.16 透明1024预览。
