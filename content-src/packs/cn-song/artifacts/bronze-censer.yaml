@@ -1,0 +1,33 @@
+id: cn.song.artifact.bronze-censer
+title: 铜弦纹炉
+exhibit_type: object
+aliases:
+- 铜弦纹炉
+- 铜香炉
+- 弦纹炉
+source_ids:
+- cn.song.source.reference-bronze-censer
+time_range:
+  start_year: 1100
+  end_year: 1299
+  precision: range
+  display_label: 12—13世纪
+  uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+category: 器物
+asset_ids:
+- cn.song.asset.bronze-censer.photo
+presentation:
+  preview_asset_id: cn.song.asset.bronze-censer.photo
+  display:
+    kind: photo
+    asset_id: cn.song.asset.bronze-censer.photo
+  teaser: 这件宋代铜香炉装饰简洁。我们从一缕香烟出发，看看它的器形和宋人的焚香生活。
+  background_node_id: cn.song.node.bronze-censer.intro
+fact_card_ids:
+- cn.song.fact.bronze-censer.reference
+story_entry_ids:
+- cn.song.story.bronze-censer
+museum:
+  name: The Metropolitan Museum of Art
+  accession: '2018.859'
+  collection_url: https://www.metmuseum.org/art/collection/search/815861

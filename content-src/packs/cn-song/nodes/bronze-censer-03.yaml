@@ -1,0 +1,14 @@
+id: cn.song.node.bronze-censer.03
+story_id: cn.song.story.bronze-censer
+fact_grade: C
+narration: 焚香可以帮助我们理解香炉的用途，但这件炉子的具体主人与使用场景并未得到确认。回到实物，它仍有值得细看的细节。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.bronze-censer.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.bronze-censer.story-03
+return_checkpoint: true

@@ -1,0 +1,14 @@
+id: cn.song.node.longquan-vase.03
+story_id: cn.song.story.longquan-vase
+fact_grade: C
+narration: 馆方记录这件瓶子有金漆修补。真实器物身上的这些痕迹，也属于我们今天观察它的一部分。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.longquan-vase.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.longquan-vase.story-03
+return_checkpoint: true

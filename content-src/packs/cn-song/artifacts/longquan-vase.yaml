@@ -1,0 +1,33 @@
+id: cn.song.artifact.longquan-vase
+title: 龙泉窑青瓷瓶
+exhibit_type: object
+aliases:
+- 龙泉窑青瓷瓶
+- 龙泉青瓷瓶
+- 龙泉瓶
+source_ids:
+- cn.song.source.reference-longquan-vase
+time_range:
+  start_year: 1200
+  end_year: 1279
+  precision: range
+  display_label: 13世纪
+  uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+category: 器物
+asset_ids:
+- cn.song.asset.longquan-vase.photo
+presentation:
+  preview_asset_id: cn.song.asset.longquan-vase.photo
+  display:
+    kind: photo
+    asset_id: cn.song.asset.longquan-vase.photo
+  teaser: 这件南宋龙泉窑青瓷瓶，瓶形与青釉相互衬托。我们先不急着讲别的，只好好欣赏它。
+  background_node_id: cn.song.node.longquan-vase.intro
+fact_card_ids:
+- cn.song.fact.longquan-vase.reference
+story_entry_ids:
+- cn.song.story.longquan-vase
+museum:
+  name: The Metropolitan Museum of Art
+  accession: 34.113.13
+  collection_url: https://www.metmuseum.org/art/collection/search/51050

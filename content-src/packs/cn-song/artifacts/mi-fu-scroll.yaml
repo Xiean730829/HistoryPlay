@@ -1,0 +1,36 @@
+id: cn.song.artifact.mi-fu-scroll
+title: 米芾《吴江舟中诗卷》
+exhibit_type: painting
+aliases:
+- 米芾《吴江舟中诗卷》
+- 米芾
+- 吴江舟中诗卷
+source_ids:
+- cn.song.source.reference-mi-fu-scroll
+time_range:
+  start_year: 1085
+  end_year: 1105
+  precision: range
+  display_label: 约1095年
+  uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+category: 书画
+asset_ids:
+- cn.song.asset.mi-fu-scroll.photo
+presentation:
+  preview_asset_id: cn.song.asset.mi-fu-scroll.photo
+  display:
+    kind: photo
+    asset_id: cn.song.asset.mi-fu-scroll.photo
+  teaser: 这是一卷馆方著录为米芾作品的书法手卷，题作《吴江舟中诗》。让我们从舟行的诗意，走近纸上的笔墨。
+  background_node_id: cn.song.node.mi-fu-scroll.intro
+fact_card_ids:
+- cn.song.fact.mi-fu-scroll.reference
+story_entry_ids:
+- cn.song.story.mi-fu-scroll
+museum:
+  name: The Metropolitan Museum of Art
+  accession: '1984.174'
+  collection_url: https://www.metmuseum.org/art/collection/search/39919
+identity:
+  kind: crop
+  label: 馆藏书法手卷的图片或局部，作者与断代以馆方记录为准。
