@@ -1,0 +1,35 @@
+id: cn.song.gallery.main
+title: 宋代画卷
+region:
+  id: cn
+  label: 中国
+status: open
+presentation_kind: song_scroll
+default_station_id: cn.song.station.qingbai-ewer
+scrolls:
+  - id: cn.song.scroll.life
+    title: 生活卷
+    theme: 生活
+    background_asset_id: cn.song.asset.scroll.life
+    interpretation_label: 艺术演绎，不是馆藏照片
+    station_ids:
+      - cn.song.station.qingbai-ewer
+    hotspots:
+      - station_id: cn.song.station.qingbai-ewer
+        x: 0.08
+        y: 0.22
+        width: 0.24
+        height: 0.4
+        label: 青白瓷注子
+stations:
+  - id: cn.song.station.qingbai-ewer
+    order: 0
+    time_range:
+      start_year: 1000
+      end_year: 1099
+      precision: century
+      display_label: 北宋11世纪
+      uncertainty: 馆方给出世纪级断代，不推定具体年份。
+    placement_basis: 生活卷按主题陈列注子，不宣称制作先后；小屋与兔毫盏的稳定ID已预留，本批尚未装配。
+    artifact_id: cn.song.artifact.qingbai-ewer
+    side: center

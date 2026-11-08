@@ -1,0 +1,9 @@
+id: cn.song.node.qingbai-ewer.02
+story_id: cn.song.story.qingbai-ewer
+fact_grade: F
+narration: 看它细细的流、圆润的身子，还有带着淡青色的釉。这样的器形方便倾注，也让器物在日常使用中显得轻巧。
+allowed_actions:
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.song.node.qingbai-ewer.03

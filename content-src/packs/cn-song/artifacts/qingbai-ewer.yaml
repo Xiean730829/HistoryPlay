@@ -1,0 +1,36 @@
+id: cn.song.artifact.qingbai-ewer
+title: 青白瓷注子
+exhibit_type: object
+aliases:
+  - 青白瓷注子
+  - 注子
+  - 青白瓷壶
+  - 18.57.1
+museum:
+  name: The Metropolitan Museum of Art
+  accession: "18.57.1"
+  collection_url: https://www.metmuseum.org/art/collection/search/49214
+source_ids:
+  - cn.song.source.met-qingbai-ewer
+time_range:
+  start_year: 1000
+  end_year: 1099
+  precision: century
+  display_label: 北宋11世纪
+  uncertainty: 馆方给出11世纪断代，不推定具体年份；具体物主和盛装液体不详。
+material: 瓷
+category: 注子
+asset_ids:
+  - cn.song.asset.qingbai-ewer.photo
+presentation:
+  preview_asset_id: cn.song.asset.qingbai-ewer.photo
+  display:
+    kind: photo
+    asset_id: cn.song.asset.qingbai-ewer.photo
+  teaser: 这是一件北宋青白瓷注子，细长的流和温润的釉色，让一件倾注用的器物也有了优雅的线条。
+  background_node_id: cn.song.node.qingbai-ewer.intro
+fact_card_ids:
+  - cn.song.fact.qingbai-ewer.date
+  - cn.song.fact.qingbai-ewer.unknown-owner
+story_entry_ids:
+  - cn.song.story.qingbai-ewer

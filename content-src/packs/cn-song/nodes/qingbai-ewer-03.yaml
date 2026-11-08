@@ -1,0 +1,10 @@
+id: cn.song.node.qingbai-ewer.03
+story_id: cn.song.story.qingbai-ewer
+fact_grade: C
+narration: 想象有人轻轻提起它，把液体注入杯中。至于它当年装过什么、属于谁，现有资料没有告诉我们；今天，我们仍能从它身上看到宋代工艺。
+allowed_actions:
+  - return_to_exhibit
+exits:
+  - action: return_to_exhibit
+    target_node_id: cn.song.node.qingbai-ewer.01
+return_checkpoint: true

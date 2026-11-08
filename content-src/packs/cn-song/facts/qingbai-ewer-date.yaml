@@ -1,0 +1,11 @@
+id: cn.song.fact.qingbai-ewer.date
+claim: 大都会艺术博物馆将这件青白瓷注子断代为北宋11世纪。
+grade: F
+applicable_time:
+  start_year: 1000
+  end_year: 1099
+  precision: century
+  display_label: 北宋11世纪
+source_ids:
+  - cn.song.source.met-qingbai-ewer
+evidence_note: 这是馆方对本件的世纪级断代，不是具体制作年份。
