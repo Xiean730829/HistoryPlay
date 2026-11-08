@@ -1,0 +1,242 @@
+.museum-page.museum-page-song { width: 100%; min-height: 100svh; margin: 0; padding: 1rem 0 3rem; background: #d4d6c7; color: #263c36; }
+.museum-page-song .masthead, .museum-page-song .page-footer { margin: 0 2rem; }
+.museum-page-song aside[aria-label="语音讲解"] { margin: 1rem; padding: 1rem; background: #eff0e3; border: 1px solid #83917c; border-radius: .7rem; }
+.museum-page-song .voice-entry { display: flex; flex-wrap: wrap; gap: .75rem; }
+.museum-page-song .voice-entry button { padding: .7rem 1rem; background: #315149; color: #f0edd9; border: 1px solid #7c8d72; border-radius: .4rem; cursor: pointer; }
+.museum-page-song .story-stage { position: fixed; inset: 0; z-index: 7; }
+.museum-page-song[data-story-mode="true"] aside[aria-label="语音讲解"] { position: fixed; top: 0; right: 0; z-index: 9; max-width: min(340px, 90vw); }
+.song-scroll-gallery { position: relative; z-index: 1; min-height: 65vh; padding: 1.5rem clamp(1rem, 4vw, 5rem); color: #243d38; background: #e9e6d5; border-radius: 1.2rem; margin: 1rem; }
+.song-scroll-gallery header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.song-scroll-gallery h2 { font-family: serif; letter-spacing: .18em; font-size: clamp(1.5rem, 3vw, 2.2rem); }
+.song-interpretation, .song-scroll-hint { font-size: .8rem; color: #53635a; line-height: 1.7; }
+.song-scroll-frame { position: relative; min-height: 12rem; padding: 1rem .75rem; background: linear-gradient(90deg, #9a7851, #f0e7cd 2%, #eee7d5 97%, #8b7356); border-radius: 1.2rem .6rem .8rem 1rem; box-shadow: 0 1rem 2rem #2c3b3430, inset 0 0 .8rem #6f593750; }
+.song-scroll-canvas {
+  --scroll-edge: clamp(14px, 2vw, 25px);
+  position: relative;
+  width: 100%;
+  padding-inline: var(--scroll-edge);
+  line-height: 0;
+  background: linear-gradient(90deg, #ad8c62, #e6d5af 3%, #efe5cd 97%, #a98459);
+  box-shadow: 0 5px 14px #352b2033;
+}
+.song-scroll-paper { position: relative; width: 100%; }
+.song-scroll-paper > img { display: block; width: 100%; height: auto; object-fit: contain; }
+.song-scroll-canvas.is-unrolling .song-scroll-paper {
+  animation: song-scroll-unroll 1.65s cubic-bezier(.22, .68, .25, 1) both;
+}
+.song-scroll-axis {
+  position: absolute;
+  z-index: 3;
+  top: -.55rem;
+  bottom: -.55rem;
+  width: clamp(16px, 1.6vw, 24px);
+  border: 1px solid #5f462e;
+  border-radius: 7px;
+  background: linear-gradient(90deg, #4f3828, #a88154 18%, #dfc39a 44%, #9c7549 69%, #4d3626);
+  box-shadow: 3px 3px 10px #261b1270, inset 1px 0 3px #f1d9ad80;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.song-scroll-axis::before, .song-scroll-axis::after {
+  content: "";
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  height: 8px;
+  border: 1px solid #60452a;
+  border-radius: 50%;
+  background: linear-gradient(#e7cca1, #8d673d);
+}
+.song-scroll-axis::before { top: -5px; }
+.song-scroll-axis::after { bottom: -5px; }
+.song-scroll-axis--start { left: calc(var(--scroll-edge) / 2); }
+.song-scroll-axis--end { left: calc(100% - var(--scroll-edge) / 2); }
+.song-scroll-canvas.is-unrolling .song-scroll-axis--end {
+  animation: song-scroll-roller 1.65s cubic-bezier(.22, .68, .25, 1) both;
+}
+@keyframes song-scroll-unroll {
+  from { clip-path: inset(0 99% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+@keyframes song-scroll-roller {
+  from { left: calc(var(--scroll-edge) / 2); }
+  to { left: calc(100% - var(--scroll-edge) / 2); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .song-scroll-canvas.is-unrolling .song-scroll-paper,
+  .song-scroll-canvas.is-unrolling .song-scroll-axis--end { animation: none; }
+}
+.song-scroll-hotspot { position: absolute; border: 1px solid transparent; border-radius: 50%; background: transparent; cursor: pointer; }
+.song-scroll-hotspot:hover, .song-scroll-hotspot:focus-visible { border: 2px solid #a48643; box-shadow: 0 0 0 .3rem #ffedb050; outline: 2px solid #f8f0db; }
+.song-scroll-loading { display: grid; place-content: center; gap: 1rem; min-height: 12rem; line-height: 1.8; }
+.song-scroll-captions { display: grid; gap: 1rem; list-style: none; padding: 1rem 0; }
+.song-scroll-captions button { width: 100%; display: grid; gap: .6rem; padding: 1rem; color: #293e36; border: 0; border-bottom: 1px solid #9d967d; background: transparent; cursor: pointer; }
+.song-scroll-captions strong { font-family: serif; font-size: clamp(1rem, 1.5vw, 1.25rem); }
+.song-scroll-captions span { font-size: .85rem; }
+.song-scroll-captions button:focus-visible { outline: 3px solid #94702d; outline-offset: 3px; }
+.song-exhibit-page { position: relative; z-index: 2; margin: 1rem; padding: clamp(1rem, 4vw, 3rem); background: #eeeada; color: #243a35; border-radius: 1rem; min-height: 80vh; }
+.song-exhibit-heading h2 { font: bold clamp(1.8rem, 4vw, 3rem) serif; }
+.song-exhibit-heading p { line-height: 1.8; max-width: 65rem; }
+.song-exhibit-page button { padding: .7rem 1rem; color: #eff0db; background: #324f43; border: 1px solid #7a8569; border-radius: .5rem; cursor: pointer; }
+.song-exhibit-page button:disabled { opacity: .5; cursor: wait; }
+.song-exhibit-media { min-height: 16rem; display: grid; gap: 1rem; place-items: center; background: #dcd9ca; border-radius: .5rem; padding: 1rem; }
+.song-exhibit-model { width: 100%; }
+.song-exhibit-photo { display: block; width: 100%; text-align: center; }
+.song-exhibit-media img { max-width: 100%; max-height: 64vh; width: auto; height: auto; object-fit: contain; }
+.song-exhibit-media model-viewer { width: 100%; height: 60vh; }
+.song-media-state { text-align: center; line-height: 1.8; }
+.song-exhibit-details { line-height: 1.8; font-size: .9rem; }
+.song-exhibit-details a { color: #345b57; margin-right: 1rem; }
+.song-scroll-navigation { display: flex; position: relative; z-index: 3; justify-content: center; align-items: center; gap: 2rem; padding: 1rem; }
+.song-scroll-navigation button { padding: .7rem 1.2rem; background: #dedac6; color: #263b33; border: 1px solid #8b8269; border-radius: .5rem; cursor: pointer; }
+.song-scroll-navigation button:disabled { opacity: .45; cursor: default; }
+.era-change-button { position: relative; z-index: 5; margin: .5rem 1rem; padding: .6rem 1rem; color: #e8e1cc; background: #213b40; border: 1px solid #8a876a; border-radius: .5rem; cursor: pointer; }
+@media (max-width: 640px) { .song-scroll-gallery header { display: block; } .song-scroll-captions { gap: .3rem; } .song-scroll-captions button { padding: .5rem .2rem; } .song-exhibit-page { margin: .4rem; } }
+
+/* The Song overview is a single desktop viewport: the guide stays beside the
+   scroll instead of being pushed underneath it. Small screens retain normal
+   document scrolling so controls are never clipped. */
+@media (min-width: 900px) and (min-height: 640px) {
+  .museum-page.museum-page-song:has(.song-scroll-gallery) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(250px, 24vw, 330px);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: .5rem .8rem;
+    height: 100svh;
+    min-height: 0;
+    padding: .65rem 1rem;
+    overflow: hidden;
+  }
+  .museum-page-song:has(.song-scroll-gallery) > .masthead { grid-area: 1 / 1; margin: 0; min-height: 48px; }
+  .museum-page-song:has(.song-scroll-gallery) > .era-change-button { grid-area: 1 / 2; margin: 0; justify-self: end; align-self: center; }
+  .museum-page-song:has(.song-scroll-gallery) > .song-scroll-gallery {
+    grid-area: 2 / 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    margin: 0;
+    padding: .8rem clamp(1rem, 2vw, 2rem);
+    overflow: hidden;
+  }
+  .museum-page-song:has(.song-scroll-gallery) .song-scroll-gallery header p,
+  .museum-page-song:has(.song-scroll-gallery) .song-scroll-gallery h2,
+  .museum-page-song:has(.song-scroll-gallery) .song-interpretation,
+  .museum-page-song:has(.song-scroll-gallery) .song-scroll-hint { margin: 0; }
+  .museum-page-song:has(.song-scroll-gallery) .song-scroll-gallery h2 { font-size: clamp(1.3rem, 2vw, 1.8rem); }
+  .museum-page-song:has(.song-scroll-gallery) .song-interpretation { margin: .15rem 0 .4rem; }
+  .museum-page-song:has(.song-scroll-gallery) .song-scroll-frame {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    align-items: center;
+    justify-content: center;
+    padding: .5rem;
+  }
+  .museum-page-song:has(.song-scroll-gallery) .song-scroll-canvas { display: table; width: auto; max-width: 100%; }
+  .museum-page-song:has(.song-scroll-gallery) .song-scroll-paper > img {
+    width: auto;
+    max-width: 100%;
+    max-height: 43svh;
+  }
+  .museum-page-song:has(.song-scroll-gallery) .song-scroll-captions { flex: 0 0 auto; margin: .3rem 0 0; padding: 0; gap: .5rem; }
+  .museum-page-song:has(.song-scroll-gallery) .song-scroll-captions button { gap: .2rem; padding: .45rem .3rem; }
+  .museum-page-song:has(.song-scroll-gallery) .song-scroll-hint { margin-top: .3rem; line-height: 1.35; }
+  .museum-page-song:has(.song-scroll-gallery) > .song-scroll-navigation { grid-area: 3 / 1; padding: 0; }
+  .museum-page-song:has(.song-scroll-gallery) > aside[aria-label="语音讲解"] {
+    grid-area: 2 / 2 / 4 / 3;
+    align-self: center;
+    margin: 0;
+    padding: .9rem;
+    max-height: 100%;
+    overflow: auto;
+  }
+  .museum-page-song:has(.song-scroll-gallery) > .page-footer { display: none; }
+  .museum-page-song:has(.song-scroll-gallery) > .status-notice,
+  .museum-page-song:has(.song-exhibit-page) > .status-notice {
+    position: fixed;
+    z-index: 12;
+    top: 4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: min(640px, 80vw);
+  }
+  .museum-page-song:has(.song-scroll-gallery) > .museum-time-filter {
+    position: fixed;
+    z-index: 5;
+    top: 4rem;
+    right: 1rem;
+    bottom: auto;
+  }
+
+  /* The selected object is also a full page, with its guide visible alongside. */
+  .museum-page.museum-page-song:has(.song-exhibit-page) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(250px, 24vw, 330px);
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: .5rem .8rem;
+    height: 100svh;
+    min-height: 0;
+    padding: .65rem 1rem;
+    overflow: hidden;
+  }
+  .museum-page-song:has(.song-exhibit-page) > .masthead { grid-area: 1 / 1; margin: 0; min-height: 48px; }
+  .museum-page-song:has(.song-exhibit-page) > .era-change-button { grid-area: 1 / 2; margin: 0; justify-self: end; align-self: center; }
+  .museum-page-song:has(.song-exhibit-page) > .song-exhibit-page {
+    grid-area: 2 / 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 1rem 1.2rem;
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 1rem;
+    overflow: hidden;
+  }
+  .museum-page-song:has(.song-exhibit-page) .song-exhibit-heading { grid-area: 1 / 2; }
+  .museum-page-song:has(.song-exhibit-page) .song-exhibit-heading h2 { margin: .3rem 0; font-size: clamp(1.5rem, 2.3vw, 2.2rem); }
+  .museum-page-song:has(.song-exhibit-page) .song-exhibit-heading p { margin: .35rem 0; line-height: 1.5; }
+  .museum-page-song:has(.song-exhibit-page) .song-exhibit-media {
+    grid-area: 1 / 1 / 3 / 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+  }
+  .museum-page-song:has(.song-exhibit-page) .song-exhibit-media img { max-height: calc(100svh - 150px); }
+  .museum-page-song:has(.song-exhibit-page) .song-exhibit-media model-viewer { height: calc(100svh - 150px); }
+  .museum-page-song:has(.song-exhibit-page) .song-exhibit-details {
+    grid-area: 2 / 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 0;
+    overflow: auto;
+    line-height: 1.5;
+  }
+  .museum-page-song:has(.song-exhibit-page) .song-exhibit-details > button { order: -1; }
+  .museum-page-song:has(.song-exhibit-page) .song-exhibit-details p { margin: .4rem 0; }
+  .museum-page-song:has(.song-exhibit-page) .song-printed-text { max-width: 100%; max-height: 24svh; overflow: auto; }
+  .museum-page-song:has(.song-exhibit-page) > aside[aria-label="语音讲解"] {
+    grid-area: 2 / 2;
+    align-self: center;
+    margin: 0;
+    padding: .9rem;
+    max-height: 100%;
+    overflow: auto;
+  }
+  .museum-page-song:has(.song-exhibit-page) > .page-footer { display: none; }
+}
+
+.museum-page-song[data-story-mode="true"] .story-narration-status {
+  position: fixed;
+  z-index: 10;
+  top: 1rem;
+  left: 1rem;
+  max-width: min(340px, 38vw);
+  padding: .6rem .8rem;
+  color: #f2eadb;
+  background: rgb(12 14 16 / 90%);
+  border: 1px solid #8a876a;
+}
+.museum-page-song[data-story-mode="true"] .story-narration-status button { margin: .35rem .35rem 0 0; }
