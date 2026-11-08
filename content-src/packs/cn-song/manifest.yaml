@@ -1,0 +1,16 @@
+id: cn.song.core
+version: 0.0.1
+schema_version: "1"
+language: zh-CN
+region:
+  id: cn
+  label: 中国
+time_range:
+  start_year: 960
+  end_year: 1279
+  precision: range
+  display_label: 宋朝
+required_capabilities:
+  - comic
+publication_status: draft
+title: 宋代画卷首件候选

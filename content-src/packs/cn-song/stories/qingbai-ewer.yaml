@@ -1,0 +1,11 @@
+id: cn.song.story.qingbai-ewer
+title: 一壶光影
+entry_node_id: cn.song.node.qingbai-ewer.01
+node_ids:
+  - cn.song.node.qingbai-ewer.intro
+  - cn.song.node.qingbai-ewer.01
+  - cn.song.node.qingbai-ewer.02
+  - cn.song.node.qingbai-ewer.03
+artifact_id: cn.song.artifact.qingbai-ewer
+return_to_exhibit: true
+review_status: draft

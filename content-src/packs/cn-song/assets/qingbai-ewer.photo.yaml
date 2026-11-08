@@ -1,0 +1,9 @@
+id: cn.song.asset.qingbai-ewer.photo
+kind: image
+format: jpg
+sha256: 1398e199d6c310fc3b0060548842202053f93eb7735187aae70df07a948116e1
+byte_size: 26674
+license:
+  spdx: CC0-1.0
+  attribution: The Metropolitan Museum of Art, 18.57.1 Qingbai ware ewer; Open Access / Public Domain.
+  url: https://www.metmuseum.org/art/collection/search/49214
