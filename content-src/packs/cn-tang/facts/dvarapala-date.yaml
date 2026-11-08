@@ -1,0 +1,11 @@
+id: cn.tang.fact.dvarapala.date
+claim: 馆方将这件石质守门力士断代为八世纪。
+grade: F
+applicable_time:
+  start_year: 701
+  end_year: 800
+  precision: century
+  display_label: 8世纪
+source_ids:
+  - cn.tang.source.r07-catalog
+evidence_note: 保留馆方的世纪级断代，不推定具体年份。

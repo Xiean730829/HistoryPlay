@@ -1,0 +1,10 @@
+id: cn.tang.fact.dvarapala.role
+claim: 馆方称此类守护像称为dvarapala，通常立于佛教洞窟或寺院入口，用来威慑反对佛教的力量。
+grade: F
+applicable_time:
+  start_year: 701
+  end_year: 800
+  precision: century
+source_ids:
+  - cn.tang.source.r07-catalog
+evidence_note: 采用馆方对这一类形象的说明；不能把本件指认为唐军士兵，也不能编造本件原来所在的具体寺院。

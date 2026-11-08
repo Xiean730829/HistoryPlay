@@ -1,0 +1,13 @@
+id: cn.tang.asset.flute-musician.preview
+kind: preview
+format: png
+sha256: 572f7d4046a01c5e4d03cdaf64f350de035d8405493994d8496eea94309404c5
+byte_size: 818517
+derived_from: cn.tang.asset.flute-musician.glb
+license:
+  spdx: CC0-1.0
+  attribution: Minneapolis Institute of Art; Tomb figure - flute player
+  url: https://sketchfab.com/3d-models/tomb-figure-flute-player-9ba6732e48034c5f824a57989e6d3db3
+framing:
+  camera_orbit: front-upright
+  orientation_note: 乐俑正面直立，持竹笛朝向观众；Blender 4.2.16 透明1024预览。

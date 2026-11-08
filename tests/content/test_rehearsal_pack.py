@@ -468,6 +468,10 @@ def test_real_tang_author_draft_stays_when_runtime_files_missing(tmp_path: Path)
     dummy = tmp_path / "missing.png"
     dummy.write_bytes(PREVIEW_BYTES)
     sources = _sources(tmp_path, {"cn.tang.asset.votive-stele.preview": dummy})
+    artifacts = [
+        yaml.safe_load(path.read_text(encoding="utf-8"))["id"]
+        for path in sorted((PACK / "artifacts").glob("*.yaml"))
+    ]
     with pytest.raises(RehearsalPackError, match="缺文件"):
         build_rehearsal_pack(
             pack_dir=PACK,
@@ -475,6 +479,7 @@ def test_real_tang_author_draft_stays_when_runtime_files_missing(tmp_path: Path)
             content_root=tmp_path / "published",
             asset_root=tmp_path / "assets",
             version="0.2.1",
+            artifact_ids=artifacts,
         )
     author = yaml.safe_load((PACK / "manifest.yaml").read_text(encoding="utf-8"))
     assert author["version"] == "0.2.0"

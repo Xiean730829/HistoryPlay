@@ -1,0 +1,14 @@
+id: cn.tang.node.buddha-follower.03
+story_id: cn.tang.story.buddha-follower
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+    - cn.tang.asset.buddha-follower.story-01
+narration: 观察、馆方解释和未知可以一起保留。前面帮助观察的画面是创作情境，空展柜也不是本件原位。现在返回长廊。
+allowed_actions:
+  - return_to_exhibit
+exits:
+  - action: return_to_exhibit
+    target_node_id: cn.tang.node.buddha-follower.01
+return_checkpoint: true

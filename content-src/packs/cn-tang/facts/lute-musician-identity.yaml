@@ -1,0 +1,10 @@
+id: cn.tang.fact.lute-musician.identity
+claim: 馆方称这件彩绘陶俑为演奏弹拨乐器的乐俑，未给出具体曲目或真实演奏者姓名。
+grade: F
+applicable_time:
+  start_year: 618
+  end_year: 906
+  precision: range
+source_ids:
+  - cn.tang.source.a11a-catalog
+evidence_note: 馆藏标题说明乐器类型为lute/弹拨乐器；不能据此认定琵琶曲目或宫廷乐队编制。

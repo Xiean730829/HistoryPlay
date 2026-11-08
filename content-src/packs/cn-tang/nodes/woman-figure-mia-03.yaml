@@ -1,0 +1,14 @@
+id: cn.tang.node.woman-figure-mia.03
+story_id: cn.tang.story.woman-figure-mia
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+    - cn.tang.asset.woman-figure-mia.story-01
+narration: 把“我看见的”和“我想知道的”各留一条，就完成了一次很好的参观。馆方能确认的是唐代女俑和这件馆藏号50.46.182；衣褶里的生活是创作想象。现在返回长廊继续看其他文物。
+allowed_actions:
+  - return_to_exhibit
+exits:
+  - action: return_to_exhibit
+    target_node_id: cn.tang.node.woman-figure-mia.01
+return_checkpoint: true

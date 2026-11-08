@@ -1,0 +1,13 @@
+id: cn.tang.asset.lute-musician.preview
+kind: preview
+format: png
+sha256: cea1da3303a6e4a699f21a48fd1019f9917c624ce84ee789175a8b631b5e1447
+byte_size: 818108
+derived_from: cn.tang.asset.lute-musician.glb
+license:
+  spdx: CC0-1.0
+  attribution: Minneapolis Institute of Art; Tomb figure - lute player
+  url: https://sketchfab.com/3d-models/tomb-figure-lute-player-f3708c86155245df909d095adacf8cfb
+framing:
+  camera_orbit: front-upright
+  orientation_note: 乐俑正面直立，持拨弦乐器朝向观众；Blender 4.2.16 透明1024预览。

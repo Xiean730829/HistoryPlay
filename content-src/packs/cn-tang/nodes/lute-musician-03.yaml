@@ -1,0 +1,14 @@
+id: cn.tang.node.lute-musician.03
+story_id: cn.tang.story.lute-musician
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+    - cn.tang.asset.lute-musician.story-01
+narration: 回到眼前这件乐俑。它安静地停在一个持奏动作上。馆方能确认的是唐代、彩绘陶和弹拨乐器类型；互相倾听的排练是创作情境。现在返回长廊，你还可以继续看其他展品，不要把虚构伙伴认成本件陶俑的主人。
+allowed_actions:
+  - return_to_exhibit
+exits:
+  - action: return_to_exhibit
+    target_node_id: cn.tang.node.lute-musician.01
+return_checkpoint: true

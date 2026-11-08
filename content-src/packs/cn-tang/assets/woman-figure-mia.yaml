@@ -1,0 +1,10 @@
+id: cn.tang.asset.woman-figure-mia.glb
+kind: model3d
+format: glb
+sha256: c254a500daf66bda3db19018e4dbab3b2865d3a27ecffc13181f82d959352069
+byte_size: 2593844
+license:
+  spdx: CC0-1.0
+  attribution: Minneapolis Institute of Art; Figure of a Woman, 618-906 CE
+  url: https://sketchfab.com/3d-models/figure-of-a-woman-618-906-ce-e3eb229a400f4f21ac069c3ce947954c
+lod: source

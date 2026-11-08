@@ -1,0 +1,14 @@
+id: cn.tang.asset.buddha-follower.display
+kind: model3d
+format: glb
+sha256: bbe908828f705d3835911bf90260731c70227c68464ba2a999e54e8161f44ef8
+byte_size: 1294180
+derived_from: cn.tang.asset.buddha-follower.glb
+license:
+  spdx: CC0-1.0
+  attribution: Minneapolis Institute of Art; Buddha Stroking the Head of a Follower, 8th C CE
+  url: https://sketchfab.com/3d-models/buddha-stroking-the-head-of-a-follower-8th-c-ce-6c53d79170bd4f37bf90a4e982dd80a3
+lod: display
+framing:
+  camera_orbit: front-relief
+  orientation_note: 浮雕叙事面朝前，佛与随从动作可见；gltf-transform 4.5.1 轻度减面，颜色贴图JPEG。

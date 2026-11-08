@@ -1,0 +1,38 @@
+id: cn.tang.artifact.woman-figure-mia
+title: 明尼阿波利斯女俑
+aliases:
+  - Mia女俑
+  - MIA女俑
+  - 明尼阿波利斯女俑
+  - R05
+museum:
+  name: Minneapolis Institute of Art
+  accession: "50.46.182"
+  collection_url: https://collections.artsmia.org/art/868/figure-of-a-woman-china
+time_range:
+  start_year: 618
+  end_year: 906
+  precision: range
+  display_label: 唐代，618—906年
+  uncertainty: 馆方给出唐朝区间，不推定具体年份，也不指认已知宫女。
+material: 彩绘陶及白色化妆土
+category: 陶俑
+asset_ids:
+  - cn.tang.asset.woman-figure-mia.glb
+  - cn.tang.asset.woman-figure-mia.preview
+  - cn.tang.asset.woman-figure-mia.display
+presentation:
+  preview_asset_id: cn.tang.asset.woman-figure-mia.preview
+  display:
+    kind: model3d
+    asset_id: cn.tang.asset.woman-figure-mia.display
+  default_camera:
+    orbit: front-upright
+    target_note: 女俑正面直立，与预览同一朝向。
+  teaser: 唐代彩绘陶女俑；姿态可观察，姓名与宫廷身份未知。
+  background_node_id: cn.tang.node.woman-figure-mia.01
+fact_card_ids:
+  - cn.tang.fact.woman-figure-mia.date
+  - cn.tang.fact.woman-figure-mia.identity
+story_entry_ids:
+  - cn.tang.story.woman-figure-mia

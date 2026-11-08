@@ -1,0 +1,13 @@
+id: cn.tang.node.dvarapala.02
+story_id: cn.tang.story.dvarapala
+fact_grade: C
+presentation:
+  capability: comic
+  asset_ids:
+    - cn.tang.asset.dvarapala.story-02
+narration: 创作对照把人从门口撤走，只留下一座空门廊。人在进入一个空间前，会先注意什么？门口的守护和墓葬里的镇墓兽可以比较愿望，但不能混成同一种用途。这里不放上假定的本件原位，也不把空门廊说成这件力士曾经站过的寺院。
+allowed_actions:
+  - continue_story
+exits:
+  - action: continue_story
+    target_node_id: cn.tang.node.dvarapala.03
