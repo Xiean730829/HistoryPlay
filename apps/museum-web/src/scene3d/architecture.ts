@@ -131,18 +131,15 @@ function addWalkway(group: Group, count: number, materials: ReturnType<typeof cr
   group.add(walkway);
 }
 
-/** A continuous, gently rising S-shaped river carries one glass case at every bend. */
+/** A level horizontal river carries one glass case in each four-slot window. */
 export function buildGallery(count: number): Group {
   const gallery = new Group();
-  gallery.name = "sinuous-galaxy-river-gallery";
+  gallery.name = "horizontal-galaxy-river-gallery";
   const materials = createGalleryMaterials();
   addWalkway(gallery, count, materials);
   for (let index = 0; index < count; index += 1) {
     const placement = stationPlacement(index);
-    const inwardX = -placement.side * placement.bankX;
-    const inwardZ = -placement.side * placement.bankZ;
-    addCase(gallery, placement.x, placement.z, placement.walkY,
-      Math.atan2(inwardX, inwardZ), materials);
+    addCase(gallery, placement.x, placement.z, placement.walkY, 0, materials);
   }
   gallery.add(buildGalleryLighting(count));
   return gallery;
