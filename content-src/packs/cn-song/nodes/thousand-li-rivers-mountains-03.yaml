@@ -1,0 +1,14 @@
+id: cn.song.node.thousand-li-rivers-mountains.03
+story_id: cn.song.story.thousand-li-rivers-mountains
+fact_grade: C
+narration: 卷后的题跋为我们留下王希孟的信息。关于他的一生，现存记载并不多；这幅山水让后人记住了他的名字。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.thousand-li-rivers-mountains.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.thousand-li-rivers-mountains.story-03
+return_checkpoint: true

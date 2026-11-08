@@ -203,6 +203,34 @@ scrolls:
     width: 0.13
     height: 0.33
     label: 东京梦华录
+- id: cn.song.scroll.mountains-into-painting
+  title: 山河入画
+  theme: 山河入画
+  background_asset_id: cn.song.asset.scroll.mountains-into-painting
+  interpretation_label: 画卷为艺术演绎；展品原件以独立页面馆藏资料或排印文本为准。
+  station_ids:
+  - cn.song.station.thousand-li-rivers-mountains
+  - cn.song.station.fan-kuan-travelers
+  - cn.song.station.listening-qin
+  hotspots:
+  - station_id: cn.song.station.thousand-li-rivers-mountains
+    x: 0.02
+    y: 0.22
+    width: 0.3
+    height: 0.67
+    label: 千里江山图
+  - station_id: cn.song.station.fan-kuan-travelers
+    x: 0.42
+    y: 0.03
+    width: 0.29
+    height: 0.85
+    label: 溪山行旅图
+  - station_id: cn.song.station.listening-qin
+    x: 0.8
+    y: 0.36
+    width: 0.19
+    height: 0.48
+    label: 听琴图
 stations:
 - id: cn.song.station.qingbai-ewer
   order: 0
@@ -434,4 +462,37 @@ stations:
     uncertainty: 书成于南宋对北宋东京的追忆，不能把每个场景当成作者精确亲历镜头。
   placement_basis: 按主题画卷追加，不对全部三十六项做全局年代重排。
   artifact_id: cn.song.artifact.dongjing-menghua
+  side: center
+- id: cn.song.station.thousand-li-rivers-mountains
+  order: 21
+  time_range:
+    start_year: 1113
+    end_year: 1113
+    precision: year
+    display_label: 约1113年
+    uncertainty: 完成时间一般据蔡京题跋推测约1113年；作者生平资料有限。
+  placement_basis: 按主题画卷追加，不对全部三十六项做全局年代重排。
+  artifact_id: cn.song.artifact.thousand-li-rivers-mountains
+  side: center
+- id: cn.song.station.fan-kuan-travelers
+  order: 22
+  time_range:
+    start_year: 1000
+    end_year: 1000
+    precision: year
+    display_label: 约1000年
+    uncertainty: 与现有“仿范宽山水图”不是同一件作品，馆藏与作者不可混用。
+  placement_basis: 按主题画卷追加，不对全部三十六项做全局年代重排。
+  artifact_id: cn.song.artifact.fan-kuan-travelers
+  side: center
+- id: cn.song.station.listening-qin
+  order: 23
+  time_range:
+    start_year: 1100
+    end_year: 1125
+    precision: range
+    display_label: 北宋末期
+    uncertainty: 作者归属与画中抚琴者身份仍有研究争议，不以“赵佶亲笔”武断定论。
+  placement_basis: 按主题画卷追加，不对全部三十六项做全局年代重排。
+  artifact_id: cn.song.artifact.listening-qin
   side: center

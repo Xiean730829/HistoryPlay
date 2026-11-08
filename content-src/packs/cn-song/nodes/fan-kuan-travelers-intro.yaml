@@ -1,0 +1,9 @@
+id: cn.song.node.fan-kuan-travelers.intro
+story_id: cn.song.story.fan-kuan-travelers
+fact_grade: F
+narration: 这幅画里，巍峨的山几乎占满了画面。我们要找的行旅队伍，却小得像是藏在山里。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.fan-kuan-travelers.01

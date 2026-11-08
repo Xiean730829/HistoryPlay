@@ -1,0 +1,37 @@
+id: cn.song.artifact.listening-qin
+title: 《听琴图》
+exhibit_type: painting
+aliases:
+- 听琴图
+- 宋代听琴图
+source_ids:
+- cn.song.source.reference-listening-qin
+time_range:
+  start_year: 1100
+  end_year: 1125
+  precision: range
+  display_label: 北宋末期
+  uncertainty: 作者归属与画中抚琴者身份仍有研究争议，不以“赵佶亲笔”武断定论。
+category: 馆藏人物画
+asset_ids:
+- cn.song.asset.listening-qin.interpretation
+presentation:
+  preview_asset_id: cn.song.asset.listening-qin.interpretation
+  display:
+    kind: interpretive_image
+    asset_id: cn.song.asset.listening-qin.interpretation
+    interpretation_label: 艺术演绎，非馆藏原图；作者归属仍有讨论。
+  teaser: 这幅宋代人物画里有人弹琴，也有人安静地听。画没有声音，却能让人想象琴声。
+  background_node_id: cn.song.node.listening-qin.intro
+fact_card_ids:
+- cn.song.fact.listening-qin.reference
+story_entry_ids:
+- cn.song.story.listening-qin
+museum:
+  name: 故宫博物院
+  accession: 故宫藏《听琴图》
+  collection_url: https://minghuaji.dpm.org.cn/paint/detail?id=na7xf64uvkwrsd5fj2z2ynzcek8iqtbb&topicType=7
+identity:
+  kind: original
+  label: 故宫藏作品；作者归属有研究争议，不以赵佶亲笔武断定论。
+  attribution_note: 画中抚琴者身份亦以馆方解释及争议表述。
