@@ -1,0 +1,14 @@
+id: cn.song.node.dragon-boat-figurine.03
+story_id: cn.song.story.dragon-boat-figurine
+fact_grade: C
+narration: 再回到这件小小的陶俑，它把人物与舟船的形象留在了一起。它和某一次具体节庆有什么关系，现有资料还不能确定。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.dragon-boat-figurine.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.dragon-boat-figurine.story-03
+return_checkpoint: true

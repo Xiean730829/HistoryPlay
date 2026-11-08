@@ -1,0 +1,10 @@
+id: cn.song.story.chongning-coin
+title: 方寸里的书法（本地候选）
+entry_node_id: cn.song.node.chongning-coin.01
+node_ids:
+- cn.song.node.chongning-coin.intro
+- cn.song.node.chongning-coin.01
+- cn.song.node.chongning-coin.02
+- cn.song.node.chongning-coin.03
+artifact_id: cn.song.artifact.chongning-coin
+return_to_exhibit: true

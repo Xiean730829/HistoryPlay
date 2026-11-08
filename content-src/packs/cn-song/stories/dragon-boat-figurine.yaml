@@ -1,0 +1,10 @@
+id: cn.song.story.dragon-boat-figurine
+title: 小舟里的节令（本地候选）
+entry_node_id: cn.song.node.dragon-boat-figurine.01
+node_ids:
+- cn.song.node.dragon-boat-figurine.intro
+- cn.song.node.dragon-boat-figurine.01
+- cn.song.node.dragon-boat-figurine.02
+- cn.song.node.dragon-boat-figurine.03
+artifact_id: cn.song.artifact.dragon-boat-figurine
+return_to_exhibit: true

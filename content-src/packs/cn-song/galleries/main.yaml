@@ -119,6 +119,34 @@ scrolls:
     width: 0.1
     height: 0.39
     label: 官窑青瓷直颈瓶
+- id: cn.song.scroll.city
+  title: 市井卷
+  theme: 市井
+  background_asset_id: cn.song.asset.scroll.city
+  interpretation_label: 画卷为艺术演绎；展品原件以独立页面馆藏资料为准。
+  station_ids:
+  - cn.song.station.chongning-coin
+  - cn.song.station.boat-haulers
+  - cn.song.station.dragon-boat-figurine
+  hotspots:
+  - station_id: cn.song.station.chongning-coin
+    x: 0.09
+    y: 0.48
+    width: 0.1
+    height: 0.29
+    label: 崇宁通宝
+  - station_id: cn.song.station.boat-haulers
+    x: 0.32
+    y: 0.52
+    width: 0.24
+    height: 0.4
+    label: 风雨纤夫题材画
+  - station_id: cn.song.station.dragon-boat-figurine
+    x: 0.88
+    y: 0.4
+    width: 0.11
+    height: 0.55
+    label: 持龙舟模型女俑
 stations:
 - id: cn.song.station.qingbai-ewer
   order: 0
@@ -251,4 +279,37 @@ stations:
     uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
   placement_basis: 主题画卷顺序，非精确年代排序；资料和热区仍待逐项核验。
   artifact_id: cn.song.artifact.guan-vase
+  side: center
+- id: cn.song.station.chongning-coin
+  order: 12
+  time_range:
+    start_year: 1102
+    end_year: 1106
+    precision: range
+    display_label: 1102—1106年
+    uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+  placement_basis: 主题画卷顺序，非精确年代排序；资料和热区仍待逐项核验。
+  artifact_id: cn.song.artifact.chongning-coin
+  side: center
+- id: cn.song.station.boat-haulers
+  order: 13
+  time_range:
+    start_year: 960
+    end_year: 1299
+    precision: unknown
+    display_label: 馆方文字与机器年代记录不一致，时间待考
+    uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+  placement_basis: 主题画卷顺序，非精确年代排序；资料和热区仍待逐项核验。
+  artifact_id: cn.song.artifact.boat-haulers
+  side: center
+- id: cn.song.station.dragon-boat-figurine
+  order: 14
+  time_range:
+    start_year: 1100
+    end_year: 1279
+    precision: range
+    display_label: 12—13世纪
+    uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+  placement_basis: 主题画卷顺序，非精确年代排序；资料和热区仍待逐项核验。
+  artifact_id: cn.song.artifact.dragon-boat-figurine
   side: center

@@ -1,0 +1,12 @@
+id: cn.song.fact.chongning-coin.reference
+claim: 这枚铜钱的文字呈现了宋徽宗书法中被称为瘦金体的风格，可从中观察货币与书法的联系。
+grade: F
+applicable_time:
+  start_year: 1102
+  end_year: 1106
+  precision: range
+  display_label: 1102—1106年
+  uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+source_ids:
+- cn.song.source.reference-chongning-coin
+evidence_note: 候选文字待历史与馆藏逐件复核；故事画面为艺术演绎。
