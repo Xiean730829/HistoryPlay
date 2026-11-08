@@ -1,0 +1,36 @@
+id: cn.song.artifact.snowy-riverbank
+title: 雪景江岸隐居图
+exhibit_type: painting
+aliases:
+- 雪景江岸隐居图
+- 雪景江岸
+- 雪景图
+source_ids:
+- cn.song.source.reference-snowy-riverbank
+time_range:
+  start_year: 1175
+  end_year: 1199
+  precision: range
+  display_label: 约12世纪末
+  uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+category: 书画
+asset_ids:
+- cn.song.asset.snowy-riverbank.photo
+presentation:
+  preview_asset_id: cn.song.asset.snowy-riverbank.photo
+  display:
+    kind: photo
+    asset_id: cn.song.asset.snowy-riverbank.photo
+  teaser: 这幅宋代雪景手卷随展开逐渐呈现江岸景物。画作的作者仍有推定与传统归属之别，我们先跟着画面缓缓看。
+  background_node_id: cn.song.node.snowy-riverbank.intro
+fact_card_ids:
+- cn.song.fact.snowy-riverbank.reference
+story_entry_ids:
+- cn.song.story.snowy-riverbank
+museum:
+  name: The Metropolitan Museum of Art
+  accession: '1984.274'
+  collection_url: https://www.metmuseum.org/art/collection/search/40987
+identity:
+  kind: original
+  label: 馆方归属为推定，曾有其他传统归属。

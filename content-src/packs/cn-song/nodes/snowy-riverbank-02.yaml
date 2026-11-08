@@ -1,0 +1,13 @@
+id: cn.song.node.snowy-riverbank.02
+story_id: cn.song.story.snowy-riverbank
+fact_grade: C
+narration: 目光沿江岸移动，远近的景物逐渐变化。画家以墨色和留白，让寒意藏在山、水与雪之间。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.snowy-riverbank.03
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.snowy-riverbank.story-02

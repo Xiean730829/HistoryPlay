@@ -1,0 +1,10 @@
+id: cn.song.story.snowy-riverbank
+title: 雪岸徐徐展开（本地候选）
+entry_node_id: cn.song.node.snowy-riverbank.01
+node_ids:
+- cn.song.node.snowy-riverbank.intro
+- cn.song.node.snowy-riverbank.01
+- cn.song.node.snowy-riverbank.02
+- cn.song.node.snowy-riverbank.03
+artifact_id: cn.song.artifact.snowy-riverbank
+return_to_exhibit: true

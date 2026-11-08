@@ -1,0 +1,10 @@
+id: cn.song.story.autumn-river-village
+title: 秋水之间（本地候选）
+entry_node_id: cn.song.node.autumn-river-village.01
+node_ids:
+- cn.song.node.autumn-river-village.intro
+- cn.song.node.autumn-river-village.01
+- cn.song.node.autumn-river-village.02
+- cn.song.node.autumn-river-village.03
+artifact_id: cn.song.artifact.autumn-river-village
+return_to_exhibit: true

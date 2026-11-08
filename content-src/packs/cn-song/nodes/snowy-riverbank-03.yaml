@@ -1,0 +1,14 @@
+id: cn.song.node.snowy-riverbank.03
+story_id: cn.song.story.snowy-riverbank
+fact_grade: C
+narration: 再细看江岸的房舍与周围景色，画卷就像带我们慢慢走过一段冬日。馆方将作品归属刘松年，但这个归属仍是推定。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.snowy-riverbank.01
+return_checkpoint: true
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.snowy-riverbank.story-03

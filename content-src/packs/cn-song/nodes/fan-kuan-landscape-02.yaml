@@ -1,0 +1,13 @@
+id: cn.song.node.fan-kuan-landscape.02
+story_id: cn.song.story.fan-kuan-landscape
+fact_grade: C
+narration: 顺着路径望去，画中人物正向中景的寺院方向行进。画家用山石和树木，让我们感觉这段路曲折而安静。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.fan-kuan-landscape.03
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.fan-kuan-landscape.story-02

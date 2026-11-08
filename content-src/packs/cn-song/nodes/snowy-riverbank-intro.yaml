@@ -1,0 +1,9 @@
+id: cn.song.node.snowy-riverbank.intro
+story_id: cn.song.story.snowy-riverbank
+fact_grade: F
+narration: 这幅宋代雪景手卷随展开逐渐呈现江岸景物。画作的作者仍有推定与传统归属之别，我们先跟着画面缓缓看。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.snowy-riverbank.01
