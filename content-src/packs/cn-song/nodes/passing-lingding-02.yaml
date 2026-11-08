@@ -1,0 +1,13 @@
+id: cn.song.node.passing-lingding.02
+story_id: cn.song.story.passing-lingding
+fact_grade: C
+narration: 诗里借风、雨和水面的景象，表达对国家处境和个人命运的感受。它不是天气记录，而是一首诗的表达。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.passing-lingding.03
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.passing-lingding.story-02

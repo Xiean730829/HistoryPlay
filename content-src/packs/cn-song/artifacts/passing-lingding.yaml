@@ -1,0 +1,41 @@
+id: cn.song.artifact.passing-lingding
+title: 文天祥《过零丁洋》
+exhibit_type: poem
+aliases:
+- 过零丁洋
+- 文天祥《过零丁洋》
+- 零丁洋
+source_ids:
+- cn.song.source.reference-passing-lingding
+time_range:
+  start_year: 1278
+  end_year: 1278
+  precision: year
+  display_label: 1278年
+  uncertainty: 确切场景细节应按可靠版本核对，不把诗句当作被镜头记录的独白。
+category: 诗作
+asset_ids:
+- cn.song.asset.passing-lingding.interpretation
+presentation:
+  preview_asset_id: cn.song.asset.passing-lingding.interpretation
+  display:
+    kind: interpretive_image
+    asset_id: cn.song.asset.passing-lingding.interpretation
+    interpretation_label: 诗意艺术演绎，非手迹、非真实肖像。
+  teaser: 南宋末年，文天祥在艰难处境中写下《过零丁洋》。诗里有风雨，也有他不愿放弃的信念。
+  background_node_id: cn.song.node.passing-lingding.intro
+  printed_text:
+    body: '辛苦遭逢起一经，干戈寥落四周星。
+
+      山河破碎风飘絮，身世浮沉雨打萍。
+
+      惶恐滩头说惶恐，零丁洋里叹零丁。
+
+      人生自古谁无死？留取丹心照汗青。'
+    script_status: printed_not_handwriting
+    source_label: 传世文本现代排印，非作者手迹
+    interpretation_label: 排印全文，不是手迹。
+fact_card_ids:
+- cn.song.fact.passing-lingding.reference
+story_entry_ids:
+- cn.song.story.passing-lingding

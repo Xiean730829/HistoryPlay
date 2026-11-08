@@ -1,0 +1,13 @@
+id: cn.song.node.summer-quatrain.02
+story_id: cn.song.story.summer-quatrain
+fact_grade: C
+narration: 诗中提到项羽，那是更早时代的人物。李清照借回望历史人物，表达自己对人的选择的评价。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.summer-quatrain.03
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.summer-quatrain.story-02

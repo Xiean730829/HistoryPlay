@@ -1,0 +1,9 @@
+id: cn.song.node.summer-quatrain.intro
+story_id: cn.song.story.summer-quatrain
+fact_grade: F
+narration: 李清照不只写细腻的词，也写过这样有力量的诗。短短四句，让我们听见她对选择和气节的思考。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.summer-quatrain.01

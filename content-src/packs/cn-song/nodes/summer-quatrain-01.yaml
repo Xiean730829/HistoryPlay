@@ -1,0 +1,13 @@
+id: cn.song.node.summer-quatrain.01
+story_id: cn.song.story.summer-quatrain
+fact_grade: C
+narration: 李清照生活在北宋到南宋之交。面对时代变化，她用诗表达自己鲜明的想法。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.summer-quatrain.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.summer-quatrain.story-01

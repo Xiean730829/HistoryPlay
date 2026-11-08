@@ -1,0 +1,14 @@
+id: cn.song.node.shier.03
+story_id: cn.song.story.shier
+fact_grade: C
+narration: 文字会留下来，也会被后人继续读。陆游的叮嘱，让我们看见他对家人和时代的深切关心。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.shier.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.shier.story-03
+return_checkpoint: true

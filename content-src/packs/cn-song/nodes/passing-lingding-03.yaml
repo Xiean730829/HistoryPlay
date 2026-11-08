@@ -1,0 +1,14 @@
+id: cn.song.node.passing-lingding.03
+story_id: cn.song.story.passing-lingding
+fact_grade: C
+narration: 诗的最后，文天祥表达了自己对信念的坚持。读诗时，我们既能感受文字的力量，也要理解那个艰难的时代。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.passing-lingding.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.passing-lingding.story-03
+return_checkpoint: true

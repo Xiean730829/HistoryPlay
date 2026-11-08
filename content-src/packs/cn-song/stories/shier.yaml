@@ -1,0 +1,10 @@
+id: cn.song.story.shier
+title: 一封写给孩子的叮嘱
+entry_node_id: cn.song.node.shier.01
+node_ids:
+- cn.song.node.shier.intro
+- cn.song.node.shier.01
+- cn.song.node.shier.02
+- cn.song.node.shier.03
+artifact_id: cn.song.artifact.shier
+return_to_exhibit: true

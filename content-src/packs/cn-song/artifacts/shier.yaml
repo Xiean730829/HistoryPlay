@@ -1,0 +1,36 @@
+id: cn.song.artifact.shier
+title: 陆游《示儿》
+exhibit_type: poem
+aliases:
+- 示儿
+- 陆游《示儿》
+source_ids:
+- cn.song.source.reference-shier
+time_range:
+  start_year: 1210
+  end_year: 1210
+  precision: year
+  display_label: 1210年
+  uncertainty: 临终嘱诗，不虚构具体亲子对白。
+category: 诗作
+asset_ids:
+- cn.song.asset.shier.interpretation
+presentation:
+  preview_asset_id: cn.song.asset.shier.interpretation
+  display:
+    kind: interpretive_image
+    asset_id: cn.song.asset.shier.interpretation
+    interpretation_label: 诗意艺术演绎，非手迹、非真实肖像。
+  teaser: 晚年的陆游写下一首给孩子的诗。它像一段很短的叮嘱，却藏着他一生没有放下的牵挂。
+  background_node_id: cn.song.node.shier.intro
+  printed_text:
+    body: '死去元知万事空，但悲不见九州同。
+
+      王师北定中原日，家祭无忘告乃翁。'
+    script_status: printed_not_handwriting
+    source_label: 传世文本现代排印，非作者手迹
+    interpretation_label: 排印全文，不是手迹。
+fact_card_ids:
+- cn.song.fact.shier.reference
+story_entry_ids:
+- cn.song.story.shier

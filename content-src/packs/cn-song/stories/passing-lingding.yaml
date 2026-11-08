@@ -1,0 +1,10 @@
+id: cn.song.story.passing-lingding
+title: 海上的一首诗
+entry_node_id: cn.song.node.passing-lingding.01
+node_ids:
+- cn.song.node.passing-lingding.intro
+- cn.song.node.passing-lingding.01
+- cn.song.node.passing-lingding.02
+- cn.song.node.passing-lingding.03
+artifact_id: cn.song.artifact.passing-lingding
+return_to_exhibit: true

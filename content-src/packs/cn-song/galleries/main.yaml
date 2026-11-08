@@ -259,6 +259,34 @@ scrolls:
     width: 0.23
     height: 0.29
     label: 后赤壁赋
+- id: cn.song.scroll.poetic-rivers
+  title: 诗心山河
+  theme: 诗心山河
+  background_asset_id: cn.song.asset.scroll.poetic-rivers
+  interpretation_label: 画卷为艺术演绎；展品原件以独立页面馆藏资料或排印文本为准。
+  station_ids:
+  - cn.song.station.summer-quatrain
+  - cn.song.station.shier
+  - cn.song.station.passing-lingding
+  hotspots:
+  - station_id: cn.song.station.summer-quatrain
+    x: 0.06
+    y: 0.48
+    width: 0.14
+    height: 0.28
+    label: 夏日绝句
+  - station_id: cn.song.station.shier
+    x: 0.49
+    y: 0.35
+    width: 0.16
+    height: 0.34
+    label: 示儿
+  - station_id: cn.song.station.passing-lingding
+    x: 0.75
+    y: 0.63
+    width: 0.18
+    height: 0.28
+    label: 过零丁洋
 stations:
 - id: cn.song.station.qingbai-ewer
   order: 0
@@ -556,4 +584,37 @@ stations:
     uncertainty: 黄州赤壁与三国战场地址不可简单等同。
   placement_basis: 按主题画卷追加，不对全部三十六项做全局年代重排。
   artifact_id: cn.song.artifact.later-red-cliff
+  side: center
+- id: cn.song.station.summer-quatrain
+  order: 27
+  time_range:
+    start_year: 960
+    end_year: 1279
+    precision: unknown
+    display_label: 时间不详
+    uncertainty: 传世诗作属李清照，具体创作地点与时间不作确定化处理。
+  placement_basis: 按主题画卷追加，不对全部三十六项做全局年代重排。
+  artifact_id: cn.song.artifact.summer-quatrain
+  side: center
+- id: cn.song.station.shier
+  order: 28
+  time_range:
+    start_year: 1210
+    end_year: 1210
+    precision: year
+    display_label: 1210年
+    uncertainty: 临终嘱诗，不虚构具体亲子对白。
+  placement_basis: 按主题画卷追加，不对全部三十六项做全局年代重排。
+  artifact_id: cn.song.artifact.shier
+  side: center
+- id: cn.song.station.passing-lingding
+  order: 29
+  time_range:
+    start_year: 1278
+    end_year: 1278
+    precision: year
+    display_label: 1278年
+    uncertainty: 确切场景细节应按可靠版本核对，不把诗句当作被镜头记录的独白。
+  placement_basis: 按主题画卷追加，不对全部三十六项做全局年代重排。
+  artifact_id: cn.song.artifact.passing-lingding
   side: center
