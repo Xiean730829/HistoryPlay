@@ -1,0 +1,9 @@
+id: cn.song.node.shier.intro
+story_id: cn.song.story.shier
+fact_grade: F
+narration: 晚年的陆游写下一首给孩子的诗。它像一段很短的叮嘱，却藏着他一生没有放下的牵挂。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.shier.01

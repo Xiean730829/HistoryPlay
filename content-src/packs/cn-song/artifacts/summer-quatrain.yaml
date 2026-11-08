@@ -1,0 +1,37 @@
+id: cn.song.artifact.summer-quatrain
+title: 李清照《夏日绝句》
+exhibit_type: poem
+aliases:
+- 夏日绝句
+- 李清照《夏日绝句》
+- 生当作人杰
+source_ids:
+- cn.song.source.reference-summer-quatrain
+time_range:
+  start_year: 960
+  end_year: 1279
+  precision: unknown
+  display_label: 时间不详
+  uncertainty: 传世诗作属李清照，具体创作地点与时间不作确定化处理。
+category: 诗作
+asset_ids:
+- cn.song.asset.summer-quatrain.interpretation
+presentation:
+  preview_asset_id: cn.song.asset.summer-quatrain.interpretation
+  display:
+    kind: interpretive_image
+    asset_id: cn.song.asset.summer-quatrain.interpretation
+    interpretation_label: 诗意艺术演绎，非手迹、非真实肖像。
+  teaser: 李清照不只写细腻的词，也写过这样有力量的诗。短短四句，让我们听见她对选择和气节的思考。
+  background_node_id: cn.song.node.summer-quatrain.intro
+  printed_text:
+    body: '生当作人杰，死亦为鬼雄。
+
+      至今思项羽，不肯过江东。'
+    script_status: printed_not_handwriting
+    source_label: 传世文本现代排印，非作者手迹
+    interpretation_label: 排印全文，不是手迹。
+fact_card_ids:
+- cn.song.fact.summer-quatrain.reference
+story_entry_ids:
+- cn.song.story.summer-quatrain

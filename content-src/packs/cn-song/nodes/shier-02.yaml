@@ -1,0 +1,13 @@
+id: cn.song.node.shier.02
+story_id: cn.song.story.shier
+fact_grade: C
+narration: 诗里提到他希望看到的未来。对他来说，写诗不仅是记录情绪，也是把愿望留给后来的人。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.shier.03
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.shier.story-02

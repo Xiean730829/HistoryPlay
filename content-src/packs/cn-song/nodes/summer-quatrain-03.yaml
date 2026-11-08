@@ -1,0 +1,14 @@
+id: cn.song.node.summer-quatrain.03
+story_id: cn.song.story.summer-quatrain
+fact_grade: C
+narration: 这首诗很短，语气却坚定。阅读诗句时，可以想一想：在困难面前，一个人为什么会坚持自己的信念？
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.summer-quatrain.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.summer-quatrain.story-03
+return_checkpoint: true

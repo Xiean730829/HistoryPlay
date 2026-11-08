@@ -1,0 +1,13 @@
+id: cn.song.node.passing-lingding.01
+story_id: cn.song.story.passing-lingding
+fact_grade: C
+narration: 南宋末年的局势急剧变化，文天祥兵败被俘。我们先记住这一背景，再去读他的诗。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.passing-lingding.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.passing-lingding.story-01
