@@ -1,0 +1,13 @@
+id: cn.song.node.yong-yu-le.02
+story_id: cn.song.story.yong-yu-le
+fact_grade: C
+narration: 词人提到历史人物和他们的时代，让过去与眼前的江山相互映照。每一处典故，都需要回到史料中理解。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.yong-yu-le.03
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.yong-yu-le.story-02

@@ -1,0 +1,10 @@
+id: cn.song.story.sheng-sheng-man
+title: 秋窗词意（本地候选）
+entry_node_id: cn.song.node.sheng-sheng-man.01
+node_ids:
+- cn.song.node.sheng-sheng-man.intro
+- cn.song.node.sheng-sheng-man.01
+- cn.song.node.sheng-sheng-man.02
+- cn.song.node.sheng-sheng-man.03
+artifact_id: cn.song.artifact.sheng-sheng-man
+return_to_exhibit: true

@@ -1,0 +1,38 @@
+id: cn.song.artifact.yong-yu-le
+title: 辛弃疾《永遇乐》
+exhibit_type: poem
+aliases:
+- 辛弃疾《永遇乐》
+- 永遇乐
+- 辛弃疾
+- 京口北固亭怀古
+source_ids:
+- cn.song.source.reference-yong-yu-le
+time_range:
+  start_year: 960
+  end_year: 1279
+  precision: unknown
+  display_label: 时间不详
+  uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+category: 词作
+asset_ids:
+- cn.song.asset.yong-yu-le.interpretation
+presentation:
+  preview_asset_id: cn.song.asset.yong-yu-le.interpretation
+  display:
+    kind: interpretive_image
+    asset_id: cn.song.asset.yong-yu-le.interpretation
+    interpretation_label: 词意艺术演绎，非手迹、非真实肖像。
+  teaser: 这首《永遇乐》借京口北固亭写江山和历史。跟随词人登临的视角，看看他怎样把怀古写进词里。
+  background_node_id: cn.song.node.yong-yu-le.intro
+  printed_text:
+    body: '千古江山，
+
+      英雄无觅孙仲谋处。'
+    script_status: printed_not_handwriting
+    source_label: 传世文字现代排印，非作者手迹
+    interpretation_label: 排印摘句与艺术演绎，不是作者手迹。
+fact_card_ids:
+- cn.song.fact.yong-yu-le.reference
+story_entry_ids:
+- cn.song.story.yong-yu-le

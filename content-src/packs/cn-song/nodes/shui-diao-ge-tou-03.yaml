@@ -1,0 +1,14 @@
+id: cn.song.node.shui-diao-ge-tou.03
+story_id: cn.song.story.shui-diao-ge-tou
+fact_grade: C
+narration: 人有悲欢离合，月有阴晴圆缺。即使相隔很远，也可以在同一轮明月下送出祝愿：但愿人长久，千里共婵娟。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.shui-diao-ge-tou.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.shui-diao-ge-tou.story-03
+return_checkpoint: true
