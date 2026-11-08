@@ -1,0 +1,13 @@
+id: cn.song.node.hanshi-scroll.02
+story_id: cn.song.story.hanshi-scroll
+fact_grade: C
+narration: 后来，苏轼把诗写成书卷。字的大小、疏密和变化，让人仿佛看见情绪随着笔墨起伏。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.hanshi-scroll.03
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.hanshi-scroll.story-02

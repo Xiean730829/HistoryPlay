@@ -1,0 +1,13 @@
+id: cn.song.node.later-red-cliff.01
+story_id: cn.song.story.later-red-cliff
+fact_grade: C
+narration: 文章写到霜露、月色和相伴而行的朋友。夜色清朗，人们想起再次到江边走走。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.later-red-cliff.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.later-red-cliff.story-01

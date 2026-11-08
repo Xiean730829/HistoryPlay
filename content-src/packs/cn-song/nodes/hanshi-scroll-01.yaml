@@ -1,0 +1,13 @@
+id: cn.song.node.hanshi-scroll.01
+story_id: cn.song.story.hanshi-scroll
+fact_grade: C
+narration: 苏轼被贬到黄州，日子里有雨、有困顿，也有对过去的回望。他把这些感受写进了寒食诗。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.hanshi-scroll.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.hanshi-scroll.story-01

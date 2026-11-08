@@ -1,0 +1,13 @@
+id: cn.song.node.later-red-cliff.02
+story_id: cn.song.story.later-red-cliff
+fact_grade: C
+narration: 文中写他攀上陡峭山路，朋友无法同行。风声与山水让原本轻快的夜游变得幽深。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.later-red-cliff.03
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.later-red-cliff.story-02

@@ -1,0 +1,14 @@
+id: cn.song.node.zuiweng-pavilion.03
+story_id: cn.song.story.zuiweng-pavilion
+fact_grade: C
+narration: 欧阳修把自己的快乐和与百姓共享山水的快乐联系在一起。读完这篇文章，你会想邀请谁一起去山里走走？
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.zuiweng-pavilion.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.zuiweng-pavilion.story-03
+return_checkpoint: true

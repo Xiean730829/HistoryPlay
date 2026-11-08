@@ -1,0 +1,10 @@
+id: cn.song.story.hanshi-scroll
+title: 雨中写下的心事
+entry_node_id: cn.song.node.hanshi-scroll.01
+node_ids:
+- cn.song.node.hanshi-scroll.intro
+- cn.song.node.hanshi-scroll.01
+- cn.song.node.hanshi-scroll.02
+- cn.song.node.hanshi-scroll.03
+artifact_id: cn.song.artifact.hanshi-scroll
+return_to_exhibit: true

@@ -1,0 +1,34 @@
+id: cn.song.artifact.zuiweng-pavilion
+title: 欧阳修《醉翁亭记》
+exhibit_type: historical_record
+aliases:
+- 醉翁亭记
+- 欧阳修《醉翁亭记》
+source_ids:
+- cn.song.source.reference-zuiweng-pavilion
+time_range:
+  start_year: 1045
+  end_year: 1046
+  precision: year
+  display_label: 1045年前后
+  uncertainty: 文章场景属于文学描绘，不能逐一等同于记录镜头。
+category: 文章
+asset_ids:
+- cn.song.asset.zuiweng-pavilion.interpretation
+presentation:
+  preview_asset_id: cn.song.asset.zuiweng-pavilion.interpretation
+  display:
+    kind: interpretive_image
+    asset_id: cn.song.asset.zuiweng-pavilion.interpretation
+    interpretation_label: 文章意境演绎，不是实地照片。
+  teaser: 欧阳修在滁州时，写下了一座山中的小亭。文章里不只有山水，还有与他一同游玩的百姓。
+  background_node_id: cn.song.node.zuiweng-pavilion.intro
+  printed_text:
+    body: 环滁皆山也。其西南诸峰，林壑尤美，望之蔚然而深秀者，琅琊也。
+    script_status: printed_not_handwriting
+    source_label: 传世文本现代排印，非作者手迹
+    interpretation_label: 排印摘句，不是手迹。
+fact_card_ids:
+- cn.song.fact.zuiweng-pavilion.reference
+story_entry_ids:
+- cn.song.story.zuiweng-pavilion
