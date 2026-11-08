@@ -36,6 +36,10 @@
     },
     "return_to_exhibit": {
       "type": "boolean"
+    },
+    "review_status": {
+      "enum": ["draft", "unavailable", "reviewed"],
+      "description": "Unreviewed stories stay draft or unavailable and must not open at runtime. Omitted status is treated as reviewed for existing published packs."
     }
   }
 }

@@ -287,6 +287,7 @@ class Story(TypedDict):
     fact_card_ids: NotRequired[list[NamespacedId]]
     artifact_id: NotRequired[NamespacedId]
     return_to_exhibit: NotRequired[bool]
+    review_status: NotRequired[Literal["draft", "unavailable", "reviewed"]]
 
 class VoiceEvent(TypedDict):
     schema_version: Literal["1"]
