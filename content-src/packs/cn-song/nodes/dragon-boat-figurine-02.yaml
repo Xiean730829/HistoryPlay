@@ -1,0 +1,13 @@
+id: cn.song.node.dragon-boat-figurine.02
+story_id: cn.song.story.dragon-boat-figurine
+fact_grade: C
+narration: 龙舟也让人想到与舟船有关的节令活动。我们可以想象水岸上的热闹，不过，这个场景不是这件俑的真实经历。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.dragon-boat-figurine.03
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.dragon-boat-figurine.story-02

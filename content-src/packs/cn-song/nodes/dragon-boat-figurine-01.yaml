@@ -1,0 +1,13 @@
+id: cn.song.node.dragon-boat-figurine.01
+story_id: cn.song.story.dragon-boat-figurine
+fact_grade: C
+narration: 先看人物俑，再看她托着的龙舟模型。馆方能告诉我们它的材料和大致年代，但没有确定人物的名字。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.dragon-boat-figurine.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.dragon-boat-figurine.story-01

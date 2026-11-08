@@ -1,0 +1,36 @@
+id: cn.song.artifact.boat-haulers
+title: 风雨纤夫题材画
+exhibit_type: painting
+aliases:
+- 风雨纤夫题材画
+- 纤夫图
+- 风雨纤夫
+source_ids:
+- cn.song.source.reference-boat-haulers
+time_range:
+  start_year: 960
+  end_year: 1299
+  precision: unknown
+  display_label: 馆方文字与机器年代记录不一致，时间待考
+  uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+category: 书画
+asset_ids:
+- cn.song.asset.boat-haulers.photo
+presentation:
+  preview_asset_id: cn.song.asset.boat-haulers.photo
+  display:
+    kind: photo
+    asset_id: cn.song.asset.boat-haulers.photo
+  teaser: 这幅宋代画作描绘风雨中牵行的舟船。我们从画中出发，了解水路运输与人们的劳动。
+  background_node_id: cn.song.node.boat-haulers.intro
+fact_card_ids:
+- cn.song.fact.boat-haulers.reference
+story_entry_ids:
+- cn.song.story.boat-haulers
+museum:
+  name: The Metropolitan Museum of Art
+  accession: 47.18.83
+  collection_url: https://www.metmuseum.org/art/collection/search/36056
+identity:
+  kind: original
+  label: 馆藏画作影像；风雨运输场景的故事属于艺术解读。

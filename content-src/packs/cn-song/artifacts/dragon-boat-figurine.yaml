@@ -1,0 +1,33 @@
+id: cn.song.artifact.dragon-boat-figurine
+title: 持龙舟模型女俑
+exhibit_type: object
+aliases:
+- 持龙舟模型女俑
+- 龙舟女俑
+- 龙舟俑
+source_ids:
+- cn.song.source.reference-dragon-boat-figurine
+time_range:
+  start_year: 1100
+  end_year: 1279
+  precision: range
+  display_label: 12—13世纪
+  uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+category: 器物
+asset_ids:
+- cn.song.asset.dragon-boat-figurine.photo
+presentation:
+  preview_asset_id: cn.song.asset.dragon-boat-figurine.photo
+  display:
+    kind: photo
+    asset_id: cn.song.asset.dragon-boat-figurine.photo
+  teaser: 这件小巧的宋代人物俑，手中托着一只龙舟模型。让我们从这只小舟，聊聊古人的节令生活。
+  background_node_id: cn.song.node.dragon-boat-figurine.intro
+fact_card_ids:
+- cn.song.fact.dragon-boat-figurine.reference
+story_entry_ids:
+- cn.song.story.dragon-boat-figurine
+museum:
+  name: The Metropolitan Museum of Art
+  accession: 30.76.89
+  collection_url: https://www.metmuseum.org/art/collection/search/61575

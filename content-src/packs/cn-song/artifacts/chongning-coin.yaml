@@ -1,0 +1,33 @@
+id: cn.song.artifact.chongning-coin
+title: 崇宁通宝
+exhibit_type: object
+aliases:
+- 崇宁通宝
+- 崇宁铜钱
+- 崇宁钱币
+source_ids:
+- cn.song.source.reference-chongning-coin
+time_range:
+  start_year: 1102
+  end_year: 1106
+  precision: range
+  display_label: 1102—1106年
+  uncertainty: 馆方断代或作品时间；存在推定与资料差异时以原始资料为准。
+category: 器物
+asset_ids:
+- cn.song.asset.chongning-coin.photo
+presentation:
+  preview_asset_id: cn.song.asset.chongning-coin.photo
+  display:
+    kind: photo
+    asset_id: cn.song.asset.chongning-coin.photo
+  teaser: 这枚北宋铜钱不只与货币有关，钱上的文字还让我们看到书法。一起看看它的形状和字。
+  background_node_id: cn.song.node.chongning-coin.intro
+fact_card_ids:
+- cn.song.fact.chongning-coin.reference
+story_entry_ids:
+- cn.song.story.chongning-coin
+museum:
+  name: The Metropolitan Museum of Art
+  accession: '2013.43'
+  collection_url: https://www.metmuseum.org/art/collection/search/75816

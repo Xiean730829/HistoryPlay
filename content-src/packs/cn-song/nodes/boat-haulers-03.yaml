@@ -1,0 +1,14 @@
+id: cn.song.node.boat-haulers.03
+story_id: cn.song.story.boat-haulers
+fact_grade: C
+narration: 宋代江河连接着许多地方，水路运输让货物和人得以往来。更具体的路线与劳动方式，要查阅史料，不能只凭这幅画断定。
+allowed_actions:
+- return_to_exhibit
+exits:
+- action: return_to_exhibit
+  target_node_id: cn.song.node.boat-haulers.01
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.boat-haulers.story-03
+return_checkpoint: true

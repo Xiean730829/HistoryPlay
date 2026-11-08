@@ -1,0 +1,13 @@
+id: cn.song.node.chongning-coin.01
+story_id: cn.song.story.chongning-coin
+fact_grade: C
+narration: 这枚铜钱中间有方孔，外面是圆形。小小一枚钱币，可以把文字和器物的形制放在一起看。
+allowed_actions:
+- continue_story
+exits:
+- action: continue_story
+  target_node_id: cn.song.node.chongning-coin.02
+presentation:
+  capability: comic
+  asset_ids:
+  - cn.song.asset.chongning-coin.story-01
