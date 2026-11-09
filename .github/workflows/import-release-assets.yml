@@ -1,0 +1,53 @@
+name: Import release assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Draft or published release tag containing files
+        required: true
+        type: string
+      target_branch:
+        description: Existing branch that already points at the intended parent
+        required: true
+        type: string
+      dest_dir:
+        description: Directory that should receive the downloaded files
+        required: true
+        type: string
+        default: assets/cn.song.core/0.1.4/files
+      commit_title:
+        description: Commit title for the imported files
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_branch }}
+          fetch-depth: 0
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "${{ inputs.dest_dir }}"
+          gh release download "${{ inputs.release_tag }}" --repo "$GITHUB_REPOSITORY" --dir "${{ inputs.dest_dir }}" --pattern '*'
+      - name: Commit imported files
+        env:
+          COMMIT_TITLE: ${{ inputs.commit_title }}
+          DEST_DIR: ${{ inputs.dest_dir }}
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- "$DEST_DIR"
+          git status --short
+          git diff --cached --stat
+          git commit -m "$COMMIT_TITLE"
+          git push origin "HEAD:$TARGET_BRANCH"
