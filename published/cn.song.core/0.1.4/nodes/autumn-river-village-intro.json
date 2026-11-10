@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.autumn-river-village.01"}],"fact_grade":"F","id":"cn.song.node.autumn-river-village.intro","narration":"这幅手卷以赵令穰风格描绘江村秋晓。我们不必急着读完整卷，先沿着秋水看看村落。","story_id":"cn.song.story.autumn-river-village"}

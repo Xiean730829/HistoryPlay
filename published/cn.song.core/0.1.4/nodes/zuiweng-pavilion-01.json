@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.zuiweng-pavilion.02"}],"fact_grade":"C","id":"cn.song.node.zuiweng-pavilion.01","narration":"沿山路走，林木越来越密，泉水从山间流出。文章把读者带到一座藏在山水里的亭子。","presentation":{"asset_ids":["cn.song.asset.zuiweng-pavilion.story-01"],"capability":"comic"},"story_id":"cn.song.story.zuiweng-pavilion"}

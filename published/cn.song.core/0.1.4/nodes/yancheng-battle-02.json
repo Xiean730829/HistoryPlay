@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.yancheng-battle.03"}],"fact_grade":"C","id":"cn.song.node.yancheng-battle.02","narration":"岳飞所率南宋军队在郾城附近与金军交战，取得胜利。关于细节，应以可核查史料为准。","presentation":{"asset_ids":["cn.song.asset.yancheng-battle.story-02"],"capability":"comic"},"story_id":"cn.song.story.yancheng-battle"}

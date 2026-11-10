@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.longquan-vase.03"}],"fact_grade":"C","id":"cn.song.node.longquan-vase.02","narration":"再走近一些，青绿色的釉面在光下显得温润。换一个角度，颜色和光感也会发生细微变化。","presentation":{"asset_ids":["cn.song.asset.longquan-vase.story-02"],"capability":"comic"},"story_id":"cn.song.story.longquan-vase"}

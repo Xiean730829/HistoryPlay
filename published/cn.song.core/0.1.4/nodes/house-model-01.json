@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.house-model.02"}],"fact_grade":"C","id":"cn.song.node.house-model.01","narration":"想象一间宋代作坊，工匠在桌前准备泥料，打算制作一座小屋。眼前的作坊是艺术演绎，并非这件藏品真实工坊的记录。","presentation":{"asset_ids":["cn.song.asset.house-model.story-01"],"capability":"comic"},"story_id":"cn.song.story.house-model"}

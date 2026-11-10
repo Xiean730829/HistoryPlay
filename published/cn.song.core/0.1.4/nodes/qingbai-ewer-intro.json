@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.qingbai-ewer.01"}],"fact_grade":"F","id":"cn.song.node.qingbai-ewer.intro","narration":"这是一件北宋青白瓷注子。请看它细长的流、圆润的器身，还有温润的青白釉色。注子是一种用来倾注液体的器物；这件藏品的物主和它曾装过什么，现有资料没有确认。","story_id":"cn.song.story.qingbai-ewer"}

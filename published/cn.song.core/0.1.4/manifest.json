@@ -1,0 +1,1 @@
+{"id":"cn.song.core","language":"zh-CN","publication_status":"published","region":{"id":"cn","label":"中国"},"required_capabilities":["comic"],"schema_version":"1","time_range":{"display_label":"宋朝","end_year":1279,"precision":"range","start_year":960},"title":"宋代画卷三十六项候选","version":"0.1.4"}

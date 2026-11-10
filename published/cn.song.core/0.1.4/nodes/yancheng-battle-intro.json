@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.yancheng-battle.01"}],"fact_grade":"F","id":"cn.song.node.yancheng-battle.intro","narration":"南宋时期，宋金之间发生过多次战争。郾城之战是其中一次重要战事，我们会讲它的背景和结果。","story_id":"cn.song.story.yancheng-battle"}

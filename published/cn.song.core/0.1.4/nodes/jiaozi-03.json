@@ -1,0 +1,1 @@
+{"allowed_actions":["return_to_exhibit"],"exits":[{"action":"return_to_exhibit","target_node_id":"cn.song.node.jiaozi.01"}],"fact_grade":"C","id":"cn.song.node.jiaozi.03","narration":"北宋政府后来设置机构管理和发行交子。一张纸能被接受，背后离不开人们对兑付和规则的信任。","presentation":{"asset_ids":["cn.song.asset.jiaozi.story-03"],"capability":"comic"},"return_checkpoint":true,"story_id":"cn.song.story.jiaozi"}

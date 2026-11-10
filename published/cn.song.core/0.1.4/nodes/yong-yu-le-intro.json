@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.yong-yu-le.01"}],"fact_grade":"F","id":"cn.song.node.yong-yu-le.intro","narration":"这首《永遇乐》借京口北固亭写江山和历史。跟随词人登临的视角，看看他怎样把怀古写进词里。","story_id":"cn.song.story.yong-yu-le"}

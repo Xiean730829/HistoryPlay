@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.jian-tea-bowl.02"}],"fact_grade":"C","id":"cn.song.node.jian-tea-bowl.01","narration":"先看茶盏的形状，再看深色的釉。陶工让釉覆盖盏身，接下来，窑火会参与改变它的样子。","presentation":{"asset_ids":["cn.song.asset.jian-tea-bowl.story-01"],"capability":"comic"},"story_id":"cn.song.story.jian-tea-bowl"}

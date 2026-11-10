@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.jingkang-change.03"}],"fact_grade":"C","id":"cn.song.node.jingkang-change.02","narration":"有人因战乱迁徙，有人留在原地。每个家庭的经历不同，我们不能替所有人编出同一种故事。","presentation":{"asset_ids":["cn.song.asset.jingkang-change.story-02"],"capability":"comic"},"story_id":"cn.song.story.jingkang-change"}

@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.jiaozi.01"}],"fact_grade":"F","id":"cn.song.node.jiaozi.intro","narration":"你能想象出门做生意要带许多铁钱吗？北宋四川的人们，曾用交子让携带和交易更方便。","story_id":"cn.song.story.jiaozi"}

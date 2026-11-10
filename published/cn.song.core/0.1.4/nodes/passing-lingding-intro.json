@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.passing-lingding.01"}],"fact_grade":"F","id":"cn.song.node.passing-lingding.intro","narration":"南宋末年，文天祥在艰难处境中写下《过零丁洋》。诗里有风雨，也有他不愿放弃的信念。","story_id":"cn.song.story.passing-lingding"}

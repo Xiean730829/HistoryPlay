@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.boat-haulers.01"}],"fact_grade":"F","id":"cn.song.node.boat-haulers.intro","narration":"这幅宋代画作描绘风雨中牵行的舟船。我们从画中出发，了解水路运输与人们的劳动。","story_id":"cn.song.story.boat-haulers"}

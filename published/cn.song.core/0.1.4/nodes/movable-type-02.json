@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.movable-type.03"}],"fact_grade":"C","id":"cn.song.node.movable-type.02","narration":"按照内容把字块排好，再上墨印到纸上。这里的工坊画面是根据文献制作的教学演绎。","presentation":{"asset_ids":["cn.song.asset.movable-type.story-02"],"capability":"comic"},"story_id":"cn.song.story.movable-type"}

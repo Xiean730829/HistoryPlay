@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.bowl-mold.03"}],"fact_grade":"C","id":"cn.song.node.bowl-mold.02","narration":"馆方介绍，这类制作方式借助模具让泥料形成纹样。具体动作和每件器物的制作过程，仍应以研究资料为准。","presentation":{"asset_ids":["cn.song.asset.bowl-mold.story-02"],"capability":"comic"},"story_id":"cn.song.story.bowl-mold"}

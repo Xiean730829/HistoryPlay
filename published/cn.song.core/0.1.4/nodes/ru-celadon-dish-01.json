@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.ru-celadon-dish.02"}],"fact_grade":"C","id":"cn.song.node.ru-celadon-dish.01","narration":"这只盘的颜色清淡，形状也很简洁。正因为装饰不多，我们更容易注意到它的釉色和线条。","presentation":{"asset_ids":["cn.song.asset.ru-celadon-dish.story-01"],"capability":"comic"},"story_id":"cn.song.story.ru-celadon-dish"}

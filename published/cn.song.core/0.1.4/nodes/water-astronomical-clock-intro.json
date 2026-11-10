@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.water-astronomical-clock.01"}],"fact_grade":"F","id":"cn.song.node.water-astronomical-clock.intro","narration":"宋代有人尝试用水推动复杂的机械，观察天象并报告时刻。它叫水运仪象台，像一座会运转的观星楼。","story_id":"cn.song.story.water-astronomical-clock"}

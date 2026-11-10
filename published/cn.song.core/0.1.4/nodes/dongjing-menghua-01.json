@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.dongjing-menghua.02"}],"fact_grade":"C","id":"cn.song.node.dongjing-menghua.01","narration":"北宋结束后，许多人离开熟悉的地方。孟元老在南方回望往日的东京，把关于城市的记忆写下来。","presentation":{"asset_ids":["cn.song.asset.dongjing-menghua.story-01"],"capability":"comic"},"story_id":"cn.song.story.dongjing-menghua"}

@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.yashan-battle.03"}],"fact_grade":"C","id":"cn.song.node.yashan-battle.02","narration":"1279年，宋元双方在崖山发生海战。对当时的人们来说，战争意味着艰难的选择和无法预知的未来。","presentation":{"asset_ids":["cn.song.asset.yashan-battle.story-02"],"capability":"comic"},"story_id":"cn.song.story.yashan-battle"}

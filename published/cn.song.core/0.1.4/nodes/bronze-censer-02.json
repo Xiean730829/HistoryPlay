@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.bronze-censer.03"}],"fact_grade":"C","id":"cn.song.node.bronze-censer.02","narration":"靠近香炉，能看到它的形体和横向纹饰。馆方认为，这件炉子以简洁的装饰突出了器形。","presentation":{"asset_ids":["cn.song.asset.bronze-censer.story-02"],"capability":"comic"},"story_id":"cn.song.story.bronze-censer"}
