@@ -1,0 +1,1099 @@
+{
+  "assets": {
+    "cn.song.asset.autumn-river-village.photo": {
+      "byte_size": 43738,
+      "format": "jpg",
+      "kind": "image",
+      "path": "files/6bbe4631981410ece96cde4df1dd4b974a67b81aaa06091d8083a204221264ac.jpg",
+      "sha256": "6bbe4631981410ece96cde4df1dd4b974a67b81aaa06091d8083a204221264ac"
+    },
+    "cn.song.asset.autumn-river-village.story-01": {
+      "byte_size": 2917972,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/401863f3d5c84feca8842dcb09f8163a69d923c5a0ca89d93b082da50d49ca70.png",
+      "sha256": "401863f3d5c84feca8842dcb09f8163a69d923c5a0ca89d93b082da50d49ca70"
+    },
+    "cn.song.asset.autumn-river-village.story-02": {
+      "byte_size": 3443798,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/75dde8d83824cb994c7da2e4cb37c60750a927a6ea5e3d32935b383c95f3fb34.png",
+      "sha256": "75dde8d83824cb994c7da2e4cb37c60750a927a6ea5e3d32935b383c95f3fb34"
+    },
+    "cn.song.asset.autumn-river-village.story-03": {
+      "byte_size": 3026642,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/cff9626e16e0fe05055187c3e614ff45f3722a15875605461976a376a745b22d.png",
+      "sha256": "cff9626e16e0fe05055187c3e614ff45f3722a15875605461976a376a745b22d"
+    },
+    "cn.song.asset.boat-haulers.photo": {
+      "byte_size": 58051,
+      "format": "jpg",
+      "kind": "image",
+      "path": "files/057f7fed8a9615dbe401f8433b3c6d274f428c71ae83fa7024f4e9e187431a46.jpg",
+      "sha256": "057f7fed8a9615dbe401f8433b3c6d274f428c71ae83fa7024f4e9e187431a46"
+    },
+    "cn.song.asset.boat-haulers.story-01": {
+      "byte_size": 3682145,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/45ebe54777b68dd23753c9377f7614c4929110e186c5da8bf87311ae4cd46f3e.png",
+      "sha256": "45ebe54777b68dd23753c9377f7614c4929110e186c5da8bf87311ae4cd46f3e"
+    },
+    "cn.song.asset.boat-haulers.story-02": {
+      "byte_size": 3556737,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/f3da04f2c57b203692f4d7d870bd701ed18669eaa9e00960336c123d82d178bb.png",
+      "sha256": "f3da04f2c57b203692f4d7d870bd701ed18669eaa9e00960336c123d82d178bb"
+    },
+    "cn.song.asset.boat-haulers.story-03": {
+      "byte_size": 3506796,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/c2b4dd9622e0365ff2728a685ee31d33574872c8ffe78e82aab38ee1c0d114c4.png",
+      "sha256": "c2b4dd9622e0365ff2728a685ee31d33574872c8ffe78e82aab38ee1c0d114c4"
+    },
+    "cn.song.asset.bowl-mold.photo": {
+      "byte_size": 41251,
+      "format": "jpg",
+      "kind": "image",
+      "path": "files/45b8e0117d4385f8cd3ccaa39b6af26da3b976a9342e02a93d774e57b5cf1400.jpg",
+      "sha256": "45b8e0117d4385f8cd3ccaa39b6af26da3b976a9342e02a93d774e57b5cf1400"
+    },
+    "cn.song.asset.bowl-mold.story-01": {
+      "byte_size": 3283598,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/0d4699bae710c450050cfb2fddb4998786bf03cf51276d1fdfb5c827c7596d6a.png",
+      "sha256": "0d4699bae710c450050cfb2fddb4998786bf03cf51276d1fdfb5c827c7596d6a"
+    },
+    "cn.song.asset.bowl-mold.story-02": {
+      "byte_size": 3190090,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/9b19d5979aea84bfc87e4330c24f921ae1858949a47240cbec9dc959e739dcb0.png",
+      "sha256": "9b19d5979aea84bfc87e4330c24f921ae1858949a47240cbec9dc959e739dcb0"
+    },
+    "cn.song.asset.bowl-mold.story-03": {
+      "byte_size": 3322985,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/cb519af2847344a4defff57f3eca11328d7e6f1bb29bedad6f609736abdfea91.png",
+      "sha256": "cb519af2847344a4defff57f3eca11328d7e6f1bb29bedad6f609736abdfea91"
+    },
+    "cn.song.asset.bronze-censer.photo": {
+      "byte_size": 68750,
+      "format": "jpg",
+      "kind": "image",
+      "path": "files/ff6e3351127d0bfeae381e5a48a12e84ad4c70cb0e2389645118f7bbd033afb2.jpg",
+      "sha256": "ff6e3351127d0bfeae381e5a48a12e84ad4c70cb0e2389645118f7bbd033afb2"
+    },
+    "cn.song.asset.bronze-censer.story-01": {
+      "byte_size": 3394758,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/a547607ff1c3477419e158390bdef33612a0d581c8356f51411c108aabe98533.png",
+      "sha256": "a547607ff1c3477419e158390bdef33612a0d581c8356f51411c108aabe98533"
+    },
+    "cn.song.asset.bronze-censer.story-02": {
+      "byte_size": 3135326,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/17fab30600d90ed6a7c4fd25bd06148712df6a60a9074a62469ee66a41f23e9d.png",
+      "sha256": "17fab30600d90ed6a7c4fd25bd06148712df6a60a9074a62469ee66a41f23e9d"
+    },
+    "cn.song.asset.bronze-censer.story-03": {
+      "byte_size": 3071717,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/6909cec7eda697ca107ed29e2337f09a1a429f318a95fb0052b6cefe3d82ddd5.png",
+      "sha256": "6909cec7eda697ca107ed29e2337f09a1a429f318a95fb0052b6cefe3d82ddd5"
+    },
+    "cn.song.asset.chongning-coin.photo": {
+      "byte_size": 100711,
+      "format": "jpg",
+      "kind": "image",
+      "path": "files/a1c8c103edbc65dfa02e5db55d83230a5d903a0288911be6e9feaf2265f5479a.jpg",
+      "sha256": "a1c8c103edbc65dfa02e5db55d83230a5d903a0288911be6e9feaf2265f5479a"
+    },
+    "cn.song.asset.chongning-coin.story-01": {
+      "byte_size": 2862043,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/b34adbc880553f7ae770f5b58d9e8e3b7d67242d9f9a94ab5f8fb76157fa471e.png",
+      "sha256": "b34adbc880553f7ae770f5b58d9e8e3b7d67242d9f9a94ab5f8fb76157fa471e"
+    },
+    "cn.song.asset.chongning-coin.story-02": {
+      "byte_size": 2782716,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/0028238c831b29c9d8f1db55b6bae413dbf792dae4887b2a9bd391a27e4d7db2.png",
+      "sha256": "0028238c831b29c9d8f1db55b6bae413dbf792dae4887b2a9bd391a27e4d7db2"
+    },
+    "cn.song.asset.chongning-coin.story-03": {
+      "byte_size": 3139879,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/7eadd3d4118108a3739b5ed341550ca727b7a33d3bdda59cd1108e034392d123.png",
+      "sha256": "7eadd3d4118108a3739b5ed341550ca727b7a33d3bdda59cd1108e034392d123"
+    },
+    "cn.song.asset.ding-vase.photo": {
+      "byte_size": 18596,
+      "format": "jpg",
+      "kind": "image",
+      "path": "files/4df6a21b4f0e48d5183087ab6ecb27b7955e88a19dc2b0bc00de6af985cde2bc.jpg",
+      "sha256": "4df6a21b4f0e48d5183087ab6ecb27b7955e88a19dc2b0bc00de6af985cde2bc"
+    },
+    "cn.song.asset.ding-vase.story-01": {
+      "byte_size": 2739184,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/58cb2f9bde1f3c8d1582896c27e83d5fcffcf144a0d5ba8218c711ed133880ad.png",
+      "sha256": "58cb2f9bde1f3c8d1582896c27e83d5fcffcf144a0d5ba8218c711ed133880ad"
+    },
+    "cn.song.asset.ding-vase.story-02": {
+      "byte_size": 2770619,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/402fb96a5da4863a5328bbe6a6a27e11f2d6d89fcbbad0bdd722bad5ca563de6.png",
+      "sha256": "402fb96a5da4863a5328bbe6a6a27e11f2d6d89fcbbad0bdd722bad5ca563de6"
+    },
+    "cn.song.asset.ding-vase.story-03": {
+      "byte_size": 2588735,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/157badda6cf9bffb6598fec0c8660765c05620b3024f7b27862f030c0ce56e5c.png",
+      "sha256": "157badda6cf9bffb6598fec0c8660765c05620b3024f7b27862f030c0ce56e5c"
+    },
+    "cn.song.asset.dongjing-menghua.interpretation": {
+      "byte_size": 3283604,
+      "format": "png",
+      "kind": "image",
+      "path": "files/4ba219f804d97a5022a499da7f09d36884cdbef8752660258ec7c7b879769c1b.png",
+      "sha256": "4ba219f804d97a5022a499da7f09d36884cdbef8752660258ec7c7b879769c1b"
+    },
+    "cn.song.asset.dongjing-menghua.story-01": {
+      "byte_size": 3283604,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/4ba219f804d97a5022a499da7f09d36884cdbef8752660258ec7c7b879769c1b.png",
+      "sha256": "4ba219f804d97a5022a499da7f09d36884cdbef8752660258ec7c7b879769c1b"
+    },
+    "cn.song.asset.dongjing-menghua.story-02": {
+      "byte_size": 3153268,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/dbd17bb117dfbef1ffa6894500cd56f73aabd36d40ef1fd6610f91313f145227.png",
+      "sha256": "dbd17bb117dfbef1ffa6894500cd56f73aabd36d40ef1fd6610f91313f145227"
+    },
+    "cn.song.asset.dongjing-menghua.story-03": {
+      "byte_size": 3140628,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/4832bfad8051cc48e56597c9acfa849bab53be77c28e2da9808878436554bebf.png",
+      "sha256": "4832bfad8051cc48e56597c9acfa849bab53be77c28e2da9808878436554bebf"
+    },
+    "cn.song.asset.dragon-boat-figurine.photo": {
+      "byte_size": 15397,
+      "format": "jpg",
+      "kind": "image",
+      "path": "files/ea6c58d039acb9c256ef64c3a16bff7489cb27026e4244d8d331a4c03eb0f780.jpg",
+      "sha256": "ea6c58d039acb9c256ef64c3a16bff7489cb27026e4244d8d331a4c03eb0f780"
+    },
+    "cn.song.asset.dragon-boat-figurine.story-01": {
+      "byte_size": 2859434,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/cdce8103d9536137d5b0f7812a12c496e51c53a1ec28d1d9b64d396faa6eba5c.png",
+      "sha256": "cdce8103d9536137d5b0f7812a12c496e51c53a1ec28d1d9b64d396faa6eba5c"
+    },
+    "cn.song.asset.dragon-boat-figurine.story-02": {
+      "byte_size": 3169481,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/68bb659a682bfbe48a2f7cf1a3378ba12edbcf5a186b4447a961a1c742174825.png",
+      "sha256": "68bb659a682bfbe48a2f7cf1a3378ba12edbcf5a186b4447a961a1c742174825"
+    },
+    "cn.song.asset.dragon-boat-figurine.story-03": {
+      "byte_size": 2846449,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/5f07713d7604666b7c39d23ec9ea65ab4556abe5ca8f15210a9a3b7e55b72752.png",
+      "sha256": "5f07713d7604666b7c39d23ec9ea65ab4556abe5ca8f15210a9a3b7e55b72752"
+    },
+    "cn.song.asset.fan-kuan-landscape.photo": {
+      "byte_size": 73380,
+      "format": "jpg",
+      "kind": "image",
+      "path": "files/8345ff39ce7ced249cf554892ecbb47c9989329c3bf8cbae3b0b920e54c17af1.jpg",
+      "sha256": "8345ff39ce7ced249cf554892ecbb47c9989329c3bf8cbae3b0b920e54c17af1"
+    },
+    "cn.song.asset.fan-kuan-landscape.story-01": {
+      "byte_size": 3467741,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/a8639fac7c28b73a00cc99db1c894454d56abd044e33364ac285f4794c861fdc.png",
+      "sha256": "a8639fac7c28b73a00cc99db1c894454d56abd044e33364ac285f4794c861fdc"
+    },
+    "cn.song.asset.fan-kuan-landscape.story-02": {
+      "byte_size": 3382447,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/536f10eb8e5edf210ea649f28d21af306291908710def851df937b200183775d.png",
+      "sha256": "536f10eb8e5edf210ea649f28d21af306291908710def851df937b200183775d"
+    },
+    "cn.song.asset.fan-kuan-landscape.story-03": {
+      "byte_size": 3327532,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/3cc0fd3f270c8f5f08941a16d7f0d82a2520ab4edc46674880eee0d16c47172b.png",
+      "sha256": "3cc0fd3f270c8f5f08941a16d7f0d82a2520ab4edc46674880eee0d16c47172b"
+    },
+    "cn.song.asset.fan-kuan-travelers.interpretation": {
+      "byte_size": 3416086,
+      "format": "png",
+      "kind": "image",
+      "path": "files/565022ea8fd9d8191f853c0b1e7a1a2006b1233e6321e6d6288a0c42fc62b1c0.png",
+      "sha256": "565022ea8fd9d8191f853c0b1e7a1a2006b1233e6321e6d6288a0c42fc62b1c0"
+    },
+    "cn.song.asset.fan-kuan-travelers.story-01": {
+      "byte_size": 3416086,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/565022ea8fd9d8191f853c0b1e7a1a2006b1233e6321e6d6288a0c42fc62b1c0.png",
+      "sha256": "565022ea8fd9d8191f853c0b1e7a1a2006b1233e6321e6d6288a0c42fc62b1c0"
+    },
+    "cn.song.asset.fan-kuan-travelers.story-02": {
+      "byte_size": 3655888,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/ae75a57387c66062953a699b2482902d58e3d30922199f13a2764ca3261a6e46.png",
+      "sha256": "ae75a57387c66062953a699b2482902d58e3d30922199f13a2764ca3261a6e46"
+    },
+    "cn.song.asset.fan-kuan-travelers.story-03": {
+      "byte_size": 3429365,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/d07d297bfe9f67e6bcc6100d1ed356d1e8ee3eeff30509bb8952f321e0680d49.png",
+      "sha256": "d07d297bfe9f67e6bcc6100d1ed356d1e8ee3eeff30509bb8952f321e0680d49"
+    },
+    "cn.song.asset.guan-vase.photo": {
+      "byte_size": 24121,
+      "format": "jpg",
+      "kind": "image",
+      "path": "files/9c7c882b025a6596d66dac9582ee07f4758f9cc8ec9c879e3133a319337cff76.jpg",
+      "sha256": "9c7c882b025a6596d66dac9582ee07f4758f9cc8ec9c879e3133a319337cff76"
+    },
+    "cn.song.asset.guan-vase.story-01": {
+      "byte_size": 2945162,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/d628a5b632e08bdfcacd32f0df14e9ebe25effb3ecbf2fa4c094dd743257146b.png",
+      "sha256": "d628a5b632e08bdfcacd32f0df14e9ebe25effb3ecbf2fa4c094dd743257146b"
+    },
+    "cn.song.asset.guan-vase.story-02": {
+      "byte_size": 2878374,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/c5a80c17fb001dea8af2165476ab397672d6b3e1fbe84e0cb2125e86c9a872a6.png",
+      "sha256": "c5a80c17fb001dea8af2165476ab397672d6b3e1fbe84e0cb2125e86c9a872a6"
+    },
+    "cn.song.asset.guan-vase.story-03": {
+      "byte_size": 2720600,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/b0a3bb26339d35a0df412014e878481d9660accbc674d366a9abfde96cfc5d0a.png",
+      "sha256": "b0a3bb26339d35a0df412014e878481d9660accbc674d366a9abfde96cfc5d0a"
+    },
+    "cn.song.asset.hanshi-scroll.interpretation": {
+      "byte_size": 2920818,
+      "format": "png",
+      "kind": "image",
+      "path": "files/f140f13d9fd968434b41ae3f944592fbd9151323fb35489b017b4d23e0e70352.png",
+      "sha256": "f140f13d9fd968434b41ae3f944592fbd9151323fb35489b017b4d23e0e70352"
+    },
+    "cn.song.asset.hanshi-scroll.story-01": {
+      "byte_size": 2920818,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/f140f13d9fd968434b41ae3f944592fbd9151323fb35489b017b4d23e0e70352.png",
+      "sha256": "f140f13d9fd968434b41ae3f944592fbd9151323fb35489b017b4d23e0e70352"
+    },
+    "cn.song.asset.hanshi-scroll.story-02": {
+      "byte_size": 3083104,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/7aab1614d8224733d7743976d3574c1f25ecae90e460261dcb256aa896cde74a.png",
+      "sha256": "7aab1614d8224733d7743976d3574c1f25ecae90e460261dcb256aa896cde74a"
+    },
+    "cn.song.asset.hanshi-scroll.story-03": {
+      "byte_size": 2938105,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/f3032d372425ef30d0e44e214cd23fb10a879be65febe044a39be9982b6dee3c.png",
+      "sha256": "f3032d372425ef30d0e44e214cd23fb10a879be65febe044a39be9982b6dee3c"
+    },
+    "cn.song.asset.house-model.photo": {
+      "byte_size": 153494,
+      "format": "jpg",
+      "kind": "image",
+      "path": "files/3ec2d7832d9a67f7355c094044c1f015468cd81cc8365ee3dd665b6df46770c8.jpg",
+      "sha256": "3ec2d7832d9a67f7355c094044c1f015468cd81cc8365ee3dd665b6df46770c8"
+    },
+    "cn.song.asset.house-model.story-01": {
+      "byte_size": 2658252,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/27b8e3935e06227f8ab8d6ceb43ec242bb1a111b10d3fc2b6113b6579dd1a9ba.png",
+      "sha256": "27b8e3935e06227f8ab8d6ceb43ec242bb1a111b10d3fc2b6113b6579dd1a9ba"
+    },
+    "cn.song.asset.house-model.story-02": {
+      "byte_size": 2713762,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/14f9854b3cfacff59c29acbdca9b9ebbaa9ae8f4f9926ece26a26047158b6516.png",
+      "sha256": "14f9854b3cfacff59c29acbdca9b9ebbaa9ae8f4f9926ece26a26047158b6516"
+    },
+    "cn.song.asset.house-model.story-03": {
+      "byte_size": 2826493,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/a27e6885e675f8ab4cda19809722090cca27e401f4dbdaae1bf25df845824d6f.png",
+      "sha256": "a27e6885e675f8ab4cda19809722090cca27e401f4dbdaae1bf25df845824d6f"
+    },
+    "cn.song.asset.jian-tea-bowl.photo": {
+      "byte_size": 25922,
+      "format": "jpg",
+      "kind": "image",
+      "path": "files/e51d37659fb8b3dd3f24560b445770d8191e6ee304193b0034de28f76f1b4881.jpg",
+      "sha256": "e51d37659fb8b3dd3f24560b445770d8191e6ee304193b0034de28f76f1b4881"
+    },
+    "cn.song.asset.jian-tea-bowl.story-01": {
+      "byte_size": 3299203,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/d85c8915b5cf2d2b5963780783642e23b24397f16cd313c86a23c7b70ab7dd1e.png",
+      "sha256": "d85c8915b5cf2d2b5963780783642e23b24397f16cd313c86a23c7b70ab7dd1e"
+    },
+    "cn.song.asset.jian-tea-bowl.story-02": {
+      "byte_size": 3498460,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/cb815acb84baf6d5d3e6ba79cfeb4d6fcd43945ae20ec0de579f6198bc513ed4.png",
+      "sha256": "cb815acb84baf6d5d3e6ba79cfeb4d6fcd43945ae20ec0de579f6198bc513ed4"
+    },
+    "cn.song.asset.jian-tea-bowl.story-03": {
+      "byte_size": 2985702,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/4ff4869ea573c108fdac96855eb16fb23ed87f90eb057b04705b617df9713b0d.png",
+      "sha256": "4ff4869ea573c108fdac96855eb16fb23ed87f90eb057b04705b617df9713b0d"
+    },
+    "cn.song.asset.jiaozi.interpretation": {
+      "byte_size": 3490402,
+      "format": "png",
+      "kind": "image",
+      "path": "files/16393a8eb334ae448ec0e09710f7a738831e004a1ef9330729062bec8adff763.png",
+      "sha256": "16393a8eb334ae448ec0e09710f7a738831e004a1ef9330729062bec8adff763"
+    },
+    "cn.song.asset.jiaozi.story-01": {
+      "byte_size": 3490402,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/16393a8eb334ae448ec0e09710f7a738831e004a1ef9330729062bec8adff763.png",
+      "sha256": "16393a8eb334ae448ec0e09710f7a738831e004a1ef9330729062bec8adff763"
+    },
+    "cn.song.asset.jiaozi.story-02": {
+      "byte_size": 2913804,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/249f2b166f79b3ac6e5c53a303df085ee2496af3ba832f18c1510f7e58364ba6.png",
+      "sha256": "249f2b166f79b3ac6e5c53a303df085ee2496af3ba832f18c1510f7e58364ba6"
+    },
+    "cn.song.asset.jiaozi.story-03": {
+      "byte_size": 3120244,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/7d57aa6ebba5d361b68f5af56a82be1491aca83b91b0748388d04786cfe42e3c.png",
+      "sha256": "7d57aa6ebba5d361b68f5af56a82be1491aca83b91b0748388d04786cfe42e3c"
+    },
+    "cn.song.asset.jingkang-change.interpretation": {
+      "byte_size": 3209001,
+      "format": "png",
+      "kind": "image",
+      "path": "files/cda94371070a0805db971deea2672fe01e444c1410845845bb14301cd9417086.png",
+      "sha256": "cda94371070a0805db971deea2672fe01e444c1410845845bb14301cd9417086"
+    },
+    "cn.song.asset.jingkang-change.story-01": {
+      "byte_size": 3209001,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/cda94371070a0805db971deea2672fe01e444c1410845845bb14301cd9417086.png",
+      "sha256": "cda94371070a0805db971deea2672fe01e444c1410845845bb14301cd9417086"
+    },
+    "cn.song.asset.jingkang-change.story-02": {
+      "byte_size": 3606433,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/b008a3ad81fa4deafee05d7ba67e4255b2bcb07a03ec532f594f7b119db7214f.png",
+      "sha256": "b008a3ad81fa4deafee05d7ba67e4255b2bcb07a03ec532f594f7b119db7214f"
+    },
+    "cn.song.asset.jingkang-change.story-03": {
+      "byte_size": 3174389,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/8e5e6967ab9828a4191b799c3cbd9bb3d7a981ae9e7b269a1f57e39618b1a3c2.png",
+      "sha256": "8e5e6967ab9828a4191b799c3cbd9bb3d7a981ae9e7b269a1f57e39618b1a3c2"
+    },
+    "cn.song.asset.later-red-cliff.interpretation": {
+      "byte_size": 3518104,
+      "format": "png",
+      "kind": "image",
+      "path": "files/e9ec7ae6bbdf09c1fc78752d87df28499f093e3a861f2f0f104f5d9508195c6f.png",
+      "sha256": "e9ec7ae6bbdf09c1fc78752d87df28499f093e3a861f2f0f104f5d9508195c6f"
+    },
+    "cn.song.asset.later-red-cliff.story-01": {
+      "byte_size": 3518104,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/e9ec7ae6bbdf09c1fc78752d87df28499f093e3a861f2f0f104f5d9508195c6f.png",
+      "sha256": "e9ec7ae6bbdf09c1fc78752d87df28499f093e3a861f2f0f104f5d9508195c6f"
+    },
+    "cn.song.asset.later-red-cliff.story-02": {
+      "byte_size": 3359840,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/21d3aee9fa1c336961880e324cf20b035c0b0dad97883eccb8815648f1fe7533.png",
+      "sha256": "21d3aee9fa1c336961880e324cf20b035c0b0dad97883eccb8815648f1fe7533"
+    },
+    "cn.song.asset.later-red-cliff.story-03": {
+      "byte_size": 3106322,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/02ed5af55860ce7644f567b6c1d23fce6cfc529956b72f38239f6131c5bdae89.png",
+      "sha256": "02ed5af55860ce7644f567b6c1d23fce6cfc529956b72f38239f6131c5bdae89"
+    },
+    "cn.song.asset.listening-qin.interpretation": {
+      "byte_size": 3594111,
+      "format": "png",
+      "kind": "image",
+      "path": "files/a2a7a153eb0921a2b58a06cb49b9f0e2d0a476ad1a8cbb3d8693a2f2a3eb9554.png",
+      "sha256": "a2a7a153eb0921a2b58a06cb49b9f0e2d0a476ad1a8cbb3d8693a2f2a3eb9554"
+    },
+    "cn.song.asset.listening-qin.story-01": {
+      "byte_size": 3594111,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/a2a7a153eb0921a2b58a06cb49b9f0e2d0a476ad1a8cbb3d8693a2f2a3eb9554.png",
+      "sha256": "a2a7a153eb0921a2b58a06cb49b9f0e2d0a476ad1a8cbb3d8693a2f2a3eb9554"
+    },
+    "cn.song.asset.listening-qin.story-02": {
+      "byte_size": 3465547,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/32caf646b4eae4748c86b6679053861f05186778e8f2ccae6b98d21110b1489d.png",
+      "sha256": "32caf646b4eae4748c86b6679053861f05186778e8f2ccae6b98d21110b1489d"
+    },
+    "cn.song.asset.listening-qin.story-03": {
+      "byte_size": 3144235,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/b1a48fc734d349652154d43e86d6e06c65ebd12ff734570c6028b6a274bbd03c.png",
+      "sha256": "b1a48fc734d349652154d43e86d6e06c65ebd12ff734570c6028b6a274bbd03c"
+    },
+    "cn.song.asset.longquan-vase.photo": {
+      "byte_size": 24197,
+      "format": "jpg",
+      "kind": "image",
+      "path": "files/cb5cd5f433ffddc0ae5193d78b36376ee0da8430575e72f7aafa9130e7c1c0ac.jpg",
+      "sha256": "cb5cd5f433ffddc0ae5193d78b36376ee0da8430575e72f7aafa9130e7c1c0ac"
+    },
+    "cn.song.asset.longquan-vase.story-01": {
+      "byte_size": 2824627,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/01427dfe6fc9ad7e0cf3605f7e46cce4d8dc8b83fd7fd68bbe18f3efbaff2e64.png",
+      "sha256": "01427dfe6fc9ad7e0cf3605f7e46cce4d8dc8b83fd7fd68bbe18f3efbaff2e64"
+    },
+    "cn.song.asset.longquan-vase.story-02": {
+      "byte_size": 2751540,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/57c229131176f7606f5438ec1a52cb1c366a921b56f49b74e470645509705e13.png",
+      "sha256": "57c229131176f7606f5438ec1a52cb1c366a921b56f49b74e470645509705e13"
+    },
+    "cn.song.asset.longquan-vase.story-03": {
+      "byte_size": 2715264,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/45eae0be2ec00de8e336a64519343329859c2baedb364b851140be610ce26102.png",
+      "sha256": "45eae0be2ec00de8e336a64519343329859c2baedb364b851140be610ce26102"
+    },
+    "cn.song.asset.mi-fu-scroll.photo": {
+      "byte_size": 93562,
+      "format": "jpg",
+      "kind": "image",
+      "path": "files/93873ef6eecb774755829f1825df45f8af118366c5f8c6b0b9bf7f0d41e6e731.jpg",
+      "sha256": "93873ef6eecb774755829f1825df45f8af118366c5f8c6b0b9bf7f0d41e6e731"
+    },
+    "cn.song.asset.mi-fu-scroll.story-01": {
+      "byte_size": 3120202,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/8a291dffaea2137efec69f003c6d699a6bc5bedc2ccec33ee7014d79f6162f7c.png",
+      "sha256": "8a291dffaea2137efec69f003c6d699a6bc5bedc2ccec33ee7014d79f6162f7c"
+    },
+    "cn.song.asset.mi-fu-scroll.story-02": {
+      "byte_size": 3035675,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/54ed47347074a9998ede0663b245715e333d4d83c371e6ab7a36fceefac2f9a6.png",
+      "sha256": "54ed47347074a9998ede0663b245715e333d4d83c371e6ab7a36fceefac2f9a6"
+    },
+    "cn.song.asset.mi-fu-scroll.story-03": {
+      "byte_size": 2993067,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/213a150d21ff7a784aefa10d1482081e7f47d7ea3279f795366cfa114c730847.png",
+      "sha256": "213a150d21ff7a784aefa10d1482081e7f47d7ea3279f795366cfa114c730847"
+    },
+    "cn.song.asset.movable-type.interpretation": {
+      "byte_size": 3425729,
+      "format": "png",
+      "kind": "image",
+      "path": "files/58dbeab614c175820f97c0f1ca483c17d68e97ebdf3805a8b27ca18fb011c668.png",
+      "sha256": "58dbeab614c175820f97c0f1ca483c17d68e97ebdf3805a8b27ca18fb011c668"
+    },
+    "cn.song.asset.movable-type.story-01": {
+      "byte_size": 3425729,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/58dbeab614c175820f97c0f1ca483c17d68e97ebdf3805a8b27ca18fb011c668.png",
+      "sha256": "58dbeab614c175820f97c0f1ca483c17d68e97ebdf3805a8b27ca18fb011c668"
+    },
+    "cn.song.asset.movable-type.story-02": {
+      "byte_size": 2957445,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/6e6e20697d435980a5291b769b8567b4e5ebbf3200c4fe4a55368e02610ba651.png",
+      "sha256": "6e6e20697d435980a5291b769b8567b4e5ebbf3200c4fe4a55368e02610ba651"
+    },
+    "cn.song.asset.movable-type.story-03": {
+      "byte_size": 3179780,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/80a1814c7a5268e912bef9266f1632640ae031c113d8ced9586b78ed9f3b7c57.png",
+      "sha256": "80a1814c7a5268e912bef9266f1632640ae031c113d8ced9586b78ed9f3b7c57"
+    },
+    "cn.song.asset.passing-lingding.interpretation": {
+      "byte_size": 3167281,
+      "format": "png",
+      "kind": "image",
+      "path": "files/733dda0a6c6168c4d735597c87caece5aca160505f0b81ba3a1ebd94720becc9.png",
+      "sha256": "733dda0a6c6168c4d735597c87caece5aca160505f0b81ba3a1ebd94720becc9"
+    },
+    "cn.song.asset.passing-lingding.story-01": {
+      "byte_size": 3167281,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/733dda0a6c6168c4d735597c87caece5aca160505f0b81ba3a1ebd94720becc9.png",
+      "sha256": "733dda0a6c6168c4d735597c87caece5aca160505f0b81ba3a1ebd94720becc9"
+    },
+    "cn.song.asset.passing-lingding.story-02": {
+      "byte_size": 3483039,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/a8aa5d8be74be58e76ede139efadcbd61e9bd442111d6d32437f5d1d93448bd0.png",
+      "sha256": "a8aa5d8be74be58e76ede139efadcbd61e9bd442111d6d32437f5d1d93448bd0"
+    },
+    "cn.song.asset.passing-lingding.story-03": {
+      "byte_size": 3018059,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/6536af9907405fd5ecf724ab8e0fa03e501164bc228b137151ceb6173a7c0655.png",
+      "sha256": "6536af9907405fd5ecf724ab8e0fa03e501164bc228b137151ceb6173a7c0655"
+    },
+    "cn.song.asset.qingbai-ewer.photo": {
+      "byte_size": 26674,
+      "format": "jpg",
+      "kind": "image",
+      "path": "files/1398e199d6c310fc3b0060548842202053f93eb7735187aae70df07a948116e1.jpg",
+      "sha256": "1398e199d6c310fc3b0060548842202053f93eb7735187aae70df07a948116e1"
+    },
+    "cn.song.asset.qingbai-ewer.story-01": {
+      "byte_size": 2628179,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/c2b7c905adbf5405d830761efa7060e47f9975306c5c698c6257d5d749ce716d.png",
+      "sha256": "c2b7c905adbf5405d830761efa7060e47f9975306c5c698c6257d5d749ce716d"
+    },
+    "cn.song.asset.qingbai-ewer.story-02": {
+      "byte_size": 2600949,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/023978a278500298b369f9f3929faf3ba3bfb287c07cefb5e931b08d8dc43bda.png",
+      "sha256": "023978a278500298b369f9f3929faf3ba3bfb287c07cefb5e931b08d8dc43bda"
+    },
+    "cn.song.asset.qingbai-ewer.story-03": {
+      "byte_size": 2457956,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/ccf6be7f4793a233b65ee30e148449574fdb2dd9fc5749ca930b3177eb2dcd28.png",
+      "sha256": "ccf6be7f4793a233b65ee30e148449574fdb2dd9fc5749ca930b3177eb2dcd28"
+    },
+    "cn.song.asset.qingming-riverside.interpretation": {
+      "byte_size": 3724743,
+      "format": "png",
+      "kind": "image",
+      "path": "files/26f3cbf278d66c5ab7a2409592a2e0569f6cbfaff757c03c565ef7028681c5f8.png",
+      "sha256": "26f3cbf278d66c5ab7a2409592a2e0569f6cbfaff757c03c565ef7028681c5f8"
+    },
+    "cn.song.asset.qingming-riverside.story-01": {
+      "byte_size": 3724743,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/26f3cbf278d66c5ab7a2409592a2e0569f6cbfaff757c03c565ef7028681c5f8.png",
+      "sha256": "26f3cbf278d66c5ab7a2409592a2e0569f6cbfaff757c03c565ef7028681c5f8"
+    },
+    "cn.song.asset.qingming-riverside.story-02": {
+      "byte_size": 3540027,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/d2da48b1dd6f8695618560500cf37be28e3004c2a188d9df83e0e6cdc9a84d42.png",
+      "sha256": "d2da48b1dd6f8695618560500cf37be28e3004c2a188d9df83e0e6cdc9a84d42"
+    },
+    "cn.song.asset.qingming-riverside.story-03": {
+      "byte_size": 3507604,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/6c14ec6c472ec96d4e7408e707419943dedb9f29535388fa8bb2073f87c51c17.png",
+      "sha256": "6c14ec6c472ec96d4e7408e707419943dedb9f29535388fa8bb2073f87c51c17"
+    },
+    "cn.song.asset.ru-celadon-dish.interpretation": {
+      "byte_size": 3017074,
+      "format": "png",
+      "kind": "image",
+      "path": "files/31e474c2f7f997a898a4ed5269eca2894e2b429ba14ecd12fdedc0715f4825a1.png",
+      "sha256": "31e474c2f7f997a898a4ed5269eca2894e2b429ba14ecd12fdedc0715f4825a1"
+    },
+    "cn.song.asset.ru-celadon-dish.story-01": {
+      "byte_size": 3017074,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/31e474c2f7f997a898a4ed5269eca2894e2b429ba14ecd12fdedc0715f4825a1.png",
+      "sha256": "31e474c2f7f997a898a4ed5269eca2894e2b429ba14ecd12fdedc0715f4825a1"
+    },
+    "cn.song.asset.ru-celadon-dish.story-02": {
+      "byte_size": 3112168,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/cb3fd8710a82e13e3a3493e4bd252fad8483339fc52884a9041db8c4f3bea670.png",
+      "sha256": "cb3fd8710a82e13e3a3493e4bd252fad8483339fc52884a9041db8c4f3bea670"
+    },
+    "cn.song.asset.ru-celadon-dish.story-03": {
+      "byte_size": 3124909,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/8cd0918c0ab72bff9c818391180cf04df70beb98fcb24df60338b62f5c9c7f41.png",
+      "sha256": "8cd0918c0ab72bff9c818391180cf04df70beb98fcb24df60338b62f5c9c7f41"
+    },
+    "cn.song.asset.scroll.bianjing-lanterns": {
+      "byte_size": 3500860,
+      "format": "png",
+      "kind": "image",
+      "path": "files/be0094a330a9f1fc0e6fc052c6d4b4ebc3f04d090df37cbb0f2a58981dcad8f7.png",
+      "sha256": "be0094a330a9f1fc0e6fc052c6d4b4ebc3f04d090df37cbb0f2a58981dcad8f7"
+    },
+    "cn.song.asset.scroll.city": {
+      "byte_size": 3790238,
+      "format": "png",
+      "kind": "image",
+      "path": "files/f43b88c05cfe467ed3b8639c3d3947d003bac36f3adfcec6b83652cdba24747f.png",
+      "sha256": "f43b88c05cfe467ed3b8639c3d3947d003bac36f3adfcec6b83652cdba24747f"
+    },
+    "cn.song.asset.scroll.craft": {
+      "byte_size": 3557283,
+      "format": "png",
+      "kind": "image",
+      "path": "files/725b098aa890a2f8cb9156bd8cc5d5e7f914c5b752636be3a7398a2601c3dd4e.png",
+      "sha256": "725b098aa890a2f8cb9156bd8cc5d5e7f914c5b752636be3a7398a2601c3dd4e"
+    },
+    "cn.song.asset.scroll.gathering": {
+      "byte_size": 3676516,
+      "format": "png",
+      "kind": "image",
+      "path": "files/616b4742fa76ad6cefb900adb10fc95bfe74cd468d702088f121db6ec9ff53cb.png",
+      "sha256": "616b4742fa76ad6cefb900adb10fc95bfe74cd468d702088f121db6ec9ff53cb"
+    },
+    "cn.song.asset.scroll.investigation-making": {
+      "byte_size": 3781170,
+      "format": "png",
+      "kind": "image",
+      "path": "files/72fa87ad5af477c89435149be198c53add9ac3de3e0565c84b13e54084ca8d3f.png",
+      "sha256": "72fa87ad5af477c89435149be198c53add9ac3de3e0565c84b13e54084ca8d3f"
+    },
+    "cn.song.asset.scroll.landscape": {
+      "byte_size": 3586525,
+      "format": "png",
+      "kind": "image",
+      "path": "files/6f6fced8e55a0d9bf422d241dfa64264b48ba4bf3b74b9393ee871d69737e28b.png",
+      "sha256": "6f6fced8e55a0d9bf422d241dfa64264b48ba4bf3b74b9393ee871d69737e28b"
+    },
+    "cn.song.asset.scroll.life": {
+      "byte_size": 3592732,
+      "format": "png",
+      "kind": "image",
+      "path": "files/7ded3c1f48d7d2ac84feef29275fae4a2456cb3a77211c36cbc6b543d8be9103.png",
+      "sha256": "7ded3c1f48d7d2ac84feef29275fae4a2456cb3a77211c36cbc6b543d8be9103"
+    },
+    "cn.song.asset.scroll.literati-travel": {
+      "byte_size": 3642107,
+      "format": "png",
+      "kind": "image",
+      "path": "files/7072b708893ba9ff3c7a912fc6b5f9582f6618986b359781e2c7f3944ef08697.png",
+      "sha256": "7072b708893ba9ff3c7a912fc6b5f9582f6618986b359781e2c7f3944ef08697"
+    },
+    "cn.song.asset.scroll.mountains-into-painting": {
+      "byte_size": 3658215,
+      "format": "png",
+      "kind": "image",
+      "path": "files/40657ae82dc5c61e55a22f0c56424290f285965564d1d0542b57ac203ce8a054.png",
+      "sha256": "40657ae82dc5c61e55a22f0c56424290f285965564d1d0542b57ac203ce8a054"
+    },
+    "cn.song.asset.scroll.poetic-rivers": {
+      "byte_size": 3569973,
+      "format": "png",
+      "kind": "image",
+      "path": "files/36a318f4e26d8ede6daf0bd82735d89c929b2e0a8f2618d74e503927db0fc589.png",
+      "sha256": "36a318f4e26d8ede6daf0bd82735d89c929b2e0a8f2618d74e503927db0fc589"
+    },
+    "cn.song.asset.scroll.poetry": {
+      "byte_size": 3678537,
+      "format": "png",
+      "kind": "image",
+      "path": "files/01684e8390053ada0434179bdd2c7f3117aae6c8b30af82404a13df2bd02e398.png",
+      "sha256": "01684e8390053ada0434179bdd2c7f3117aae6c8b30af82404a13df2bd02e398"
+    },
+    "cn.song.asset.scroll.turning-rivers": {
+      "byte_size": 3716494,
+      "format": "png",
+      "kind": "image",
+      "path": "files/3b0e6df0d415214c6d4c9f3718b4b4d8e78be1990a9d6c7256859e269116b5a1.png",
+      "sha256": "3b0e6df0d415214c6d4c9f3718b4b4d8e78be1990a9d6c7256859e269116b5a1"
+    },
+    "cn.song.asset.sheng-sheng-man.interpretation": {
+      "byte_size": 2999209,
+      "format": "png",
+      "kind": "image",
+      "path": "files/3d12ded08b1eeb0750ab5e1aebf47c17fe70654d02e07feb4d9707e6f01baf98.png",
+      "sha256": "3d12ded08b1eeb0750ab5e1aebf47c17fe70654d02e07feb4d9707e6f01baf98"
+    },
+    "cn.song.asset.sheng-sheng-man.story-01": {
+      "byte_size": 2999209,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/3d12ded08b1eeb0750ab5e1aebf47c17fe70654d02e07feb4d9707e6f01baf98.png",
+      "sha256": "3d12ded08b1eeb0750ab5e1aebf47c17fe70654d02e07feb4d9707e6f01baf98"
+    },
+    "cn.song.asset.sheng-sheng-man.story-02": {
+      "byte_size": 3159658,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/6b0713cecf3090bec2f40ef1b977325bd4421963d282298b28bf773ba48ca08f.png",
+      "sha256": "6b0713cecf3090bec2f40ef1b977325bd4421963d282298b28bf773ba48ca08f"
+    },
+    "cn.song.asset.sheng-sheng-man.story-03": {
+      "byte_size": 3103882,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/fbab6fe91e6cab3ac3eb79ecc2fa8b2e3634a6129ff73b0aab8f40c9b04670a2.png",
+      "sha256": "fbab6fe91e6cab3ac3eb79ecc2fa8b2e3634a6129ff73b0aab8f40c9b04670a2"
+    },
+    "cn.song.asset.shier.interpretation": {
+      "byte_size": 2861311,
+      "format": "png",
+      "kind": "image",
+      "path": "files/b27ab7b34dde41d0d9cdbcdfeec6559b186fd13b4feb49a0b99da39496be272c.png",
+      "sha256": "b27ab7b34dde41d0d9cdbcdfeec6559b186fd13b4feb49a0b99da39496be272c"
+    },
+    "cn.song.asset.shier.story-01": {
+      "byte_size": 2861311,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/b27ab7b34dde41d0d9cdbcdfeec6559b186fd13b4feb49a0b99da39496be272c.png",
+      "sha256": "b27ab7b34dde41d0d9cdbcdfeec6559b186fd13b4feb49a0b99da39496be272c"
+    },
+    "cn.song.asset.shier.story-02": {
+      "byte_size": 3153105,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/bf7906356ae8a23c04b7d29cccb54a068ee5a7dd596d8efa562657bee3399530.png",
+      "sha256": "bf7906356ae8a23c04b7d29cccb54a068ee5a7dd596d8efa562657bee3399530"
+    },
+    "cn.song.asset.shier.story-03": {
+      "byte_size": 3153448,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/631e2426255a6d624553c41d25234988b8d67e2a17885a53df3edd6a269be811.png",
+      "sha256": "631e2426255a6d624553c41d25234988b8d67e2a17885a53df3edd6a269be811"
+    },
+    "cn.song.asset.shui-diao-ge-tou.interpretation": {
+      "byte_size": 3286080,
+      "format": "png",
+      "kind": "image",
+      "path": "files/520b56dd1cc58279eb92483d9770596610aadcc0bba5648e3308e075de114808.png",
+      "sha256": "520b56dd1cc58279eb92483d9770596610aadcc0bba5648e3308e075de114808"
+    },
+    "cn.song.asset.shui-diao-ge-tou.story-01": {
+      "byte_size": 3286080,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/520b56dd1cc58279eb92483d9770596610aadcc0bba5648e3308e075de114808.png",
+      "sha256": "520b56dd1cc58279eb92483d9770596610aadcc0bba5648e3308e075de114808"
+    },
+    "cn.song.asset.shui-diao-ge-tou.story-02": {
+      "byte_size": 3173066,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/67ccfd40b392cb7765ea70699f6b40cd216336910b839d090e5c65706382189b.png",
+      "sha256": "67ccfd40b392cb7765ea70699f6b40cd216336910b839d090e5c65706382189b"
+    },
+    "cn.song.asset.shui-diao-ge-tou.story-03": {
+      "byte_size": 3306323,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/08211b0de28b905c4c11b9f203bbb4f0adf38e436827cb824601f062547e9251.png",
+      "sha256": "08211b0de28b905c4c11b9f203bbb4f0adf38e436827cb824601f062547e9251"
+    },
+    "cn.song.asset.snowy-riverbank.photo": {
+      "byte_size": 135436,
+      "format": "jpg",
+      "kind": "image",
+      "path": "files/a04f5ec58509ef793a9044f32e24212a2cb6c15da6b87c3d7480f4ddf65d3a84.jpg",
+      "sha256": "a04f5ec58509ef793a9044f32e24212a2cb6c15da6b87c3d7480f4ddf65d3a84"
+    },
+    "cn.song.asset.snowy-riverbank.story-01": {
+      "byte_size": 2770321,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/1622d22742f471454c0ac216bd90cfe3341a7ce338f9d33911f8c0aa2bdc11fe.png",
+      "sha256": "1622d22742f471454c0ac216bd90cfe3341a7ce338f9d33911f8c0aa2bdc11fe"
+    },
+    "cn.song.asset.snowy-riverbank.story-02": {
+      "byte_size": 3236930,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/b8dc8137f52c6a027d54cb01027d16305539ca7ba13bd34aaebc9df8b87a8268.png",
+      "sha256": "b8dc8137f52c6a027d54cb01027d16305539ca7ba13bd34aaebc9df8b87a8268"
+    },
+    "cn.song.asset.snowy-riverbank.story-03": {
+      "byte_size": 3364332,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/d6db36debbb011d53ca958fa1e57d2d3d77f0b6b5a60dbf8642090a2566b8764.png",
+      "sha256": "d6db36debbb011d53ca958fa1e57d2d3d77f0b6b5a60dbf8642090a2566b8764"
+    },
+    "cn.song.asset.summer-quatrain.interpretation": {
+      "byte_size": 3090103,
+      "format": "png",
+      "kind": "image",
+      "path": "files/db5a253e4223fcd86730db125a9cecbd9a4a27b7d37f122fdf10b6094dc78617.png",
+      "sha256": "db5a253e4223fcd86730db125a9cecbd9a4a27b7d37f122fdf10b6094dc78617"
+    },
+    "cn.song.asset.summer-quatrain.story-01": {
+      "byte_size": 3090103,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/db5a253e4223fcd86730db125a9cecbd9a4a27b7d37f122fdf10b6094dc78617.png",
+      "sha256": "db5a253e4223fcd86730db125a9cecbd9a4a27b7d37f122fdf10b6094dc78617"
+    },
+    "cn.song.asset.summer-quatrain.story-02": {
+      "byte_size": 3434433,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/6ec2dd46721d878a6592616c873582e730fe594b8febd838164be8c55280a2be.png",
+      "sha256": "6ec2dd46721d878a6592616c873582e730fe594b8febd838164be8c55280a2be"
+    },
+    "cn.song.asset.summer-quatrain.story-03": {
+      "byte_size": 3075065,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/c5cb5703a080904ad20c8b9e8dbf7d9f19d0292cca08523aedbe96d96fabe664.png",
+      "sha256": "c5cb5703a080904ad20c8b9e8dbf7d9f19d0292cca08523aedbe96d96fabe664"
+    },
+    "cn.song.asset.thousand-li-rivers-mountains.interpretation": {
+      "byte_size": 2991242,
+      "format": "png",
+      "kind": "image",
+      "path": "files/0c85490d5f76d1fd93986e31540813fb894edc88d25ea64fe4e0585948409923.png",
+      "sha256": "0c85490d5f76d1fd93986e31540813fb894edc88d25ea64fe4e0585948409923"
+    },
+    "cn.song.asset.thousand-li-rivers-mountains.story-01": {
+      "byte_size": 2991242,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/0c85490d5f76d1fd93986e31540813fb894edc88d25ea64fe4e0585948409923.png",
+      "sha256": "0c85490d5f76d1fd93986e31540813fb894edc88d25ea64fe4e0585948409923"
+    },
+    "cn.song.asset.thousand-li-rivers-mountains.story-02": {
+      "byte_size": 3191578,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/a8f2ae5242a8a5d63ef781ed978f7f5938575a8ecd9790ecaa83f20cf57f0e7d.png",
+      "sha256": "a8f2ae5242a8a5d63ef781ed978f7f5938575a8ecd9790ecaa83f20cf57f0e7d"
+    },
+    "cn.song.asset.thousand-li-rivers-mountains.story-03": {
+      "byte_size": 3081091,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/a8cc85eacbcc144aeff9562b51be5bb4ac6aed3f8e7491e2bc578734cf96bf3e.png",
+      "sha256": "a8cc85eacbcc144aeff9562b51be5bb4ac6aed3f8e7491e2bc578734cf96bf3e"
+    },
+    "cn.song.asset.water-astronomical-clock.interpretation": {
+      "byte_size": 3173349,
+      "format": "png",
+      "kind": "image",
+      "path": "files/ef0fe0b70ad983d83226cf33699d3bf7586f496594466e87f5c251d18a49e7f1.png",
+      "sha256": "ef0fe0b70ad983d83226cf33699d3bf7586f496594466e87f5c251d18a49e7f1"
+    },
+    "cn.song.asset.water-astronomical-clock.story-01": {
+      "byte_size": 3173349,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/ef0fe0b70ad983d83226cf33699d3bf7586f496594466e87f5c251d18a49e7f1.png",
+      "sha256": "ef0fe0b70ad983d83226cf33699d3bf7586f496594466e87f5c251d18a49e7f1"
+    },
+    "cn.song.asset.water-astronomical-clock.story-02": {
+      "byte_size": 3399605,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/d8f6cf577924e63f44c1b96da00bcab43474786ceb92ca53b02b6379f3b7bfbe.png",
+      "sha256": "d8f6cf577924e63f44c1b96da00bcab43474786ceb92ca53b02b6379f3b7bfbe"
+    },
+    "cn.song.asset.water-astronomical-clock.story-03": {
+      "byte_size": 3175135,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/7446809cf096b8f749d1e663c5e870a9a33e22dd138a58a21444cf6ff6638070.png",
+      "sha256": "7446809cf096b8f749d1e663c5e870a9a33e22dd138a58a21444cf6ff6638070"
+    },
+    "cn.song.asset.yancheng-battle.interpretation": {
+      "byte_size": 3127443,
+      "format": "png",
+      "kind": "image",
+      "path": "files/6faf399afb7c82425eeebf7462224239ae0d7a109f3293eabae59017cdd35e6b.png",
+      "sha256": "6faf399afb7c82425eeebf7462224239ae0d7a109f3293eabae59017cdd35e6b"
+    },
+    "cn.song.asset.yancheng-battle.story-01": {
+      "byte_size": 3127443,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/6faf399afb7c82425eeebf7462224239ae0d7a109f3293eabae59017cdd35e6b.png",
+      "sha256": "6faf399afb7c82425eeebf7462224239ae0d7a109f3293eabae59017cdd35e6b"
+    },
+    "cn.song.asset.yancheng-battle.story-02": {
+      "byte_size": 3402607,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/a84686ab88f48e077debb665aba5f5b3b92eb536b59a3dfe435995eb0ea89c00.png",
+      "sha256": "a84686ab88f48e077debb665aba5f5b3b92eb536b59a3dfe435995eb0ea89c00"
+    },
+    "cn.song.asset.yancheng-battle.story-03": {
+      "byte_size": 3243509,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/7e1247ac9b2041afe06a0df14efe7a3278c285fc43e5a86402615028d898224c.png",
+      "sha256": "7e1247ac9b2041afe06a0df14efe7a3278c285fc43e5a86402615028d898224c"
+    },
+    "cn.song.asset.yashan-battle.interpretation": {
+      "byte_size": 3236512,
+      "format": "png",
+      "kind": "image",
+      "path": "files/b9deb65bd4e9c05d9081fa3957614c51ecf5e4b9e6bfd68eb43f99a3d552ee6e.png",
+      "sha256": "b9deb65bd4e9c05d9081fa3957614c51ecf5e4b9e6bfd68eb43f99a3d552ee6e"
+    },
+    "cn.song.asset.yashan-battle.story-01": {
+      "byte_size": 3236512,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/b9deb65bd4e9c05d9081fa3957614c51ecf5e4b9e6bfd68eb43f99a3d552ee6e.png",
+      "sha256": "b9deb65bd4e9c05d9081fa3957614c51ecf5e4b9e6bfd68eb43f99a3d552ee6e"
+    },
+    "cn.song.asset.yashan-battle.story-02": {
+      "byte_size": 3241353,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/1d4929202b0bc7436211fb166f40de7a24e7b399807fad49bcb8159f1f1b8ff6.png",
+      "sha256": "1d4929202b0bc7436211fb166f40de7a24e7b399807fad49bcb8159f1f1b8ff6"
+    },
+    "cn.song.asset.yashan-battle.story-03": {
+      "byte_size": 3185703,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/1eb8dd47e78f724d8bc567afba2ff779c4c12916b05c4f58b6a95bbea4f6fcc2.png",
+      "sha256": "1eb8dd47e78f724d8bc567afba2ff779c4c12916b05c4f58b6a95bbea4f6fcc2"
+    },
+    "cn.song.asset.yong-yu-le.interpretation": {
+      "byte_size": 3258825,
+      "format": "png",
+      "kind": "image",
+      "path": "files/cff38b66d8a4fcbf88c32992fd5b655a1edd802fa458fdbf88fc3e6fddc082c3.png",
+      "sha256": "cff38b66d8a4fcbf88c32992fd5b655a1edd802fa458fdbf88fc3e6fddc082c3"
+    },
+    "cn.song.asset.yong-yu-le.story-01": {
+      "byte_size": 3258825,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/cff38b66d8a4fcbf88c32992fd5b655a1edd802fa458fdbf88fc3e6fddc082c3.png",
+      "sha256": "cff38b66d8a4fcbf88c32992fd5b655a1edd802fa458fdbf88fc3e6fddc082c3"
+    },
+    "cn.song.asset.yong-yu-le.story-02": {
+      "byte_size": 3179924,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/cd2b51dce0d59859e0c2166e7921bedd024d1213d493e354ee5e0dea0ee33a82.png",
+      "sha256": "cd2b51dce0d59859e0c2166e7921bedd024d1213d493e354ee5e0dea0ee33a82"
+    },
+    "cn.song.asset.yong-yu-le.story-03": {
+      "byte_size": 2987454,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/00a56407570266727c13a936f8fd658aa05f23a067f952eda6e24b6587eb547c.png",
+      "sha256": "00a56407570266727c13a936f8fd658aa05f23a067f952eda6e24b6587eb547c"
+    },
+    "cn.song.asset.zuiweng-pavilion.interpretation": {
+      "byte_size": 3985079,
+      "format": "png",
+      "kind": "image",
+      "path": "files/fd89e31f792651a0a1bed73a943fb60dc53b67148528687533a37e8cc0312c95.png",
+      "sha256": "fd89e31f792651a0a1bed73a943fb60dc53b67148528687533a37e8cc0312c95"
+    },
+    "cn.song.asset.zuiweng-pavilion.story-01": {
+      "byte_size": 3985079,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/fd89e31f792651a0a1bed73a943fb60dc53b67148528687533a37e8cc0312c95.png",
+      "sha256": "fd89e31f792651a0a1bed73a943fb60dc53b67148528687533a37e8cc0312c95"
+    },
+    "cn.song.asset.zuiweng-pavilion.story-02": {
+      "byte_size": 3533363,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/3f11c39f891c9f7665a4ffb2f8ca8569217b705e39f0705375493a2c45d1dbc6.png",
+      "sha256": "3f11c39f891c9f7665a4ffb2f8ca8569217b705e39f0705375493a2c45d1dbc6"
+    },
+    "cn.song.asset.zuiweng-pavilion.story-03": {
+      "byte_size": 3164578,
+      "format": "png",
+      "kind": "comic",
+      "path": "files/e63159fdb629df15640546b7625197d4168ab693d7b8ca6d277d39d0c905aacb.png",
+      "sha256": "e63159fdb629df15640546b7625197d4168ab693d7b8ca6d277d39d0c905aacb"
+    }
+  },
+  "pack_id": "cn.song.core",
+  "schema_version": 1,
+  "version": "0.1.4"
+}
