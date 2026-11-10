@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.later-red-cliff.02"}],"fact_grade":"C","id":"cn.song.node.later-red-cliff.01","narration":"文章写到霜露、月色和相伴而行的朋友。夜色清朗，人们想起再次到江边走走。","presentation":{"asset_ids":["cn.song.asset.later-red-cliff.story-01"],"capability":"comic"},"story_id":"cn.song.story.later-red-cliff"}

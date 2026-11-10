@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.snowy-riverbank.02"}],"fact_grade":"C","id":"cn.song.node.snowy-riverbank.01","narration":"手卷不是一下子看尽的画。随着画面展开，雪覆盖的江岸、树木和水面一点点出现。","presentation":{"asset_ids":["cn.song.asset.snowy-riverbank.story-01"],"capability":"comic"},"story_id":"cn.song.story.snowy-riverbank"}

@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.jiaozi.03"}],"fact_grade":"C","id":"cn.song.node.jiaozi.02","narration":"交子最初与商人寄存、取用钱物有关。后来，它逐渐发展出纸币的作用。","presentation":{"asset_ids":["cn.song.asset.jiaozi.story-02"],"capability":"comic"},"story_id":"cn.song.story.jiaozi"}

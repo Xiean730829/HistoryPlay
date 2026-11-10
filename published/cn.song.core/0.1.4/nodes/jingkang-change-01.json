@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.jingkang-change.02"}],"fact_grade":"C","id":"cn.song.node.jingkang-change.01","narration":"北宋的都城汴京曾经繁忙。战争到来，让这座城市和许多人的生活发生了巨大变化。","presentation":{"asset_ids":["cn.song.asset.jingkang-change.story-01"],"capability":"comic"},"story_id":"cn.song.story.jingkang-change"}

@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.chongning-coin.01"}],"fact_grade":"F","id":"cn.song.node.chongning-coin.intro","narration":"这枚北宋铜钱不只与货币有关，钱上的文字还让我们看到书法。一起看看它的形状和字。","story_id":"cn.song.story.chongning-coin"}

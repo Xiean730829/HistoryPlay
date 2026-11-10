@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.boat-haulers.03"}],"fact_grade":"C","id":"cn.song.node.boat-haulers.02","narration":"注意画中的牵船形象。顺着画面，我们可以想象行舟并不总是顺风顺水，有时需要岸上的人出力。","presentation":{"asset_ids":["cn.song.asset.boat-haulers.story-02"],"capability":"comic"},"story_id":"cn.song.story.boat-haulers"}

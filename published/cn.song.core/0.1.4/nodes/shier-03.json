@@ -1,0 +1,1 @@
+{"allowed_actions":["return_to_exhibit"],"exits":[{"action":"return_to_exhibit","target_node_id":"cn.song.node.shier.01"}],"fact_grade":"C","id":"cn.song.node.shier.03","narration":"文字会留下来，也会被后人继续读。陆游的叮嘱，让我们看见他对家人和时代的深切关心。","presentation":{"asset_ids":["cn.song.asset.shier.story-03"],"capability":"comic"},"return_checkpoint":true,"story_id":"cn.song.story.shier"}

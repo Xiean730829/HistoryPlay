@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.guan-vase.01"}],"fact_grade":"F","id":"cn.song.node.guan-vase.intro","narration":"这件南宋官窑青瓷瓶，值得慢慢看的不仅是外形，还有青色釉面上的光与细纹。","story_id":"cn.song.story.guan-vase"}

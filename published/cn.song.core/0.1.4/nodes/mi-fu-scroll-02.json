@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.mi-fu-scroll.03"}],"fact_grade":"C","id":"cn.song.node.mi-fu-scroll.02","narration":"展开手卷，目光跟随一行行字移动。馆方介绍，米芾的书写重视笔势和变化，字形随运笔显出自由的节奏。","presentation":{"asset_ids":["cn.song.asset.mi-fu-scroll.story-02"],"capability":"comic"},"story_id":"cn.song.story.mi-fu-scroll"}

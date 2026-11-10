@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.hanshi-scroll.01"}],"fact_grade":"F","id":"cn.song.node.hanshi-scroll.intro","narration":"这是一卷把诗和书法放在一起的作品。透过字的变化，我们能感受到苏轼在黄州时复杂的心情。","story_id":"cn.song.story.hanshi-scroll"}

@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.ru-celadon-dish.01"}],"fact_grade":"F","id":"cn.song.node.ru-celadon-dish.intro","narration":"这只宋代汝窑盘看上去很素净。翻到盘底，还能发现烧制时留下的五个小痕迹。","story_id":"cn.song.story.ru-celadon-dish"}

@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.boat-haulers.02"}],"fact_grade":"C","id":"cn.song.node.boat-haulers.01","narration":"画面里有舟船，也有被水汽和风雨包围的景色。馆方将作品断代为十二世纪晚期，画家身份不详。","presentation":{"asset_ids":["cn.song.asset.boat-haulers.story-01"],"capability":"comic"},"story_id":"cn.song.story.boat-haulers"}

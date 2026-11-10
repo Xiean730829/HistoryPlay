@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.later-red-cliff.01"}],"fact_grade":"F","id":"cn.song.node.later-red-cliff.intro","narration":"一个初冬的夜晚，苏轼和友人重游赤壁。文章把江声、山路和归舟写得像一场夜间旅行。","story_id":"cn.song.story.later-red-cliff"}

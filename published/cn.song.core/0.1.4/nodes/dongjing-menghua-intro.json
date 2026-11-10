@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.dongjing-menghua.01"}],"fact_grade":"F","id":"cn.song.node.dongjing-menghua.intro","narration":"汴京的热闹后来怎样被记住？孟元老用一本书，把城市的街市、节日和生活留给了后人。","story_id":"cn.song.story.dongjing-menghua"}

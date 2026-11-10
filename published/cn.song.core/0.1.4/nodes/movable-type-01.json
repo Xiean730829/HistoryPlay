@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.movable-type.02"}],"fact_grade":"C","id":"cn.song.node.movable-type.01","narration":"与整块雕版不同，活字把文字分成可重新排列的小单元。这样，排成一页之后，还可以拆开再用。","presentation":{"asset_ids":["cn.song.asset.movable-type.story-01"],"capability":"comic"},"story_id":"cn.song.story.movable-type"}

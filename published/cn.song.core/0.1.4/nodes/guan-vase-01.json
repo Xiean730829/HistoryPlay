@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.guan-vase.02"}],"fact_grade":"C","id":"cn.song.node.guan-vase.01","narration":"先看整件瓶子。它的颜色安静柔和，光落在釉面上时，瓶身会显出不同的明暗。","presentation":{"asset_ids":["cn.song.asset.guan-vase.story-01"],"capability":"comic"},"story_id":"cn.song.story.guan-vase"}

@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.zuiweng-pavilion.01"}],"fact_grade":"F","id":"cn.song.node.zuiweng-pavilion.intro","narration":"欧阳修在滁州时，写下了一座山中的小亭。文章里不只有山水，还有与他一同游玩的百姓。","story_id":"cn.song.story.zuiweng-pavilion"}

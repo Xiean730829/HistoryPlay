@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.sheng-sheng-man.02"}],"fact_grade":"C","id":"cn.song.node.sheng-sheng-man.01","narration":"寻寻觅觅，冷冷清清。词一开始，重复的声音就让人感到一种空落；秋窗画面是依词意作的想象。","presentation":{"asset_ids":["cn.song.asset.sheng-sheng-man.story-01"],"capability":"comic"},"story_id":"cn.song.story.sheng-sheng-man"}

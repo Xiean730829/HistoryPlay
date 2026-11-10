@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.bronze-censer.01"}],"fact_grade":"F","id":"cn.song.node.bronze-censer.intro","narration":"这件宋代铜香炉装饰简洁。我们从一缕香烟出发，看看它的器形和宋人的焚香生活。","story_id":"cn.song.story.bronze-censer"}

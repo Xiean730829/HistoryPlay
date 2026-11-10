@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.ding-vase.02"}],"fact_grade":"C","id":"cn.song.node.ding-vase.01","narration":"先退一步，看瓶子的整体。浅色釉面没有抢走轮廓，反而让器形的起伏更加清楚。","presentation":{"asset_ids":["cn.song.asset.ding-vase.story-01"],"capability":"comic"},"story_id":"cn.song.story.ding-vase"}

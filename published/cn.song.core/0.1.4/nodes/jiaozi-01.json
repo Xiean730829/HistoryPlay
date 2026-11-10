@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.jiaozi.02"}],"fact_grade":"C","id":"cn.song.node.jiaozi.01","narration":"想象一位商人准备出行，钱袋里装着沉重的铁钱。长路上，携带和保管都不是一件轻松的事。","presentation":{"asset_ids":["cn.song.asset.jiaozi.story-01"],"capability":"comic"},"story_id":"cn.song.story.jiaozi"}

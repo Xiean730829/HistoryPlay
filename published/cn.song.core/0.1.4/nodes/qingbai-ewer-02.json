@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.qingbai-ewer.03"}],"fact_grade":"F","id":"cn.song.node.qingbai-ewer.02","narration":"看它细细的流、圆润的身子，还有带着淡青色的釉。这样的器形方便倾注，也让器物在日常使用中显得轻巧。","presentation":{"asset_ids":["cn.song.asset.qingbai-ewer.story-02"],"capability":"comic"},"story_id":"cn.song.story.qingbai-ewer"}

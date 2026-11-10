@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.yancheng-battle.02"}],"fact_grade":"C","id":"cn.song.node.yancheng-battle.01","narration":"1140年，宋金之间的战争仍在继续。将领与士兵的行动，发生在更大的政治和军事局势之中。","presentation":{"asset_ids":["cn.song.asset.yancheng-battle.story-01"],"capability":"comic"},"story_id":"cn.song.story.yancheng-battle"}

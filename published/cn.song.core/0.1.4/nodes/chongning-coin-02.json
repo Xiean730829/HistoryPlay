@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.chongning-coin.03"}],"fact_grade":"C","id":"cn.song.node.chongning-coin.02","narration":"钱文是“崇宁通宝”。馆方介绍，这些字呈现出宋徽宗书法中被称为瘦金体的特点。","presentation":{"asset_ids":["cn.song.asset.chongning-coin.story-02"],"capability":"comic"},"story_id":"cn.song.story.chongning-coin"}

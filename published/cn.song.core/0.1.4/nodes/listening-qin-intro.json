@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.listening-qin.01"}],"fact_grade":"F","id":"cn.song.node.listening-qin.intro","narration":"这幅宋代人物画里有人弹琴，也有人安静地听。画没有声音，却能让人想象琴声。","story_id":"cn.song.story.listening-qin"}

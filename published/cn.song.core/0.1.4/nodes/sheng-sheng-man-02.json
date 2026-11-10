@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.sheng-sheng-man.03"}],"fact_grade":"C","id":"cn.song.node.sheng-sheng-man.02","narration":"词里有乍暖还寒，也有梧桐细雨。听见这些景物的声音，我们仿佛更能靠近词中人的心情。","presentation":{"asset_ids":["cn.song.asset.sheng-sheng-man.story-02"],"capability":"comic"},"story_id":"cn.song.story.sheng-sheng-man"}

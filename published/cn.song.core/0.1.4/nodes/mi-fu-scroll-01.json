@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.mi-fu-scroll.02"}],"fact_grade":"C","id":"cn.song.node.mi-fu-scroll.01","narration":"想象舟在水面行进，岸边景色缓缓退去。这样的画面是由诗卷题目引出的演绎，不是写作现场的照片。","presentation":{"asset_ids":["cn.song.asset.mi-fu-scroll.story-01"],"capability":"comic"},"story_id":"cn.song.story.mi-fu-scroll"}

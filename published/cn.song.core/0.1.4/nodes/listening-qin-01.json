@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.listening-qin.02"}],"fact_grade":"C","id":"cn.song.node.listening-qin.01","narration":"画里，松树和竹子围出一片安静的庭院。人们围坐在琴旁，目光和姿态都慢了下来。","presentation":{"asset_ids":["cn.song.asset.listening-qin.story-01"],"capability":"comic"},"story_id":"cn.song.story.listening-qin"}

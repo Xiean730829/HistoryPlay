@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.shier.02"}],"fact_grade":"C","id":"cn.song.node.shier.01","narration":"陆游年老时，仍然牵挂着山河的未来。他把心里的愿望写给自己的孩子。","presentation":{"asset_ids":["cn.song.asset.shier.story-01"],"capability":"comic"},"story_id":"cn.song.story.shier"}

@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.song.node.ru-celadon-dish.03"}],"fact_grade":"C","id":"cn.song.node.ru-celadon-dish.02","narration":"馆方介绍，盘底留有五个支钉痕。它们是烧制过程留下的线索，帮助我们认识工艺。","presentation":{"asset_ids":["cn.song.asset.ru-celadon-dish.story-02"],"capability":"comic"},"story_id":"cn.song.story.ru-celadon-dish"}
