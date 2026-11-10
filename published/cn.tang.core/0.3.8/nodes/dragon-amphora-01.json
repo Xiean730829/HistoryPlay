@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.tang.node.dragon-amphora.02"}],"fact_grade":"C","id":"cn.tang.node.dragon-amphora.01","narration":"这是一件唐代三彩双龙耳瓶。它的瓶身细长，两侧各有一条龙形耳，釉色让这件器物格外醒目。","presentation":{"asset_ids":["cn.tang.asset.dragon-amphora.story-01"],"capability":"comic"},"story_id":"cn.tang.story.dragon-amphora"}

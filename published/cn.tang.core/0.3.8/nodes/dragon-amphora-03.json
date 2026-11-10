@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.tang.node.dragon-amphora.04"}],"fact_grade":"C","id":"cn.tang.node.dragon-amphora.03","narration":"人们常把唐代多种釉色相互映衬的陶器称为唐三彩。瓶身上流动的颜色和线条，让我们看到陶器工艺的表现力。","presentation":{"asset_ids":["cn.tang.asset.dragon-amphora.story-03"],"capability":"comic"},"story_id":"cn.tang.story.dragon-amphora"}

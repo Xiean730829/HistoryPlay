@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.tang.node.equestrian-pair.03"}],"fact_grade":"C","id":"cn.tang.node.equestrian-pair.02","narration":"先看马。它的身体、四腿和站姿都经过塑造，即使静静不动，也让我们想到行走与出行。","presentation":{"asset_ids":["cn.tang.asset.equestrian-pair.story-02"],"capability":"comic"},"story_id":"cn.tang.story.equestrian-pair"}
