@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.tang.node.guardian-head.03"}],"fact_grade":"C","id":"cn.tang.node.guardian-head.02","narration":"在佛教造像中，力士常以威武的形象出现，具有守护的象征意义。它的神情让人感受到守护者的力量。","presentation":{"asset_ids":["cn.tang.asset.guardian-head.story-02"],"capability":"comic"},"story_id":"cn.tang.story.guardian-head"}

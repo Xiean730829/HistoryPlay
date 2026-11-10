@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.tang.node.bronze-mirror.02"}],"fact_grade":"C","id":"cn.tang.node.bronze-mirror.01","narration":"这是一面唐代铜镜。古人把金属镜面磨得光亮，用它整理仪容；另一面则可以铸出漂亮的花纹。","presentation":{"asset_ids":["cn.tang.asset.bronze-mirror.story-01"],"capability":"comic"},"story_id":"cn.tang.story.bronze-mirror"}

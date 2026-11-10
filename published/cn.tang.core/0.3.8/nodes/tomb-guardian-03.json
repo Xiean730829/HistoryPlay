@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.tang.node.tomb-guardian.04"}],"fact_grade":"C","id":"cn.tang.node.tomb-guardian.03","narration":"仔细看，镇墓兽的神情和身体形状都很特别。工匠把不同动物的特点组合起来，让守护的形象显得醒目有力。","presentation":{"asset_ids":["cn.tang.asset.tomb-guardian.story-03"],"capability":"comic"},"story_id":"cn.tang.story.tomb-guardian"}

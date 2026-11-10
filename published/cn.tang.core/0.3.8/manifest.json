@@ -1,0 +1,1 @@
+{"id":"cn.tang.core","language":"zh-CN","publication_status":"published","region":{"id":"cn","label":"中国"},"required_capabilities":["artifact3d","comic"],"schema_version":"1","time_range":{"display_label":"唐朝","end_year":907,"precision":"range","start_year":618},"title":"唐朝长廊首批展位","version":"0.3.8"}

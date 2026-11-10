@@ -1,0 +1,1 @@
+{"allowed_actions":["continue_story"],"exits":[{"action":"continue_story","target_node_id":"cn.tang.node.tomb-guardian.03"}],"fact_grade":"C","id":"cn.tang.node.tomb-guardian.02","narration":"镇墓兽常作为随葬品，被放在墓葬空间里。古人用它表达守护与辟邪的愿望，让想象中的守卫陪伴逝去的人。","presentation":{"asset_ids":["cn.tang.asset.tomb-guardian.story-02"],"capability":"comic"},"story_id":"cn.tang.story.tomb-guardian"}
